@@ -1,0 +1,32 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "corpus_lifecycle_axiom",
+    "asserts": {
+      "every_node_carries_status": true,
+      "status_enum_per_kind_closed_set": true,
+      "status_transitions_through_admission_gate": "atomic_with_admission_audited",
+      "transitions_traverse_per_kind_legal_graph": true,
+      "non_graph_transition": "refused_with_reason",
+      "terminal_status_values_per_kind": "permitted",
+      "terminal_status_preserves_row": true,
+      "hard_delete_of_node_row": false
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Corpus Lifecycle Axiom",
+    "out_of_scope": [
+      "per_kind_status_enums",
+      "per_kind_legal_transition_graphs",
+      "per_kind_terminal_values",
+      "cold_archive_vs_warm_preservation_mechanics",
+      "ttl_or_row_deletion_policies_for_non_node_data",
+      "current_version_resolution_and_discovery_filtering",
+      "supersession_vs_deprecation_distinction",
+      "approval_flows_for_high_privilege_transitions",
+      "performance_and_indexing_for_status_filtered_queries",
+      "audit_record_content_for_status_transitions"
+    ]
+  }
+}

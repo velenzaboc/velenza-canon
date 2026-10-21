@@ -1,0 +1,68 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "audit_record",
+    "asserts": {
+      "structural_fields_in_contract": ["principal_stable_id", "subject_stable_id", "wall_clock_instant", "admission_event_kind"],
+      "immutable_once_admitted": true,
+      "re_admittable": false,
+      "atomic_commit_with_subject_admission": true,
+      "plaintext_structural_fields": true,
+      "audit_of_audit_recursion": "fixed_point_audit_record_is_its_own_audit"
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "audit_record",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "audit_record",
+      "required_contract_fields": ["principal_stable_id", "subject_stable_id", "wall_clock_instant", "admission_event_kind", "contract_monotonicity_rule"],
+      "optional_contract_fields": ["subject_definition_hash"],
+      "field_specs": {
+        "principal_stable_id": {
+          "type": "uuid",
+          "constraint": "resolves_to_existing_principal_node"
+        },
+        "subject_stable_id": {
+          "type": "uuid",
+          "constraint": "resolves_to_existing_node"
+        },
+        "wall_clock_instant": {
+          "type": "timestamp",
+          "source": "admission_gate"
+        },
+        "admission_event_kind": {
+          "type": "enum",
+          "values": ["admission", "re_admission", "status_transition", "retirement"]
+        },
+        "subject_definition_hash": {
+          "type": "hex_string_or_null"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["admitted"],
+      "legal_transitions": [],
+      "terminal_status_values": ["admitted"],
+      "re_admittable": false,
+      "immutable_once_admitted": true,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "no_re_admission; version_2_or_beyond_forbidden"
+  },
+  "payload": {
+    "title": "Audit Record Kind Declaration",
+    "out_of_scope": [
+      "audit_query_languages_and_result_shapes",
+      "audit_chain_visualization_or_ui",
+      "audit_retention_and_cold_archival",
+      "external_auditor_integration_patterns",
+      "audit_record_indexing_and_performance_optimization",
+      "audit_record_of_audit_record_infinite_recursion_forbidden_by_construction"
+    ]
+  }
+}

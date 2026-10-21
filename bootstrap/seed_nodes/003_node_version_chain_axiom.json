@@ -1,0 +1,35 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "node_version_chain_axiom",
+    "asserts": {
+      "every_node_carries_version_integer": true,
+      "version_integer": {
+        "type": "positive_integer",
+        "first_admission_value": 1,
+        "monotonicity": "strict_increment_by_one",
+        "density": "no_gaps",
+        "direction": "no_decrease"
+      },
+      "two_surfaces_per_version_row": {
+        "contract": "byte_equivalent_across_all_versions_of_same_stable_id",
+        "payload": "version_specific_refinable"
+      },
+      "contract_immutability_across_versions": true,
+      "audit_preservation": "every_admitted_version_row_preserved"
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Node Version Chain Axiom",
+    "out_of_scope": [
+      "admission_ceremony_procedure",
+      "contract_byte_equivalence_check_mechanism",
+      "status_enum_and_lifecycle_transitions",
+      "supersession_resolution",
+      "attestation_columns",
+      "edge_semantics",
+      "retention_policy_for_old_versions"
+    ]
+  }
+}

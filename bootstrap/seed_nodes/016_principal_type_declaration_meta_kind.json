@@ -1,0 +1,72 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "principal_type_declaration",
+    "asserts": {
+      "declares_per_declaration": 1,
+      "uniqueness_scope": ["organization_id", "canonical_name"],
+      "type_specific_properties_required_in_contract": true,
+      "authentication_binding_contract_required_in_contract": true,
+      "registry_membership_requires_admitted_active_declaration": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "principal_type_declaration",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "principal_type_declaration",
+      "required_contract_fields": ["canonical_name", "asserts", "type_specific_properties", "authentication_binding_contract", "contract_monotonicity_rule"],
+      "optional_contract_fields": ["default_trust_tier", "permitted_authorization_dimensions"],
+      "field_specs": {
+        "canonical_name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type_specific_properties": {
+          "type": "json_schema_fragment"
+        },
+        "authentication_binding_contract": {
+          "type": "json_schema_fragment"
+        },
+        "default_trust_tier": {
+          "type": "string_or_null"
+        },
+        "permitted_authorization_dimensions": {
+          "type": "array_of_strings_or_null"
+        }
+      },
+      "required_payload_fields": ["title"],
+      "optional_payload_fields": ["out_of_scope"]
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "superseded", "retired"],
+      "legal_transitions": [
+        {"from": "active", "to": "superseded"},
+        {"from": "active", "to": "retired"},
+        {"from": "superseded", "to": "retired"}
+      ],
+      "terminal_status_values": ["retired"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_title_and_out_of_scope_only"
+  },
+  "payload": {
+    "title": "Principal Type Declaration Meta-Kind",
+    "out_of_scope": [
+      "specific_principal_types_in_registry",
+      "authentication_protocol_choices_per_type",
+      "trust_tier_vocabulary",
+      "authorization_dimension_vocabulary",
+      "principal_type_retirement_cascade",
+      "federated_identity_provider_integration_patterns",
+      "audit_record_content_for_principal_type_admissions",
+      "performance_optimization_for_principal_type_filtered_queries"
+    ]
+  }
+}

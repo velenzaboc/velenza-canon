@@ -1,0 +1,34 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "node_admission_axiom",
+    "asserts": {
+      "single_gate": true,
+      "side_channel_admission": false,
+      "atomicity": "node_row_and_identity_and_provenance_commit_together_or_no_effect",
+      "validation": "per_proposed_node_kind_validation_rules_before_commit",
+      "outcome": {
+        "values": ["commit", "refusal_with_reason"],
+        "silent_drop": false,
+        "indeterminate_state": false
+      },
+      "provenance_fields": ["initiating_principal", "wall_clock_instant", "cryptographic_proof_of_content"],
+      "uniformity_across_kinds": true,
+      "per_kind_validation_rules_owned_by_kind_declaration": true,
+      "no_corpus_state_without_admission": true
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Node Admission Axiom",
+    "out_of_scope": [
+      "gate_procedure_implementation",
+      "cryptographic_algorithm_choice",
+      "per_kind_validation_rule_contents",
+      "audit_record_storage_shape",
+      "authorization_per_kind",
+      "retirement_or_removal_of_nodes",
+      "genesis_bootstrap_exemptions_per_validation_step"
+    ]
+  }
+}

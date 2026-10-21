@@ -1,0 +1,46 @@
+{
+  "node_kind": "principal_type_declaration",
+  "contract": {
+    "canonical_name": "system",
+    "asserts": {
+      "represents": "corpus_internal_machine_actor",
+      "authentication_binding_shape": "cryptographic_key_reference",
+      "binding_required_fields": ["key_resource_reference", "signing_algorithm"],
+      "human_attached_identity_fields": false,
+      "type_immutable_per_principal_kind_contract": true,
+      "default_trust_tier": "core_admin"
+    },
+    "type_specific_properties": {
+      "schema_format": "json_schema_fragment",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "authentication_binding_contract": {
+      "schema_format": "json_schema_fragment",
+      "type": "object",
+      "required": ["key_resource_reference", "signing_algorithm"],
+      "properties": {
+        "key_resource_reference": {"type": "string"},
+        "signing_algorithm": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "default_trust_tier": "core_admin",
+    "permitted_authorization_dimensions": null,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "System Principal Type",
+    "out_of_scope": [
+      "specific_cryptographic_algorithms_and_parameters",
+      "key_resource_grammar",
+      "key_rotation_cadence",
+      "trust_tier_vocabulary_beyond_naming_core_admin",
+      "system_principal_subclassification",
+      "key_compromise_response_procedures",
+      "keying_authority_implementation",
+      "audit_record_content_for_system_admissions",
+      "bootstrap_principal_admission_ceremony_specifics"
+    ]
+  }
+}

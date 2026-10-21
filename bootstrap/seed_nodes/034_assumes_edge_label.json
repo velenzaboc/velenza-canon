@@ -1,0 +1,30 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "assumes",
+    "asserts": {
+      "semantic": "source_claims_rely_on_target_assumption_being_true",
+      "target_kind_constraint": ["assumption"],
+      "directional": true,
+      "reciprocity": null,
+      "edge_family": "declaration"
+    },
+    "source_kinds": ["axiom", "section", "decision"],
+    "target_kinds": ["assumption"],
+    "edge_family": "declaration",
+    "reciprocity": null,
+    "version_pinning_default": "current_active",
+    "diagnostic_only": false,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "assumes Edge Label",
+    "out_of_scope": [
+      "assumption_taxonomy",
+      "assumption_violation_cascade_analysis",
+      "automatic_propagation_of_assumption_revocation",
+      "assumes_retirement_cascade",
+      "audit_record_content_for_assumes_admissions"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "raises",
+    "asserts": {
+      "semantic": "source_catalogs_raise_site_for_target_sentinel",
+      "target_kind_constraint": ["sentinel"],
+      "directional": true,
+      "reciprocity": null,
+      "edge_family": "declaration"
+    },
+    "source_kinds": ["axiom", "section", "decision"],
+    "target_kinds": ["sentinel"],
+    "edge_family": "declaration",
+    "reciprocity": null,
+    "version_pinning_default": "current_active",
+    "diagnostic_only": false,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "raises Edge Label",
+    "out_of_scope": [
+      "sentinel_taxonomy",
+      "automatic_raise_site_discovery_from_prose",
+      "raise_frequency_metrics_or_alerting",
+      "raises_retirement_cascade",
+      "audit_record_content_for_raises_admissions"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "audits",
+    "asserts": {
+      "semantic": "source_audit_record_documents_admission_event_affecting_target",
+      "source_kind_constraint": ["audit_record"],
+      "directional": true,
+      "reciprocity": null,
+      "edge_family": "audit",
+      "default_version_pinning": "version_pinned",
+      "self_loops_forbidden": true,
+      "audit_record_fixed_point_implicit": true
+    },
+    "source_kinds": ["audit_record"],
+    "target_kinds": ["origin", "axiom", "section", "sentinel", "invariant", "assumption", "decision", "doc_object", "circuit", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "principal", "edge", "audit_record", "grant", "snapshot"],
+    "edge_family": "audit",
+    "reciprocity": null,
+    "version_pinning_default": "version_pinned",
+    "diagnostic_only": false,
+    "forbid_self_loops": true,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "audits Edge Label",
+    "out_of_scope": [
+      "audit_record_kind_itself",
+      "audit_immutability_enforcement_at_gate",
+      "audit_history_retention_and_archival",
+      "automatic_audits_edge_admission_alongside_every_node_admission",
+      "audit_aggregation_queries",
+      "audit_record_of_audit_record_chain"
+    ]
+  }
+}

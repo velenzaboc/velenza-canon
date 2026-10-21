@@ -1,0 +1,212 @@
+{
+  "_comment": "Bootstrap-phase config for spec-graph. Every behavioral value lives here. NO defaults, NO fallbacks — if a required field is missing, the binary refuses to boot. impersonated_service_account reads only the owner-only gcloud well-known ADC file created with gcloud auth application-default login --impersonate-service-account; GOOGLE_APPLICATION_CREDENTIALS and alternate Cloud SDK config roots are rejected. The literal admitter string, the database allowlist, and the per-substrate table names are all developer-chosen; rename them at will and restart.",
+
+  "mode": "experimental_bootstrap",
+  "google_credentials": {
+    "credentials_source": "application_default",
+    "credentials_profile": "impersonated_service_account",
+    "credentials_identity": "spec-graph-local@example-project.iam.gserviceaccount.com"
+  },
+  "experimental_admitter": "EXPERIMENTAL_BOOTSTRAP",
+  "experimental_query_enabled": true,
+  "default_organization_id": "example-org",
+  "listen_address": "127.0.0.1:8765",
+
+  "init_database_allowlist": ["corpus-graph-*"],
+
+  "embedding": {
+    "provider":         "vertex_ai",
+    "project":          "example-project",
+    "location":         "us-central1",
+    "model":            "gemini-embedding-2-preview",
+    "dimensions":       3072,
+    "max_text_bytes":   32768
+  },
+
+  "external_sources": [
+    {
+      "id": "google_cloud_spanner_docs_canonical",
+      "source_artifact_class": "official_product_documentation",
+      "reference_kind": "https_url_prefix",
+      "reference_prefix": "https://docs.cloud.google.com/spanner/docs",
+      "content_hash_algorithm": "sha256",
+      "version_coordinate_mode": "content_digest",
+      "version_stable_name_prefix": "google_cloud_spanner_docs_",
+      "allowed_object_classes": ["external_reference_doc", "reference_page", "api_symbol", "code_example"],
+      "locator_kinds": {"external_reference_doc":"resource_root", "reference_page":"html_id_or_name", "api_symbol":"html_id_or_name", "code_example":"html_id_or_name"},
+      "freshness_window_seconds": 604800,
+      "license_evidence_required": true,
+      "license_evidence_binding": "coordinate",
+      "retrieval_permission_evidence_coordinates": ["https://developers.google.com/terms/site-policies"],
+      "allow_query": false,
+      "allow_fragment": true
+    },
+    {
+      "id": "google_cloud_spanner_docs_legacy_host",
+      "source_artifact_class": "official_product_documentation",
+      "reference_kind": "https_url_prefix",
+      "reference_prefix": "https://cloud.google.com/spanner/docs",
+      "content_hash_algorithm": "sha256",
+      "version_coordinate_mode": "content_digest",
+      "version_stable_name_prefix": "google_cloud_spanner_docs_",
+      "allowed_object_classes": ["external_reference_doc", "reference_page", "api_symbol", "code_example"],
+      "locator_kinds": {"external_reference_doc":"resource_root", "reference_page":"html_id_or_name", "api_symbol":"html_id_or_name", "code_example":"html_id_or_name"},
+      "freshness_window_seconds": 604800,
+      "license_evidence_required": true,
+      "license_evidence_binding": "coordinate",
+      "retrieval_permission_evidence_coordinates": ["https://developers.google.com/terms/site-policies"],
+      "allow_query": false,
+      "allow_fragment": true
+    },
+    {
+      "id": "google_cloud_spanner_release_notes_canonical",
+      "source_artifact_class": "official_release_notes",
+      "reference_kind": "https_url_prefix",
+      "reference_prefix": "https://docs.cloud.google.com/spanner/docs/release-notes",
+      "content_hash_algorithm": "sha256",
+      "version_coordinate_mode": "content_digest",
+      "version_stable_name_prefix": "google_cloud_spanner_release_",
+      "allowed_object_classes": ["release_note"],
+      "locator_kinds": {"release_note":"html_id_or_name"},
+      "freshness_window_seconds": 604800,
+      "license_evidence_required": true,
+      "license_evidence_binding": "coordinate",
+      "retrieval_permission_evidence_coordinates": ["https://developers.google.com/terms/site-policies"],
+      "allow_query": false,
+      "allow_fragment": true
+    },
+    {
+      "id": "google_cloud_spanner_release_notes_legacy_host",
+      "source_artifact_class": "official_release_notes",
+      "reference_kind": "https_url_prefix",
+      "reference_prefix": "https://cloud.google.com/spanner/docs/release-notes",
+      "content_hash_algorithm": "sha256",
+      "version_coordinate_mode": "content_digest",
+      "version_stable_name_prefix": "google_cloud_spanner_release_",
+      "allowed_object_classes": ["release_note"],
+      "locator_kinds": {"release_note":"html_id_or_name"},
+      "freshness_window_seconds": 604800,
+      "license_evidence_required": true,
+      "license_evidence_binding": "coordinate",
+      "retrieval_permission_evidence_coordinates": ["https://developers.google.com/terms/site-policies"],
+      "allow_query": false,
+      "allow_fragment": true
+    }
+  ],
+
+  "pipeline": {
+    "_comment": "Staged spec-ingestion pipeline config. Consumed by bootstrap/cmd/spec-cluster (Phase F Stage 2a) and bootstrap/cmd/spec-dedup-verify (Phase G Stage 2b). The main spec-graph daemon ignores this section (Go json.Unmarshal silently drops unknown keys). Per Vision Principle 7 binary_is_never_sot, every value is REQUIRED — CLIs fail-closed if any sub-field is missing.",
+
+    "cluster": {
+      "_comment": "spec-cluster threshold + batch values. Cosine-distance buckets per gemini-embedding-001 semantics (range [0,2]; identical=0). auto_merge_distance must be < review_distance.",
+      "auto_merge_distance":   0.10,
+      "review_distance":       0.30,
+      "embedding_batch_size":  100
+    },
+
+    "flash": {
+      "_comment": "spec-dedup-verify Vertex AI Gemini Flash setup. Prompts live on disk as text files under bootstrap/prompts/; LoadAndRender reads them fresh on every Flash call (no in-memory cache). Edit the prompt file → next call sees the change without rebuild.",
+      "provider":         "vertex_ai",
+      "project":          "example-project",
+      "location":         "us-central1",
+      "model":            "gemini-2.5-flash",
+      "max_output_tokens": 256,
+      "temperature":       0,
+      "prompts": {
+        "same_concept_query_path":        "./bootstrap/prompts/same_concept_query.txt",
+        "canonical_name_selection_path":  "./bootstrap/prompts/canonical_name_selection.txt"
+      }
+    }
+  },
+
+  "substrates": [
+    {
+      "id": "corpus_graph_iter1",
+      "description": "Experimental corpus graph — single substrate during bootstrap iteration",
+      "spanner_database": "projects/example-project/instances/example-instance/databases/corpus-graph-iter1",
+      "read_only": false,
+      "snapshot_table": "OODGraphSnapshots",
+      "object_table": "OODGraphObjects",
+      "symbol_table": "OODGraphSymbols",
+      "graph_edge_table": "OODGraphEdges",
+      "materialization_run_table": "OODGraphMaterializationRuns",
+      "violation_table": "OODGraphViolations",
+      "projection_artifact_table": "OODGraphProjectionArtifacts"
+    }
+  ],
+
+  "node_kinds": [
+    { "name": "origin",     "substrate_id": "corpus_graph_iter1", "artifact_type": "origin",     "version_scope": "stable_id_preserved", "projection_role": "substrate_origin_vertex_for_bootstrap_provenance_root" },
+    { "name": "axiom",      "substrate_id": "corpus_graph_iter1", "artifact_type": "axiom",      "version_scope": "stable_id_preserved", "projection_role": "foundational_constraint_vertex_for_bootstrap_grounding" },
+    { "name": "section",    "substrate_id": "corpus_graph_iter1", "artifact_type": "section",    "projections": ["doc_canonical_json"], "version_scope": "document_version_scoped", "projection_role": "subdocument_vertex_for_projection_and_closure", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263" },
+    { "name": "sentinel",   "substrate_id": "corpus_graph_iter1", "artifact_type": "sentinel",   "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "failure_mode_vertex_for_rule_and_raise_site_projection", "source_authority": "3b929ea6-e771-451b-a51f-e3556f116915" },
+    { "name": "invariant",  "substrate_id": "corpus_graph_iter1", "artifact_type": "invariant",  "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "normative_constraint_vertex_for_validation_and_context" },
+    { "name": "assumption", "substrate_id": "corpus_graph_iter1", "artifact_type": "assumption", "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "cross_spec_contract_vertex_for_dependency_and_validation" },
+    { "name": "decision",   "substrate_id": "corpus_graph_iter1", "artifact_type": "decision",   "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "architectural_choice_vertex_resolving_a_conflict_or_tension" },
+    { "name": "doc_object", "substrate_id": "corpus_graph_iter1", "artifact_type": "doc_object", "projections": ["doc_canonical_json"], "version_scope": "logical_document_scope", "projection_role": "root_document_vertex_for_structured_ood_projection", "source_authority": "46954a80-78eb-4351-8be7-6e7d7eba8f5b" },
+    { "name": "circuit",    "substrate_id": "corpus_graph_iter1", "artifact_type": "circuit",    "version_scope": "active_or_versioned_node_scope_as_exposed_by_volt", "projection_role": "executable_structure_vertex_for_forge_and_context_consumption", "source_authority": "05c50ca8-5d1b-4eed-ba8a-4c21c5d01475" },
+    { "name": "node_kind_declaration",      "substrate_id": "corpus_graph_iter1", "artifact_type": "node_kind_declaration",      "version_scope": "stable_id_preserved", "projection_role": "closed_node_kind_registry_declaration_vertex" },
+    { "name": "edge_label_declaration",     "substrate_id": "corpus_graph_iter1", "artifact_type": "edge_label_declaration",     "version_scope": "stable_id_preserved", "projection_role": "closed_edge_label_registry_declaration_vertex" },
+    { "name": "principal_type_declaration", "substrate_id": "corpus_graph_iter1", "artifact_type": "principal_type_declaration", "version_scope": "stable_id_preserved", "projection_role": "closed_principal_type_registry_declaration_vertex" },
+    { "name": "doc_version",  "substrate_id": "corpus_graph_iter1", "artifact_type": "doc_version",  "projections": ["doc_canonical_json"], "version_scope": "version_row_scope", "projection_role": "version_pinned_document_projection_vertex", "source_authority": "46954a80-78eb-4351-8be7-6e7d7eba8f5b" },
+    { "name": "symbol",       "substrate_id": "corpus_graph_iter1", "artifact_type": "symbol",       "version_scope": "symbol_scope_declared_by_s3", "projection_role": "canonical_addressable_vertex_for_graph_traversal", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263" },
+    { "name": "config",       "substrate_id": "corpus_graph_iter1", "artifact_type": "config",       "projections": ["doc_canonical_json"], "version_scope": "config_artifact_scope_or_registry_row_scope_as_exposed_by_source_authority", "projection_role": "configuration_vertex_in_app_config_documentation_projection", "source_authority": "05c50ca8-5d1b-4eed-ba8a-4c21c5d01475" },
+    { "name": "schema",       "substrate_id": "corpus_graph_iter1", "artifact_type": "schema",       "projections": ["doc_canonical_json"], "version_scope": "schema_artifact_version_scope_as_exposed_by_source_authority", "projection_role": "contract_vertex_for_validation_and_projection" },
+    { "name": "principal",    "substrate_id": "corpus_graph_iter1", "artifact_type": "principal",    "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "actor_identity_vertex_for_authorization_and_audit" },
+    { "name": "grant",        "substrate_id": "corpus_graph_iter1", "artifact_type": "grant",        "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "authorization_token_vertex_binding_principal_to_capability" },
+    { "name": "audit_record", "substrate_id": "corpus_graph_iter1", "artifact_type": "audit_record", "projections": ["doc_canonical_json"], "version_scope": "immutable_admission_ceremony_scope", "projection_role": "ceremony_evidence_vertex_immutable_once_admitted" },
+    { "name": "snapshot",     "substrate_id": "corpus_graph_iter1", "artifact_type": "snapshot",     "projections": ["doc_canonical_json"], "version_scope": "snapshot_pin_scope", "projection_role": "graph_state_vertex_for_temporal_and_reproducibility_anchoring" },
+    { "name": "edge",         "substrate_id": "corpus_graph_iter1", "artifact_type": "edge",         "projections": ["doc_canonical_json"], "version_scope": "owner_spec_version_scope", "projection_role": "first_class_edge_vertex_when_edges_carry_payload" },
+    { "name": "external_reference_doc", "substrate_id": "corpus_graph_iter1", "artifact_type": "external_reference_doc", "version_scope": "external_corpus_version_or_digest_scope", "projection_role": "root_external_reference_vertex_for_technology_lookup_and_forge_context", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "reference_page",         "substrate_id": "corpus_graph_iter1", "artifact_type": "reference_page",         "version_scope": "page_digest_scope",                       "projection_role": "retrievable_external_reference_vertex_for_cross_doc_traversal", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "api_symbol",             "substrate_id": "corpus_graph_iter1", "artifact_type": "api_symbol",             "version_scope": "api_symbol_version_or_digest_scope",      "projection_role": "technology_symbol_vertex_for_retrieval_and_forge_task_context", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "code_example",           "substrate_id": "corpus_graph_iter1", "artifact_type": "code_example",           "version_scope": "example_digest_scope",                    "projection_role": "retrieval_vertex_for_task_examples_without_claiming_source_truth", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "release_note",           "substrate_id": "corpus_graph_iter1", "artifact_type": "release_note",           "version_scope": "release_coordinate_scope",                "projection_role": "temporal_external_reference_vertex_for_currentness_and_compatibility_queries", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "source_repo",            "substrate_id": "corpus_graph_iter1", "artifact_type": "source_repo",            "version_scope": "repository_snapshot_coordinate_scope",    "projection_role": "external_source_authority_vertex_for_docs_and_code_graph_projection", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "repo_snapshot",          "substrate_id": "corpus_graph_iter1", "artifact_type": "repo_snapshot",          "version_scope": "repo_snapshot_scope",                     "projection_role": "versioned_bridge_vertex_between_external_docs_and_code_graph_symbols", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" },
+    { "name": "code_symbol_ref",        "substrate_id": "corpus_graph_iter1", "artifact_type": "code_symbol_ref",        "version_scope": "code_graph_snapshot_or_commit_scope",      "projection_role": "implementation_evidence_vertex_for_traversal_without_copying_code_graph_storage", "source_authority": "767c2399-87f9-4859-ac64-afb575bdb263", "source_coordinate_policy": "external_reference_required" }
+  ],
+
+  "edge_labels": [
+    { "name": "load_bearing_for",  "direction": "source is a prerequisite whose change may affect target.", "source_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "invariant", "assumption"], "target_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "invariant", "assumption"], "reciprocal_label": "depends_on", "forbid_self_loops": true, "edge_family": "dependency" },
+    { "name": "depends_on",        "direction": "source requires target before source is coherent, valid, executable, projectable, or consumable.", "source_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "invariant", "assumption"], "target_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "invariant", "assumption"], "reciprocal_label": "load_bearing_for", "forbid_self_loops": true, "edge_family": "dependency" },
+    { "name": "references",        "direction": "source contains a stable inline or graph-native reference to target without asserting dependency.", "source_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "invariant", "assumption", "decision"], "target_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption", "decision"], "edge_family": "reference" },
+    { "name": "supersedes",        "direction": "source version replaces target version within the same logical source authority chain.", "source_kinds": ["doc_version", "config", "circuit", "schema"], "target_kinds": ["doc_version", "config", "circuit", "schema"], "reciprocal_label": "superseded_by", "version_pinned": true, "forbid_self_loops": true, "edge_family": "version_supersession" },
+    { "name": "implements",        "direction": "source graph object or symbol implements target contract, capability-shaped rule, schema, or declared behavior.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "forbid_self_loops": true, "edge_family": "implementation_materialization" },
+    { "name": "raises",            "direction": "source rule, operation, materialization contract, circuit projection, schema, invariant, or assumption may raise target sentinel when its failure condition occurs.", "catalog_owner": "s15_sentinels", "source_kinds": ["section", "symbol", "config", "circuit", "schema", "invariant", "assumption"], "target_kinds": ["sentinel"], "forbid_self_loops": true, "edge_family": "raises_sentinel" },
+    { "name": "asserts_invariant", "direction": "source section, rule, object, or symbol establishes target invariant input.", "catalog_owner": "s16_invariants", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "assumption"], "target_kinds": ["invariant"], "forbid_self_loops": true, "edge_family": "invariant_assumption" },
+    { "name": "assumes",           "direction": "source assumption object constrains target sibling spec, section, object, or symbol.", "source_kinds": ["assumption"], "target_kinds": ["doc_object", "section", "symbol", "schema", "config", "circuit"], "forbid_self_loops": true, "edge_family": "invariant_assumption" },
+    { "name": "declares",          "direction": "source introduces target as a named construct, rule, registry entry, sentinel, invariant, or assumption.", "source_kinds": ["origin", "axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "doc_object", "doc_version", "section", "symbol", "schema"], "target_kinds": ["axiom", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption", "decision"], "edge_family": "declaration_containment" },
+    { "name": "resolves",          "direction": "source decision-node identifies target as a node whose claim or conflict the decision resolves.", "source_kinds": ["decision"], "target_kinds": ["axiom", "section", "sentinel", "invariant", "assumption", "decision", "doc_object", "circuit", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration"], "edge_family": "decision" },
+    { "name": "documents",                  "direction": "source external_reference_doc or reference_page documents target api_symbol, code_example, release_note, or OOD Graph object.", "source_kinds": ["external_reference_doc", "reference_page"],                                                                                   "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption", "api_symbol", "code_example", "release_note", "code_symbol_ref"], "edge_family": "external_reference" },
+    { "name": "official_source_for",        "direction": "source external_reference_doc, source_repo, or repo_snapshot is an official source for target technology symbol, spec section, or code_symbol_ref.", "source_kinds": ["external_reference_doc", "source_repo", "repo_snapshot"],                                                                   "target_kinds": ["section", "api_symbol", "code_symbol_ref", "reference_page"],                                                                                                                   "edge_family": "external_reference", "stable_reference_only": true },
+    { "name": "defines_external_symbol",    "direction": "source reference_page or source_repo defines target api_symbol or code_symbol_ref.", "source_kinds": ["reference_page", "source_repo"],                                                                                            "target_kinds": ["api_symbol", "code_symbol_ref"],                                                                                                                                                    "edge_family": "external_reference" },
+    { "name": "example_of",                 "direction": "source code_example illustrates target api_symbol, reference_page, or code_symbol_ref.", "source_kinds": ["code_example"],                                                                                                               "target_kinds": ["api_symbol", "reference_page", "code_symbol_ref"],                                                                                                                                "edge_family": "external_reference" },
+    { "name": "version_note_for",           "direction": "source release_note changes, deprecates, or constrains target api_symbol, reference_page, external_reference_doc, or code_symbol_ref.", "source_kinds": ["release_note"],                                                                                                               "target_kinds": ["api_symbol", "reference_page", "external_reference_doc", "code_symbol_ref"],                                                                                                   "edge_family": "external_reference" },
+    { "name": "supports_spec_section",      "direction": "source external reference object provides current technical evidence for target OOD section, invariant, sentinel, or implementation contract.", "source_kinds": ["external_reference_doc", "reference_page", "api_symbol", "code_example", "release_note", "source_repo", "repo_snapshot", "code_symbol_ref"], "target_kinds": ["section", "invariant", "sentinel", "schema", "config", "circuit"],                                                                                                                   "edge_family": "evidence_reference", "stable_reference_only": true },
+    { "name": "implemented_by_code_symbol", "direction": "source OOD Graph contract, section, invariant, sentinel, or api_symbol is implemented or evidenced by target code_symbol_ref.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption", "api_symbol"],        "target_kinds": ["code_symbol_ref"],                                                                                                                                                                    "edge_family": "code_graph_interop", "stable_reference_only": true },
+    { "name": "technology_relevant_to",     "direction": "source external reference, api_symbol, release_note, or code_symbol_ref is relevant to target forge task context, closure profile, or implementation domain.", "source_kinds": ["external_reference_doc", "reference_page", "api_symbol", "code_example", "release_note", "source_repo", "repo_snapshot", "code_symbol_ref"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "assumption"],                                                                                   "edge_family": "forge_context_reference", "stable_reference_only": true },
+    { "name": "contains",              "direction": "source structurally contains target in canonical OOD JSON or a graph-native projection.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "schema"], "target_kinds": ["section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption"], "edge_family": "declaration_containment" },
+    { "name": "superseded_by",         "direction": "source version is replaced by target version within the same logical source authority chain.", "source_kinds": ["doc_version", "config", "circuit", "schema"], "target_kinds": ["doc_version", "config", "circuit", "schema"], "reciprocal_label": "supersedes", "version_pinned": true, "forbid_self_loops": true, "edge_family": "version_supersession" },
+    { "name": "owned_by",              "direction": "source object's graph-visible authority is owned by target doc_object, section, schema, or graph symbol authority.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption"], "target_kinds": ["doc_object", "section", "symbol", "schema"], "edge_family": "ownership_authority" },
+    { "name": "authority_for",          "direction": "source doc_object, section, schema, or graph symbol authority governs target object's graph-visible meaning.", "source_kinds": ["doc_object", "section", "symbol", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption"], "edge_family": "ownership_authority" },
+    { "name": "declared_by",            "direction": "source construct is declared by target doc_object, section, schema, or authority symbol.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption"], "target_kinds": ["doc_object", "section", "symbol", "schema"], "edge_family": "ownership_authority" },
+    { "name": "implemented_by",         "direction": "source contract, schema, or declared behavior is implemented by target graph object or symbol.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "edge_family": "implementation_materialization" },
+    { "name": "materializes",           "direction": "source materialization artifact produces target graph object endpoint.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "forbid_self_loops": true, "edge_family": "implementation_materialization" },
+    { "name": "materialized_from",      "direction": "source graph object endpoint was materialized from target source artifact coordinate.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "edge_family": "implementation_materialization" },
+    { "name": "projects_to",            "direction": "source graph state projects to target structured OOD JSON object, document projection, or graph-visible artifact projection.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "edge_family": "implementation_materialization" },
+    { "name": "projected_from",         "direction": "source structured OOD JSON projection originates from target graph state.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "edge_family": "implementation_materialization" },
+    { "name": "raised_by",              "direction": "source sentinel may be raised by target rule, operation, materialization contract, circuit projection, schema, invariant, or assumption.", "catalog_owner": "s15_sentinels", "source_kinds": ["sentinel"], "target_kinds": ["section", "symbol", "config", "circuit", "schema", "invariant", "assumption"], "edge_family": "raises_sentinel" },
+    { "name": "invariant_of",           "direction": "source invariant constrains target section, rule, object, or symbol.", "catalog_owner": "s16_invariants", "source_kinds": ["invariant"], "target_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "assumption"], "edge_family": "invariant_assumption" },
+    { "name": "assumed_by",             "direction": "source sibling spec, section, object, or symbol is constrained by target assumption object.", "source_kinds": ["doc_object", "section", "symbol", "schema", "config", "circuit"], "target_kinds": ["assumption"], "edge_family": "invariant_assumption" },
+    { "name": "interop_reference",      "direction": "source OOD Graph object points to target sibling graph substrate or source authority coordinate by stable reference only.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["symbol", "config", "circuit", "schema"], "stable_reference_only": true, "edge_family": "interop_reference" },
+    { "name": "asg_reference",          "direction": "source OOD Graph object points to an ASG node or symbol coordinate by stable reference only.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["symbol", "config", "circuit", "schema"], "stable_reference_only": true, "edge_family": "interop_reference" },
+    { "name": "code_graph_reference",   "direction": "source OOD Graph object points to a code graph symbol coordinate by stable reference only.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["symbol", "config", "circuit", "schema"], "stable_reference_only": true, "edge_family": "interop_reference" },
+    { "name": "sibling_reference",      "direction": "source OOD Graph object points to any non-OOD-Graph sibling authority coordinate by stable reference only.", "source_kinds": ["doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema"], "target_kinds": ["symbol", "config", "circuit", "schema"], "stable_reference_only": true, "edge_family": "interop_reference" },
+    { "name": "contradicts",            "direction": "source node asserts a claim about the same conceptual subject as target node, and the two claims are incompatible; resolution pending operator (the contradiction itself is a finding, not a resolved decision).", "source_kinds": ["axiom", "section", "invariant", "assumption", "decision", "config", "circuit", "schema", "sentinel"], "target_kinds": ["axiom", "section", "invariant", "assumption", "decision", "config", "circuit", "schema", "sentinel"], "reciprocal_label": "contradicts", "forbid_self_loops": true, "edge_family": "decision" }
+  ],
+
+  "projections": [
+    { "name": "doc_canonical_json", "description": "Render a node and its closure as canonical structured OOD JSON", "owning_spec": "ood_graph_protocol §5" }
+  ]
+}

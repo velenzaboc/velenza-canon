@@ -1,0 +1,32 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "node_reference_axiom",
+    "asserts": {
+      "references_for_traversal_are_first_class_edges": true,
+      "edges_are_nodes": {
+        "node_kind": "edge"
+      },
+      "edge_structural_fields": ["source_stable_id", "target_stable_id", "edge_label"],
+      "edge_label_registry": "closed",
+      "dangling_references": false,
+      "default_endpoint_resolution": "current_active_version",
+      "version_pinning": "optional_per_edge"
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Node Reference Axiom",
+    "out_of_scope": [
+      "edge_label_registry_contents",
+      "reciprocity_per_label_policy",
+      "version_pinning_mechanics",
+      "closure_and_traversal_query_languages",
+      "impact_analysis_algorithms",
+      "edge_retention_and_archival",
+      "multi_edge_per_pair_constraints",
+      "self_loop_per_label_policy",
+      "edge_payload_schemas_beyond_three_structural_fields"
+    ]
+  }
+}

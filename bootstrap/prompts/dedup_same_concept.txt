@@ -1,0 +1,37 @@
+You are deciding whether two concepts in a canonical doc-graph are
+the SAME concept or DIFFERENT concepts. The two concepts have already
+been identified as semantic near-neighbors by vector cosine distance;
+your job is to decide whether they describe the same underlying claim
+about the same underlying thing.
+
+CONCEPT A (a candidate concept to be admitted):
+  canonical_name: {{.CanonicalNameA}}
+  node_kind:      {{.NodeKindA}}
+  payload:        {{.PayloadA}}
+
+CONCEPT B (an already-admitted concept in the graph):
+  canonical_name: {{.CanonicalNameB}}
+  node_kind:      {{.NodeKindB}}
+  payload:        {{.PayloadB}}
+
+Decision rule:
+  - SAME: the two concepts express the same claim about the same
+    thing. Wording differences are tolerated. Two concepts that
+    state the same rule, the same invariant, the same axiom, or
+    the same fact ARE the same. Admit A would create a duplicate.
+  - DIFFERENT: the two concepts express different claims, OR the
+    same claim about different things. Admit A creates a distinct
+    row in the graph; both should coexist.
+  - UNCERTAIN: the two concepts are near each other but you cannot
+    decide without human review. Use this sparingly — prefer
+    DIFFERENT when the claims are not obviously identical.
+
+Respond with EXACTLY two lines and nothing else. No preamble, no
+markdown, no surrounding quotes.
+
+VERDICT: same | different | uncertain
+REASON: <one short sentence, ≤ 20 words, naming the specific claim
+         that matches (for "same") or differs (for "different").>
+
+VERDICT must be exactly "same", "different", or "uncertain" —
+lowercase, no other words, no quotes, no punctuation.

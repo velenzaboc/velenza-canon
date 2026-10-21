@@ -1,0 +1,35 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "corpus_audit_axiom",
+    "asserts": {
+      "every_admission_produces_audit_record": {
+        "count": 1,
+        "commit": "atomic_with_admission"
+      },
+      "audit_records_are_nodes": {
+        "node_kind": "audit_record"
+      },
+      "audit_record_re_admittable": false,
+      "audit_record_immutable_once_admitted": true,
+      "audit_chain_storage_location": "in_corpus_only",
+      "audit_record_references": ["principal_stable_id", "subject_stable_id", "wall_clock_instant"],
+      "tampering_detectability": "cryptographic_via_admission_axiom_provenance"
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Corpus Audit Axiom",
+    "out_of_scope": [
+      "audit_record_full_schema_beyond_three_references",
+      "audit_query_languages_and_result_shapes",
+      "audit_chain_visualization_or_ui",
+      "audit_retention_and_cold_archival",
+      "audit_indexing_and_search_optimization",
+      "specific_cryptographic_algorithms",
+      "external_auditor_integration_tooling",
+      "audit_record_encryption_posture_for_tenant_data",
+      "supersession_and_retirement_as_separately_audited_events"
+    ]
+  }
+}

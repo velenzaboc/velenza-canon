@@ -1,0 +1,48 @@
+{
+  "node_kind": "principal_type_declaration",
+  "contract": {
+    "canonical_name": "external_system",
+    "asserts": {
+      "represents": "actor_outside_corpus_trust_boundary",
+      "authentication_binding_shape": "federated_token_evidence",
+      "binding_required_fields": ["issuer", "audience", "jwks_endpoint"],
+      "type_immutable_per_principal_kind_contract": true,
+      "default_trust_tier": "external",
+      "structural_authority": false,
+      "authority_source": "explicit_grants_only"
+    },
+    "type_specific_properties": {
+      "schema_format": "json_schema_fragment",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "authentication_binding_contract": {
+      "schema_format": "json_schema_fragment",
+      "type": "object",
+      "required": ["issuer", "audience", "jwks_endpoint"],
+      "properties": {
+        "issuer": {"type": "string"},
+        "audience": {"type": "string"},
+        "jwks_endpoint": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "default_trust_tier": "external",
+    "permitted_authorization_dimensions": null,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "External System Principal Type",
+    "out_of_scope": [
+      "specific_federated_token_formats",
+      "jwks_endpoint_caching_retry_and_rotation_handling",
+      "issuer_trust_onboarding",
+      "trust_tier_vocabulary_beyond_naming_external",
+      "per_integration_operational_metadata",
+      "external_system_subclassification",
+      "external_actor_disablement_and_revocation_cascade",
+      "token_introspection_vs_signature_based_verification_trade_offs",
+      "audit_record_content_for_external_system_admissions"
+    ]
+  }
+}

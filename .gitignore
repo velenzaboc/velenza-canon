@@ -1,0 +1,14 @@
+bin/
+/spec-graph
+# CI or local validation may check out canonical specs here as a separate nested
+# repository. It is never spec-graph candidate source, so the factory release
+# source roster (git ls-files --cached --others --exclude-standard) must not list it.
+/_canonical/
+*.test
+*.out
+.DS_Store
+
+# Local config — the canonical example ships as spec-graph.config.example.json.
+# Each environment supplies its own spec-graph.config.json (or SPEC_GRAPH_CONFIG
+# path).
+spec-graph.config.json

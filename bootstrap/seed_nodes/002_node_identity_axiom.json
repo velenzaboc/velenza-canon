@@ -1,0 +1,38 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "node_identity_axiom",
+    "asserts": {
+      "every_corpus_node_has": ["stable_id", "node_kind", "organization_id"],
+      "stable_id": {
+        "grammar": "uuid_v4_lowercase_hex_36char_8_4_4_4_12",
+        "minting": "at_admission_by_authoritative_source",
+        "caller_supplied": false,
+        "lifetime": "preserved_across_all_re_admissions",
+        "uniqueness_scope": ["organization_id", "stable_id"],
+        "reuse": false
+      },
+      "node_kind": {
+        "membership": "closed_node_kind_registry",
+        "immutability": "after_first_admission"
+      },
+      "organization_id": {
+        "role": "tenant_scope",
+        "immutability": "after_first_admission"
+      },
+      "identity_tuple": ["organization_id", "stable_id"]
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Node Identity Axiom",
+    "out_of_scope": [
+      "version_model",
+      "status_enum_and_transitions",
+      "admission_ceremony_procedure",
+      "attestation_columns",
+      "edge_grammar",
+      "supersession_rules"
+    ]
+  }
+}

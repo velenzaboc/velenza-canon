@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.1"
+          check-latest: false
+
+      - name: Validate release wrapper shell syntax
+        run: sh -n scripts/provider-documentation-factory-release.sh
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Build all packages
+        run: go build ./...
+
+      - name: Run test suite
+        run: go test -p 1 -count=1 -timeout 30m ./...

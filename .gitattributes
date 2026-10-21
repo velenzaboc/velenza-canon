@@ -1,0 +1,39 @@
+# LINE ENDINGS — the general rule first, the byte-identity pins after.
+#
+# Ordering matters: git applies the LAST matching pattern, so the `-text` pins
+# at the bottom override the blanket rule for the paths whose bytes ARE their
+# identity.
+#
+# Why a blanket rule at all: with no attribute, the line-ending form of every
+# checked-out file is inherited from the cloning host's git config. Git for
+# Windows, including the GitHub-hosted windows-2025 runner image that runs the
+# windows-amd64 coverage target, installs with core.autocrlf=true and rewrites
+# LF to CRLF at checkout. `* text=auto eol=lf` makes the working-tree bytes a
+# property of the repository instead of the host, and normalizes a CRLF edit
+# back to LF at commit. `text=auto` uses git's NUL-byte heuristic, so binaries
+# are left alone.
+#
+# Measured 2026-09-14 with `git ls-files --eol`: all 403 tracked blobs are
+# i/lf or i/none, with zero i/crlf, i/mixed, or binary blobs, so this file
+# changes no byte of the current tree.
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# BYTE-IDENTITY PINS — these MUST stay below the blanket rule to take effect.
+# ---------------------------------------------------------------------------
+
+# GENERATED OOD GRAPH SCHEMA: THE BYTES ARE BOUND BY SHA-256 IN THE RECEIPT.
+#
+# bootstrap/schema_ood_graph_protocol_v1.render-receipt.json carries
+# rendered_ddl_sha256, and oodschema.VerifyRendered recomputes that digest over
+# the exact bytes of the generated .sql. On PR #79 the windows-amd64 target
+# failed TestGeneratedOODGraphSchemaMatchesReceipt with "rendered DDL SHA-256
+# does not match its receipt" because the runner's core.autocrlf=true checkout
+# had rewritten the .sql to CRLF. Reproduced locally by cloning with
+# `git -c core.autocrlf=true clone` (w/crlf, test FAIL) before this file existed.
+#
+# `-text`, not `text eol=lf`: -text tells git these blobs are never translated
+# in EITHER direction, so the committed bytes are the working-tree bytes on
+# every platform. The renderer owns their line endings, not git.
+bootstrap/*.generated.sql -text
+bootstrap/*.render-receipt.json -text

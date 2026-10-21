@@ -1,0 +1,69 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "edge",
+    "asserts": {
+      "structural_fields_in_contract": ["source_stable_id", "target_stable_id", "edge_label"],
+      "structural_fields_immutable_across_versions": true,
+      "edge_label_value_source": "admitted_active_edge_label_declaration",
+      "dangling_endpoints": false,
+      "endpoint_kinds_validated_against_edge_label_source_and_target_kinds": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "edge",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "edge",
+      "required_contract_fields": ["source_stable_id", "target_stable_id", "edge_label", "contract_monotonicity_rule"],
+      "optional_contract_fields": ["source_version_pin", "target_version_pin"],
+      "optional_payload_fields": ["reciprocal_edge_id"],
+      "field_specs": {
+        "source_stable_id": {
+          "type": "uuid",
+          "constraint": "resolves_to_existing_node_with_node_kind_in_edge_label_source_kinds"
+        },
+        "target_stable_id": {
+          "type": "uuid",
+          "constraint": "resolves_to_existing_node_with_node_kind_in_edge_label_target_kinds"
+        },
+        "edge_label": {
+          "type": "string",
+          "constraint": "admitted_active_edge_label_declaration_canonical_name"
+        },
+        "source_version_pin": {
+          "type": "integer_or_null"
+        },
+        "target_version_pin": {
+          "type": "integer_or_null"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "retired"],
+      "legal_transitions": [{"from": "active", "to": "retired"}],
+      "terminal_status_values": ["retired"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_for_reciprocal_edge_id_only"
+  },
+  "payload": {
+    "title": "Edge Kind Declaration",
+    "out_of_scope": [
+      "specific_edge_label_values",
+      "reciprocity_tie_break_across_reciprocal_labels",
+      "closure_traversal_algorithms",
+      "edge_payload_schema_beyond_optional_annotations",
+      "multi_edge_per_pair_constraints",
+      "self_loop_per_label_policy",
+      "edge_retirement_cascade",
+      "audit_record_content_for_edge_admissions"
+    ]
+  }
+}

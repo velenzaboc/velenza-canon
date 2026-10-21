@@ -1,0 +1,76 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "snapshot",
+    "asserts": {
+      "structural_fields_in_contract": ["snapshot_kind", "snapshot_version", "sealed_at", "source_set_hash", "materialization_run_ref"],
+      "captured_state_immutable_across_versions": true,
+      "snapshot_version_monotonic_per_tenant": true,
+      "identity_tuple": ["organization_id", "snapshot_version"],
+      "status_transitions_via_re_admission": true,
+      "content_change_requires_new_stable_id": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "snapshot",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "snapshot",
+      "required_contract_fields": ["snapshot_kind", "snapshot_version", "sealed_at", "source_set_hash", "materialization_run_ref", "contract_monotonicity_rule"],
+      "optional_payload_fields": ["snapshot_label", "sealing_principal_stable_id", "summary_stats"],
+      "field_specs": {
+        "snapshot_kind": {
+          "type": "string",
+          "value_source": "per_corpus_snapshot_kind_registry"
+        },
+        "snapshot_version": {
+          "type": "positive_integer",
+          "monotonicity": "per_organization_id",
+          "source": "materialization_machinery",
+          "immutability": "after_first_admission"
+        },
+        "sealed_at": {
+          "type": "timestamp",
+          "source": "sealing_operation",
+          "immutability": "after_first_admission"
+        },
+        "source_set_hash": {
+          "type": "hex_sha256"
+        },
+        "materialization_run_ref": {
+          "type": "uuid"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "archived", "invalid"],
+      "legal_transitions": [
+        {"from": "active", "to": "archived"},
+        {"from": "active", "to": "invalid"}
+      ],
+      "terminal_status_values": ["archived", "invalid"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_for_status_transitions_only"
+  },
+  "payload": {
+    "title": "Snapshot Kind Declaration",
+    "out_of_scope": [
+      "snapshot_kind_vocabulary",
+      "sealing_procedure_triggers",
+      "materialization_run_record_content",
+      "snapshot_retention_and_cold_archival",
+      "snapshot_query_languages",
+      "failed_or_abandoned_materialization_run_handling",
+      "cross_tenant_snapshot_comparison",
+      "snapshot_replication_across_regions",
+      "audit_record_content_for_snapshot_sealing"
+    ]
+  }
+}

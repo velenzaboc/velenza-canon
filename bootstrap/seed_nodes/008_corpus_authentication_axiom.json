@@ -1,0 +1,35 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "corpus_authentication_axiom",
+    "asserts": {
+      "every_principal_carries_authentication_binding": true,
+      "authentication_binding_shape": "per_principal_type",
+      "admission_requires_verified_admitter": "before_any_other_ceremony_step",
+      "outcome": {
+        "values": ["verified", "refused_with_reason"],
+        "silent_drop": false,
+        "indeterminate_state": false
+      },
+      "failed_authentication": {
+        "blocks_admission": "atomically",
+        "refusal_audited": true
+      }
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Corpus Authentication Axiom",
+    "out_of_scope": [
+      "specific_authentication_protocols",
+      "credential_storage_and_key_management",
+      "credential_rotation_policies",
+      "session_management",
+      "authorization_what_principal_can_do",
+      "multi_factor_or_step_up_procedures",
+      "external_identity_provider_integration_patterns",
+      "refusal_reason_string_format",
+      "anonymous_or_unauthenticated_access"
+    ]
+  }
+}

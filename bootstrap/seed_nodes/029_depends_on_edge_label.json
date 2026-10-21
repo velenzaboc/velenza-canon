@@ -1,0 +1,29 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "depends_on",
+    "asserts": {
+      "semantic": "source_claims_rely_on_target_claims",
+      "reciprocity_atomic_with_load_bearing_for": true,
+      "edge_family": "dependency",
+      "default_endpoint_resolution": "current_active"
+    },
+    "source_kinds": ["axiom", "section", "sentinel", "invariant", "assumption", "decision"],
+    "target_kinds": ["axiom", "section", "sentinel", "invariant", "assumption", "decision"],
+    "edge_family": "dependency",
+    "reciprocity": "load_bearing_for",
+    "version_pinning_default": "current_active",
+    "diagnostic_only": false,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "depends_on Edge Label",
+    "out_of_scope": [
+      "cycle_detection_in_dependency_closure",
+      "transitive_dependency_strength_weighting",
+      "depends_on_retirement_cascade_to_reciprocal",
+      "closure_traversal_performance",
+      "audit_record_content_for_depends_on_admissions"
+    ]
+  }
+}

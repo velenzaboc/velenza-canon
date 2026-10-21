@@ -1,0 +1,29 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "load_bearing_for",
+    "asserts": {
+      "semantic": "target_claims_rely_on_source_claims_reciprocal_of_depends_on",
+      "admitted_only_via_reciprocity": true,
+      "standalone_admission_refused": true,
+      "edge_family": "dependency",
+      "default_endpoint_resolution": "current_active"
+    },
+    "source_kinds": ["axiom", "section", "sentinel", "invariant", "assumption", "decision"],
+    "target_kinds": ["axiom", "section", "sentinel", "invariant", "assumption", "decision"],
+    "edge_family": "dependency",
+    "reciprocity": "depends_on",
+    "version_pinning_default": "current_active",
+    "diagnostic_only": false,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "load_bearing_for Edge Label",
+    "out_of_scope": [
+      "policy_for_paired_retirement_divergence",
+      "impact_analysis_traversal_performance",
+      "rendering_of_load_bearing_relationships",
+      "audit_record_content_for_load_bearing_for_admissions"
+    ]
+  }
+}

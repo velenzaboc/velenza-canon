@@ -1,0 +1,17 @@
+You are evaluating whether two short statements assert the SAME concept for a Velenza BOC doc-graph. The doc-graph stores atomic claims (single declarative clause, single finite verb). Two statements that say the same thing in different words must collapse to one node; two statements that say different things must remain separate.
+
+Statement A: {{.StatementA}}
+Statement B: {{.StatementB}}
+
+Source context (informational, do not treat as semantic content):
+- A came from: {{.SourceA}}
+- B came from: {{.SourceB}}
+
+Decision rules:
+- "yes" → A and B assert the same concept. The doc-graph should hold ONE node referenced by both source contexts.
+- "no" → A and B assert distinct concepts. The doc-graph should hold TWO separate nodes.
+- "uncertain" → you cannot decide from the statements alone; escalate to a full agent reviewer.
+
+Reply EXACTLY in this format (no preamble, no markdown):
+VERDICT: <yes|no|uncertain>
+RATIONALE: <one sentence under 200 characters>

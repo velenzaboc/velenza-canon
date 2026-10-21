@@ -1,0 +1,69 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "principal",
+    "asserts": {
+      "principal_type_in_contract": true,
+      "principal_type_immutable_across_versions": true,
+      "authentication_binding_in_payload": true,
+      "authentication_binding_shape": "per_principal_type_declaration",
+      "display_identity_in_payload": true,
+      "two_state_status": ["active", "not_active"]
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "principal",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "principal",
+      "required_contract_fields": ["principal_type", "contract_monotonicity_rule"],
+      "required_payload_fields": ["display_identity", "authentication_binding"],
+      "field_specs": {
+        "principal_type": {
+          "type": "string",
+          "value_source": "admitted_active_principal_type_declaration_canonical_name",
+          "immutability": "after_first_admission"
+        },
+        "display_identity": {
+          "type": "string",
+          "encryption": "tenant_comp_encrypted"
+        },
+        "authentication_binding": {
+          "type": "object",
+          "shape": "per_principal_type_declaration_authentication_binding_contract",
+          "encryption": "tenant_comp_encrypted"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "not_active"],
+      "legal_transitions": [
+        {"from": "active", "to": "not_active"},
+        {"from": "not_active", "to": "active"}
+      ],
+      "terminal_status_values": [],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {
+        "payload.display_identity": "tenant_comp_encrypted",
+        "payload.authentication_binding": "tenant_comp_encrypted"
+      }
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_for_display_identity_and_authentication_binding_rotation"
+  },
+  "payload": {
+    "title": "Principal Kind Declaration",
+    "out_of_scope": [
+      "trust_tier_vocabulary",
+      "principal_id_grammar",
+      "identity_provider_binding_lifecycle",
+      "jit_grant_patterns",
+      "cross_tenant_principal_correlation",
+      "audit_record_content_for_principal_admissions_and_status_flips"
+    ]
+  }
+}

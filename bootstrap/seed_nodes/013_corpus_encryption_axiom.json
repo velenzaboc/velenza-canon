@@ -1,0 +1,39 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "corpus_encryption_axiom",
+    "asserts": {
+      "tenant_comp_data_plaintext_at_rest": false,
+      "envelope_format_uniform_across_corpus": true,
+      "envelope_fields": ["algorithm_identifier", "key_version_identifier", "iv", "wrapped_dek", "ciphertext_with_auth_tag"],
+      "keys_are_partition_handles": true,
+      "keys_are_identity_claims": false,
+      "cryptographic_actor": "kernel_only",
+      "principal_possesses_key_material": false,
+      "aad_binding_mandatory_for_tenant_comp": true,
+      "aad_binds": ["organization_id", "table_identifier", "row_coordinates"],
+      "nil_aad_for_tenant_comp": false,
+      "payload_plaintext_leaves_kernel": false,
+      "dek_wrapping_path": "kernel_generated_dek_wrapped_by_kms_under_tenant_kek",
+      "crypto_outcomes_fail_closed": true,
+      "crypto_agility": "registry_governed_via_alg_id_field"
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Corpus Encryption Axiom",
+    "out_of_scope": [
+      "specific_algorithm_protocols_and_parameters",
+      "kms_resource_paths_and_key_naming",
+      "dek_cache_lifecycle",
+      "kek_rotation_procedures",
+      "per_column_encryption_posture_decisions",
+      "confidential_vm_or_tee_residency",
+      "signing_and_mac_discipline",
+      "algorithm_registry_contents",
+      "key_destruction_procedures",
+      "audit_record_content_for_crypto_failures",
+      "post_quantum_migration_timing"
+    ]
+  }
+}

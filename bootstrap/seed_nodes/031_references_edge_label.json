@@ -1,0 +1,31 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "references",
+    "asserts": {
+      "semantic": "non_load_bearing_cross_link_citation",
+      "directional": true,
+      "reciprocity": null,
+      "participates_in_dependency_closure": false,
+      "edge_family": "reference",
+      "origin_asymmetry": "origin_in_target_kinds_only_never_source"
+    },
+    "source_kinds": ["axiom", "section", "sentinel", "invariant", "assumption", "decision", "doc_object", "circuit", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "principal", "edge", "audit_record", "grant", "snapshot"],
+    "target_kinds": ["origin", "axiom", "section", "sentinel", "invariant", "assumption", "decision", "doc_object", "circuit", "node_kind_declaration", "edge_label_declaration", "principal_type_declaration", "principal", "edge", "audit_record", "grant", "snapshot"],
+    "edge_family": "reference",
+    "reciprocity": null,
+    "version_pinning_default": "current_active",
+    "diagnostic_only": false,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "references Edge Label",
+    "out_of_scope": [
+      "citation_strength_or_scoring",
+      "automatic_references_edge_generation_from_text_mentions",
+      "references_retirement_cascade",
+      "performance_optimization_for_incoming_references_traversal",
+      "audit_record_content_for_references_admissions"
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "node_kind": "principal_type_declaration",
+  "contract": {
+    "canonical_name": "human",
+    "asserts": {
+      "represents": "natural_person",
+      "authentication_binding_shape": "federated_identity_provider_reference",
+      "binding_required_fields": ["identity_provider_id", "subject_identifier"],
+      "type_immutable_per_principal_kind_contract": true,
+      "authority_source": "grants_only_no_structural_default"
+    },
+    "type_specific_properties": {
+      "schema_format": "json_schema_fragment",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "authentication_binding_contract": {
+      "schema_format": "json_schema_fragment",
+      "type": "object",
+      "required": ["identity_provider_id", "subject_identifier"],
+      "properties": {
+        "identity_provider_id": {"type": "string"},
+        "subject_identifier": {"type": "string"},
+        "mfa_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "default_trust_tier": null,
+    "permitted_authorization_dimensions": null,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Human Principal Type",
+    "out_of_scope": [
+      "specific_federation_protocols",
+      "credential_lifecycle",
+      "per_human_directory_attributes",
+      "session_lifetime_and_re_authentication_cadence",
+      "mfa_protocol_mechanics",
+      "identity_provider_registry_admission",
+      "trust_tier_vocabulary",
+      "human_principal_retirement_cascade",
+      "audit_record_content_for_human_admissions"
+    ]
+  }
+}

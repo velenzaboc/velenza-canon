@@ -1,0 +1,76 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "sentinel",
+    "asserts": {
+      "canonical_err_name_in_contract": true,
+      "canonical_err_name_immutable_across_versions": true,
+      "canonical_err_name_pattern": "^Err[A-Z][A-Za-z0-9]*$",
+      "uniqueness_scope": ["organization_id", "canonical_err_name"],
+      "description_and_raise_conditions_in_payload_refinable": true,
+      "ownership_via_declares_edges": true,
+      "raise_sites_via_raises_edges": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "sentinel",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "sentinel",
+      "required_contract_fields": ["canonical_err_name", "contract_monotonicity_rule"],
+      "required_payload_fields": ["description", "raise_conditions"],
+      "optional_payload_fields": ["severity_classification", "remediation_hint"],
+      "field_specs": {
+        "canonical_err_name": {
+          "type": "string",
+          "pattern": "^Err[A-Z][A-Za-z0-9]*$",
+          "uniqueness_scope": ["organization_id", "canonical_err_name"]
+        },
+        "description": {
+          "type": "string",
+          "shape": "single_clause_no_prose"
+        },
+        "raise_conditions": {
+          "type": "string_or_object",
+          "shape": "structured_conditions_no_prose"
+        },
+        "severity_classification": {
+          "type": "string_or_null"
+        },
+        "remediation_hint": {
+          "type": "string_or_null",
+          "shape": "single_clause_no_prose"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "deprecated", "retired"],
+      "legal_transitions": [
+        {"from": "active", "to": "deprecated"},
+        {"from": "active", "to": "retired"},
+        {"from": "deprecated", "to": "retired"}
+      ],
+      "terminal_status_values": ["retired"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": false
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Sentinel Kind Declaration",
+    "out_of_scope": [
+      "severity_vocabulary",
+      "sentinel_to_http_status_code_mappings",
+      "internationalization_of_description_and_remediation_hint",
+      "sentinel_raise_rate_metrics_and_alerting",
+      "automatic_sentinel_discovery_from_raises_edges",
+      "sentinel_deprecation_cascade_to_existing_raise_sites",
+      "audit_record_content_for_sentinel_admissions"
+    ]
+  }
+}

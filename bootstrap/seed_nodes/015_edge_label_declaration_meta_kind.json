@@ -1,0 +1,91 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "edge_label_declaration",
+    "asserts": {
+      "declares_per_declaration": 1,
+      "uniqueness_scope": ["organization_id", "canonical_name"],
+      "source_kinds_and_target_kinds_required_in_contract": true,
+      "edge_family_required_in_contract": true,
+      "reciprocity_optional_in_contract": true,
+      "reciprocity_atomic_mirror_admission": true,
+      "registry_membership_requires_admitted_active_declaration": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "edge_label_declaration",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "edge_label_declaration",
+      "required_contract_fields": ["canonical_name", "asserts", "source_kinds", "target_kinds", "edge_family", "contract_monotonicity_rule"],
+      "optional_contract_fields": ["reciprocity", "version_pinning_default", "diagnostic_only", "forbid_self_loops"],
+      "field_specs": {
+        "canonical_name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "source_kinds": {
+          "type": "array_of_strings",
+          "min_entries": 1,
+          "member_constraint": "in_node_kind_registry"
+        },
+        "target_kinds": {
+          "type": "array_of_strings",
+          "min_entries": 1,
+          "member_constraint": "in_node_kind_registry"
+        },
+        "edge_family": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "reciprocity": {
+          "type": "string_or_null"
+        },
+        "version_pinning_default": {
+          "type": "enum",
+          "values": ["current_active", "version_pinned"],
+          "default": "current_active"
+        },
+        "diagnostic_only": {
+          "type": "boolean",
+          "default": false
+        },
+        "forbid_self_loops": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required_payload_fields": ["title"],
+      "optional_payload_fields": ["out_of_scope"]
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "superseded", "retired"],
+      "legal_transitions": [
+        {"from": "active", "to": "superseded"},
+        {"from": "active", "to": "retired"},
+        {"from": "superseded", "to": "retired"}
+      ],
+      "terminal_status_values": ["retired"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_title_and_out_of_scope_only"
+  },
+  "payload": {
+    "title": "Edge Label Declaration Meta-Kind",
+    "out_of_scope": [
+      "specific_edge_labels_in_registry",
+      "closure_profile_registry",
+      "edge_query_languages",
+      "reciprocity_tie_break_rules_across_versions",
+      "performance_optimization_for_edge_filtered_queries",
+      "audit_record_content_for_edge_label_admissions",
+      "label_retirement_cascade_to_existing_edges"
+    ]
+  }
+}

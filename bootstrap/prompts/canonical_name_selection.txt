@@ -1,0 +1,21 @@
+You are picking the most canonical name from N candidate names that all describe the same concept in a Velenza BOC doc-graph cluster.
+
+Cluster statement (what these names describe): {{.Statement}}
+
+Candidate names:
+{{range .Candidates}}- {{.}}
+{{end}}
+
+Canonical-name pattern (R7): ^[a-z][a-z0-9_]*$
+- snake_case, starts with lowercase letter
+- no dots (sections use the dotted form; this cluster's kind does not)
+- short and descriptive of the asserted claim
+
+Decision rules:
+- Pick the candidate that BEST matches both R7 pattern and concise description of the claim.
+- If two candidates are equally canonical, prefer the SHORTER name.
+- If NO candidate matches R7 or accurately describes the claim, output "PROPOSE: <new_name>" with a name you compose.
+
+Reply EXACTLY in this format (no preamble, no markdown):
+NAME: <chosen_or_proposed_canonical_name>
+RATIONALE: <one sentence under 200 characters>

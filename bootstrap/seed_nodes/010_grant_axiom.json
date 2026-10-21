@@ -1,0 +1,44 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "grant_axiom",
+    "asserts": {
+      "grants_are_nodes": {
+        "node_kind": "grant"
+      },
+      "subject": {
+        "required": true,
+        "shape": "principal_stable_id"
+      },
+      "authorization_clause_fields": ["access_dimension", "access_target", "access_level"],
+      "granting_authority": {
+        "required": true,
+        "shape": "principal_or_scope_reference"
+      },
+      "temporal_validity": {
+        "required_fields": ["granted_at"],
+        "optional_fields": ["expires_at"],
+        "outside_window_authorizes": false
+      },
+      "cross_authority_scope_supported": true,
+      "admission_required": true
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Grant Axiom",
+    "out_of_scope": [
+      "access_dimension_vocabulary",
+      "access_target_shape",
+      "access_level_vocabulary",
+      "delegation_patterns",
+      "dual_control_hitl_approval_mechanics",
+      "revocation_cascade_semantics",
+      "jit_grant_request_workflow",
+      "approval_consensus_records",
+      "explicit_deny_or_excludes_patterns_within_a_grant",
+      "evaluation_performance_indexing",
+      "audit_record_content_for_grant_admissions"
+    ]
+  }
+}

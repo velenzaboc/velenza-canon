@@ -1,0 +1,36 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "corpus_temporal_axiom",
+    "asserts": {
+      "sealed_snapshots_produced": true,
+      "snapshots_are_nodes": {
+        "node_kind": "snapshot"
+      },
+      "snapshot_version": {
+        "scope": "per_organization_id",
+        "monotonicity": "strictly_increasing_at_sealing"
+      },
+      "identity_tuple": ["organization_id", "snapshot_version"],
+      "query_selectors": ["active", "snapshot_id", "snapshot_version", "as_of_timestamp"],
+      "sealed_snapshot_mutation": "refused_atomically_and_audited",
+      "historical_traversal_scope": "single_snapshot_only"
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Corpus Temporal Axiom",
+    "out_of_scope": [
+      "snapshot_sealing_procedure_and_triggers",
+      "materialization_mechanics",
+      "snapshot_retention_policy",
+      "temporal_query_languages_and_result_shapes",
+      "failed_or_abandoned_materialization_run_handling",
+      "snapshot_indexing_and_search_optimization",
+      "cross_tenant_snapshot_comparison",
+      "snapshot_replication_across_regions",
+      "snapshot_kind_vocabulary",
+      "audit_record_content_for_snapshot_sealing"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "source_spec_id": "3b929ea6-e771-451b-a51f-e3556f116915",
+  "source_spec_name": "KERNEL_SENTINEL_RAISE_SITE_CONVENTION",
+  "concept_domain": "sentinel_raise_site_convention",
+  "extractions": [
+    {
+      "path": "sections.*",
+      "node_kind": "section",
+      "leaf_fields": {
+        "scope": "scope"
+      }
+    },
+    {
+      "path": "sections.s12_invariants.invariants[*]",
+      "node_kind": "invariant",
+      "id_field": "invariant_name",
+      "leaf_fields": {
+        "statement": "statement"
+      }
+    }
+  ]
+}

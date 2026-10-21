@@ -1,0 +1,34 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "principal_axiom",
+    "asserts": {
+      "principal_is_actor_identity": true,
+      "principals_are_nodes": {
+        "node_kind": "principal"
+      },
+      "reference_form": "by_stable_id_only",
+      "non_stable_identifiers_forbidden_in_steady_state": ["display_name", "alias", "other_non_stable_identifiers"],
+      "type_discriminator": {
+        "required": true,
+        "value_source": "per_corpus_principal_type_registry"
+      },
+      "actor_reference_without_principal_node": false,
+      "bootstrap_exception": "admitted_by_sentinel_value_permitted_before_bootstrap_principal_node_exists"
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Principal Axiom",
+    "out_of_scope": [
+      "authentication_mechanisms",
+      "authorization_and_permission_rules",
+      "principal_type_registry_contents",
+      "credentials_tokens_key_material",
+      "external_identity_provider_integration",
+      "principal_to_out_of_corpus_identity_mapping",
+      "delegation_patterns",
+      "principal_retirement_and_archival"
+    ]
+  }
+}

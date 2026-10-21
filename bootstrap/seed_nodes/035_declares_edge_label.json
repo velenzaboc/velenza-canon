@@ -1,0 +1,31 @@
+{
+  "node_kind": "edge_label_declaration",
+  "contract": {
+    "canonical_name": "declares",
+    "asserts": {
+      "semantic": "source_introduces_or_owns_or_catalogs_target",
+      "directional": true,
+      "reciprocity": null,
+      "edge_family": "declaration",
+      "enables_hierarchical_section_composition": true,
+      "section_to_section_composition_supported": true
+    },
+    "source_kinds": ["axiom", "section", "doc_object"],
+    "target_kinds": ["section", "sentinel", "invariant", "assumption", "decision"],
+    "edge_family": "declaration",
+    "reciprocity": null,
+    "version_pinning_default": "current_active",
+    "diagnostic_only": false,
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "declares Edge Label",
+    "out_of_scope": [
+      "orphan_detection",
+      "ownership_conflict_resolution_across_dual_declarers",
+      "declares_retirement_cascade",
+      "permission_rules_for_declares_admission",
+      "audit_record_content_for_declares_admissions"
+    ]
+  }
+}

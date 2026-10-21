@@ -1,0 +1,44 @@
+{
+  "node_kind": "axiom",
+  "contract": {
+    "canonical_name": "corpus_authorization_axiom",
+    "asserts": {
+      "admission_requires_admitter_authorization": "precondition_for_commit",
+      "authorization_records": {
+        "node_kind": "grant",
+        "out_of_corpus_storage": false,
+        "hardcoded_gate_logic": false
+      },
+      "authorization_set_evaluated": "currently_active_grants_only",
+      "non_authorizing_grant_states": ["revoked", "expired"],
+      "version_selection": "current_active_version_per_node_version_chain_axiom",
+      "authorization_subject": "authentication_verified_principal_id_only",
+      "caller_supplied_identity_claim_authorized": false,
+      "outcome": {
+        "values": ["authorized", "refused_with_reason"],
+        "silent_drop": false,
+        "indeterminate_state": false
+      },
+      "failed_authorization": {
+        "blocks_admission": "atomically",
+        "refusal_audited": true
+      }
+    },
+    "contract_monotonicity_rule": "asserts_immutable_across_versions; payload_refinable"
+  },
+  "payload": {
+    "title": "Corpus Authorization Axiom",
+    "out_of_scope": [
+      "grant_content_schema_owned_by_grant_kind_declaration",
+      "grant_structural_properties_owned_by_grant_axiom",
+      "delegation_patterns",
+      "grant_lifecycle_mechanics",
+      "authentication_mechanism",
+      "audit_record_content_for_refusal_events",
+      "evaluation_performance_and_caching",
+      "external_authorization_service_integration",
+      "default_deny_vs_default_allow_posture",
+      "cross_org_grant_patterns"
+    ]
+  }
+}

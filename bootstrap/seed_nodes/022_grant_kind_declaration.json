@@ -1,0 +1,89 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "grant",
+    "asserts": {
+      "subject_principal_stable_id_required_in_contract": true,
+      "authorization_clause_required_in_contract": true,
+      "authorization_clause_fields": ["access_dimension", "access_target", "access_level"],
+      "granting_authority_required_in_contract": true,
+      "temporal_validity_required_in_contract": true,
+      "subject_must_resolve_to_admitted_principal": true,
+      "status_enum": ["active", "revoked", "expired"],
+      "revocation_lineage_fields": ["revoked_by_principal_stable_id", "revoked_at", "revocation_reason"],
+      "reason_field_encryption": "tenant_comp_encrypted",
+      "cross_authority_scope_supported": true,
+      "content_change_requires_new_stable_id": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "grant",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "grant",
+      "required_contract_fields": ["subject_principal_stable_id", "authorization", "granting_authority", "temporal_validity", "contract_monotonicity_rule"],
+      "required_payload_fields": ["reason"],
+      "optional_payload_fields": ["approval_consensus_id", "revoked_by_principal_stable_id", "revoked_at", "revocation_reason", "jit_flag", "urgent_revocation_flag"],
+      "field_specs": {
+        "subject_principal_stable_id": {
+          "type": "uuid",
+          "constraint": "resolves_to_admitted_principal",
+          "immutability": "after_first_admission"
+        },
+        "authorization": {
+          "type": "object",
+          "required_fields": ["access_dimension", "access_target", "access_level"],
+          "immutability": "after_first_admission"
+        },
+        "granting_authority": {
+          "type": "object",
+          "required_fields": ["granting_org_id"],
+          "optional_fields": ["granting_principal_stable_id"],
+          "immutability": "after_first_admission"
+        },
+        "temporal_validity": {
+          "type": "object",
+          "required_fields": ["granted_at"],
+          "optional_fields": ["expires_at"]
+        },
+        "reason": {
+          "type": "string",
+          "encryption": "tenant_comp_encrypted"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "revoked", "expired"],
+      "legal_transitions": [
+        {"from": "active", "to": "revoked"},
+        {"from": "active", "to": "expired"}
+      ],
+      "terminal_status_values": ["revoked", "expired"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {
+        "payload.reason": "tenant_comp_encrypted",
+        "payload.revocation_reason": "tenant_comp_encrypted"
+      }
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_for_status_transitions_and_revocation_lineage_only"
+  },
+  "payload": {
+    "title": "Grant Kind Declaration",
+    "out_of_scope": [
+      "access_dimension_vocabulary",
+      "access_target_shape_per_dimension",
+      "access_level_vocabulary",
+      "delegation_patterns",
+      "dual_control_hitl_approval_mechanics",
+      "jit_grant_request_workflow",
+      "cross_org_consent_records",
+      "revocation_cascade_semantics",
+      "audit_record_content_for_grant_admissions"
+    ]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "node_kind": "node_kind_declaration",
+  "contract": {
+    "canonical_name": "axiom",
+    "asserts": {
+      "asserts_in_contract": true,
+      "asserts_immutable_across_versions": true,
+      "payload_refinable_across_versions": true,
+      "admission_through_gate": true,
+      "no_special_bypass": true
+    },
+    "content_schema": {
+      "schema_format": "structured_field_declaration",
+      "applies_to_nodes_of_kind": "axiom",
+      "required_top_level_fields": ["node_kind", "contract", "payload"],
+      "node_kind_constraint": "axiom",
+      "required_contract_fields": ["canonical_name", "asserts", "contract_monotonicity_rule"],
+      "required_payload_fields": ["title"],
+      "optional_payload_fields": ["out_of_scope"],
+      "field_specs": {
+        "asserts": {
+          "type": "object",
+          "min_entries": 1,
+          "value_shape": "structured_claim_clauses_no_prose"
+        },
+        "out_of_scope": {
+          "type": "array_of_strings",
+          "shape": "short_deferred_concern_snake_case"
+        }
+      }
+    },
+    "per_kind_lifecycle": {
+      "status_enum": ["active", "superseded", "retired"],
+      "legal_transitions": [
+        {"from": "active", "to": "superseded"},
+        {"from": "active", "to": "retired"},
+        {"from": "superseded", "to": "retired"}
+      ],
+      "terminal_status_values": ["retired"],
+      "re_admittable": true,
+      "immutable_once_admitted": false,
+      "single_instance": false,
+      "bootstrap_kind": true
+    },
+    "per_kind_encryption_posture": {
+      "default_posture": "plaintext",
+      "field_postures": {}
+    },
+    "contract_monotonicity_rule": "contract_immutable_across_versions; payload_refinable_title_and_out_of_scope_only"
+  },
+  "payload": {
+    "title": "Axiom Kind Declaration",
+    "out_of_scope": [
+      "specific_axiom_content",
+      "axiom_retirement_cascade_to_dependents",
+      "audit_record_content_for_axiom_admissions"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.velenza.spec-graph</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/velenza/velenza-canon/bin/spec-graph</string>
+        <string>mcp</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>SPEC_GRAPH_CONFIG</key>
+        <string>/opt/velenza/velenza-canon/spec-graph.config.json</string>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/opt/velenza/velenza-canon</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/opt/velenza/Library/Logs/spec-graph.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/opt/velenza/Library/Logs/spec-graph.err.log</string>
+</dict>
+</plist>

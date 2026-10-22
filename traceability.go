@@ -896,7 +896,20 @@ func typescriptGenericArrowAt(source string, start int) bool {
 				braceDepth--
 			}
 		case '\'', '"', '`':
-			return false
+			previous := i - 1
+			for previous > start && isJavaScriptHorizontalWhitespace(source[previous]) {
+				previous--
+			}
+			if previous > start && source[previous] == '=' {
+				// JSX attributes use name="value". A quoted TypeScript
+				// literal constraint has no assignment token before the quote.
+				return false
+			}
+			next := skipQuoted(source, i, source[i], true)
+			if next <= i || next > len(source) {
+				return false
+			}
+			i = next - 1
 		}
 	}
 	return false

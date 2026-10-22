@@ -492,12 +492,21 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 	// A regular expression may begin immediately after a control-statement
 	// header even though an ordinary closing parenthesis ends an expression.
 	var controlParens []bool
-	// Braces following a control-statement header delimit statement blocks.
-	// Keep them distinct from object literals so a slash after `if (...) {}`
-	// may start a regex without treating `const x = {} / 2` as one.
+	// Keep statement/declaration blocks distinct from object and function
+	// expressions so a following slash is interpreted in the right grammar
+	// context.
 	var statementBraces []bool
 	lastIdentifier := ""
+	lastIdentifierStartedStatement := false
 	regexAfterControlParen := false
+	statementStart := true
+	functionDeclarationPending := false
+	functionDeclarationParamDepth := 0
+	functionDeclarationBodyReady := false
+	classDeclarationPending := false
+	classDeclarationParenDepth := 0
+	classDeclarationBracketDepth := 0
+	bracketDepth := 0
 	line := 1
 	for i := 0; i < len(source); {
 		mode := &modes[len(modes)-1]
@@ -641,21 +650,27 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			line += strings.Count(source[i:next], "\n")
 			i = next
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			statementStart = false
 			continue
 		}
 		if source[i] == '`' {
 			modes = append(modes, javascriptLexMode{templateText: true})
 			i++
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			statementStart = false
 			continue
 		}
 		if allowJSX && source[i] == '<' && i+1 < len(source) && isJSXTagStart(source[i+1]) && javascriptExpressionCanStart(source, i) && !typescriptGenericArrowAt(source, i) {
 			modes = append(modes, javascriptLexMode{jsx: true, jsxDepth: 1})
 			i++
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			statementStart = false
 			continue
 		}
 		if source[i] == '/' && (regexAfterControlParen || javascriptRegexCanStart(source, i)) {
@@ -663,7 +678,9 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			line += strings.Count(source[i:next], "\n")
 			i = next
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			statementStart = false
 			continue
 		}
 		if isJavaScriptIdentifierStart(source[i]) {
@@ -671,33 +688,71 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			for end < len(source) && isJavaScriptIdentifierPart(source[end]) {
 				end++
 			}
-			lastIdentifier = source[i:end]
+			identifier := source[i:end]
+			startedStatement := statementStart
+			lastIdentifier = identifier
+			lastIdentifierStartedStatement = startedStatement
 			regexAfterControlParen = false
+			if identifier == "function" && startedStatement {
+				functionDeclarationPending = true
+				functionDeclarationParamDepth = 0
+				functionDeclarationBodyReady = false
+			}
+			if identifier == "class" && startedStatement {
+				classDeclarationPending = true
+				classDeclarationParenDepth = len(controlParens)
+				classDeclarationBracketDepth = bracketDepth
+			}
+			statementStart = startedStatement && isJavaScriptStatementPrefix(identifier)
 			i = end
 			continue
 		}
 		if source[i] == '(' {
 			controlParens = append(controlParens, isJavaScriptControlKeyword(lastIdentifier))
+			if functionDeclarationPending && functionDeclarationParamDepth == 0 {
+				functionDeclarationParamDepth = len(controlParens)
+			}
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			statementStart = false
 			i++
 			continue
 		}
 		if source[i] == ')' {
+			closingDepth := len(controlParens)
 			control := false
 			if len(controlParens) > 0 {
 				control = controlParens[len(controlParens)-1]
 				controlParens = controlParens[:len(controlParens)-1]
 			}
+			if functionDeclarationPending && functionDeclarationParamDepth == closingDepth {
+				functionDeclarationParamDepth = 0
+				functionDeclarationBodyReady = true
+			}
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = control
+			statementStart = false
 			i++
 			continue
 		}
 		if !mode.expression && source[i] == '{' {
-			statementBraces = append(statementBraces, regexAfterControlParen)
+			classDeclarationBody := classDeclarationPending && len(controlParens) == classDeclarationParenDepth && bracketDepth == classDeclarationBracketDepth
+			statementBlock := regexAfterControlParen || statementStart || functionDeclarationBodyReady || classDeclarationBody || isJavaScriptDirectBlockKeyword(lastIdentifier)
+			statementBraces = append(statementBraces, statementBlock)
+			if functionDeclarationBodyReady {
+				functionDeclarationPending = false
+				functionDeclarationParamDepth = 0
+				functionDeclarationBodyReady = false
+			}
+			if classDeclarationBody {
+				classDeclarationPending = false
+			}
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			statementStart = statementBlock
 			i++
 			continue
 		}
@@ -708,7 +763,9 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 				statementBraces = statementBraces[:len(statementBraces)-1]
 			}
 			lastIdentifier = ""
+			lastIdentifierStartedStatement = false
 			regexAfterControlParen = statementBlock
+			statementStart = statementBlock
 			i++
 			continue
 		}
@@ -723,7 +780,26 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 				}
 			}
 		}
+		if source[i] == ';' {
+			functionDeclarationPending = false
+			functionDeclarationParamDepth = 0
+			functionDeclarationBodyReady = false
+			classDeclarationPending = false
+			statementStart = true
+		} else if source[i] == ':' && lastIdentifierStartedStatement {
+			// A labelled statement begins a fresh statement position. Colons in
+			// object literals and conditional expressions do not satisfy this.
+			statementStart = true
+		} else {
+			statementStart = false
+		}
+		if source[i] == '[' {
+			bracketDepth++
+		} else if source[i] == ']' && bracketDepth > 0 {
+			bracketDepth--
+		}
 		lastIdentifier = ""
+		lastIdentifierStartedStatement = false
 		regexAfterControlParen = false
 		i++
 	}
@@ -746,7 +822,19 @@ func isJSXTagStart(char byte) bool {
 func typescriptGenericArrowAt(source string, start int) bool {
 	angleDepth := 0
 	sawTopLevelComma := false
+	sawTopLevelConstraint := false
 	for i := start + 1; i < len(source) && source[i] != '\n'; i++ {
+		if isJavaScriptIdentifierStart(source[i]) {
+			end := i + 1
+			for end < len(source) && isJavaScriptIdentifierPart(source[end]) {
+				end++
+			}
+			if angleDepth == 0 && source[i:end] == "extends" {
+				sawTopLevelConstraint = true
+			}
+			i = end - 1
+			continue
+		}
 		switch source[i] {
 		case '<':
 			angleDepth++
@@ -755,10 +843,11 @@ func typescriptGenericArrowAt(source string, start int) bool {
 				angleDepth--
 				continue
 			}
-			if !sawTopLevelComma {
+			if !sawTopLevelComma && !sawTopLevelConstraint {
 				return false
 			}
-			// In TSX, the trailing comma is the unambiguous generic-arrow form.
+			// A trailing comma or a top-level constraint disambiguates a TSX
+			// generic arrow from JSX. In both forms the parameter list follows.
 			i++
 			for i < len(source) && (source[i] == ' ' || source[i] == '\t' || source[i] == '\r' || source[i] == '\n') {
 				i++
@@ -773,6 +862,24 @@ func typescriptGenericArrowAt(source string, start int) bool {
 		}
 	}
 	return false
+}
+
+func isJavaScriptStatementPrefix(identifier string) bool {
+	switch identifier {
+	case "abstract", "async", "declare", "default", "do", "else", "export", "finally", "try":
+		return true
+	default:
+		return false
+	}
+}
+
+func isJavaScriptDirectBlockKeyword(identifier string) bool {
+	switch identifier {
+	case "catch", "do", "else", "finally", "try":
+		return true
+	default:
+		return false
+	}
 }
 
 func javascriptExpressionCanStart(source string, offset int) bool {

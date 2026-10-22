@@ -317,7 +317,7 @@ func extractSourceComments(source, ext string) []sourceComment {
 	case ".rs":
 		return extractCStyleComments(source, cStyleDialect{rustRawStrings: true, nestedBlockComments: true, rustCharLiterals: true})
 	case ".ts", ".tsx", ".js", ".mjs", ".cjs":
-		return extractJavaScriptComments(source, ext == ".tsx")
+		return extractJavaScriptComments(source, ext == ".tsx", ext == ".ts" || ext == ".tsx")
 	case ".py":
 		return extractPythonComments(source)
 	case ".sh":
@@ -486,7 +486,7 @@ type javascriptLexMode struct {
 	closingTag   bool
 }
 
-func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
+func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []sourceComment {
 	var comments []sourceComment
 	modes := []javascriptLexMode{{}}
 	// A regular expression may begin immediately after a control-statement
@@ -503,9 +503,10 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 	functionDeclarationPending := false
 	functionDeclarationParamDepth := 0
 	functionDeclarationBodyReady := false
-	classDeclarationPending := false
-	classDeclarationParenDepth := 0
-	classDeclarationBracketDepth := 0
+	blockDeclarationPending := false
+	blockDeclarationParenDepth := 0
+	blockDeclarationBracketDepth := 0
+	blockDeclarationAngleDepth := 0
 	bracketDepth := 0
 	line := 1
 	for i := 0; i < len(source); {
@@ -673,7 +674,7 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			statementStart = false
 			continue
 		}
-		if source[i] == '/' && (regexAfterControlParen || javascriptRegexCanStart(source, i)) {
+		if source[i] == '/' && (statementStart || regexAfterControlParen || isJavaScriptRegexPrefixKeyword(lastIdentifier) || javascriptRegexCanStart(source, i)) {
 			next := skipJavaScriptRegex(source, i)
 			line += strings.Count(source[i:next], "\n")
 			i = next
@@ -698,10 +699,11 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 				functionDeclarationParamDepth = 0
 				functionDeclarationBodyReady = false
 			}
-			if identifier == "class" && startedStatement {
-				classDeclarationPending = true
-				classDeclarationParenDepth = len(controlParens)
-				classDeclarationBracketDepth = bracketDepth
+			if isJavaScriptBlockDeclarationKeyword(identifier, allowTypeScript) && startedStatement {
+				blockDeclarationPending = true
+				blockDeclarationParenDepth = len(controlParens)
+				blockDeclarationBracketDepth = bracketDepth
+				blockDeclarationAngleDepth = 0
 			}
 			statementStart = startedStatement && isJavaScriptStatementPrefix(identifier)
 			i = end
@@ -738,16 +740,16 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			continue
 		}
 		if !mode.expression && source[i] == '{' {
-			classDeclarationBody := classDeclarationPending && len(controlParens) == classDeclarationParenDepth && bracketDepth == classDeclarationBracketDepth
-			statementBlock := regexAfterControlParen || statementStart || functionDeclarationBodyReady || classDeclarationBody || isJavaScriptDirectBlockKeyword(lastIdentifier)
+			declarationBody := blockDeclarationPending && len(controlParens) == blockDeclarationParenDepth && bracketDepth == blockDeclarationBracketDepth && blockDeclarationAngleDepth == 0
+			statementBlock := regexAfterControlParen || statementStart || functionDeclarationBodyReady || declarationBody || isJavaScriptDirectBlockKeyword(lastIdentifier)
 			statementBraces = append(statementBraces, statementBlock)
 			if functionDeclarationBodyReady {
 				functionDeclarationPending = false
 				functionDeclarationParamDepth = 0
 				functionDeclarationBodyReady = false
 			}
-			if classDeclarationBody {
-				classDeclarationPending = false
+			if declarationBody {
+				blockDeclarationPending = false
 			}
 			lastIdentifier = ""
 			lastIdentifierStartedStatement = false
@@ -784,7 +786,7 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			functionDeclarationPending = false
 			functionDeclarationParamDepth = 0
 			functionDeclarationBodyReady = false
-			classDeclarationPending = false
+			blockDeclarationPending = false
 			statementStart = true
 		} else if source[i] == ':' && lastIdentifierStartedStatement {
 			// A labelled statement begins a fresh statement position. Colons in
@@ -797,6 +799,13 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			bracketDepth++
 		} else if source[i] == ']' && bracketDepth > 0 {
 			bracketDepth--
+		}
+		if blockDeclarationPending {
+			if source[i] == '<' {
+				blockDeclarationAngleDepth++
+			} else if source[i] == '>' && blockDeclarationAngleDepth > 0 && (i == 0 || source[i-1] != '=') {
+				blockDeclarationAngleDepth--
+			}
 		}
 		lastIdentifier = ""
 		lastIdentifierStartedStatement = false
@@ -821,6 +830,9 @@ func isJSXTagStart(char byte) bool {
 
 func typescriptGenericArrowAt(source string, start int) bool {
 	angleDepth := 0
+	parenDepth := 0
+	bracketDepth := 0
+	braceDepth := 0
 	sawTopLevelComma := false
 	sawTopLevelConstraint := false
 	for i := start + 1; i < len(source) && source[i] != '\n'; i++ {
@@ -829,7 +841,7 @@ func typescriptGenericArrowAt(source string, start int) bool {
 			for end < len(source) && isJavaScriptIdentifierPart(source[end]) {
 				end++
 			}
-			if angleDepth == 0 && source[i:end] == "extends" {
+			if angleDepth == 0 && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0 && source[i:end] == "extends" {
 				sawTopLevelConstraint = true
 			}
 			i = end - 1
@@ -839,8 +851,16 @@ func typescriptGenericArrowAt(source string, start int) bool {
 		case '<':
 			angleDepth++
 		case '>':
+			// A function type inside a constraint or default contains =>. Its
+			// greater-than token is not the end of the generic parameter list.
+			if i > start+1 && source[i-1] == '=' {
+				continue
+			}
 			if angleDepth > 0 {
 				angleDepth--
+				continue
+			}
+			if parenDepth > 0 || bracketDepth > 0 || braceDepth > 0 {
 				continue
 			}
 			if !sawTopLevelComma && !sawTopLevelConstraint {
@@ -854,14 +874,47 @@ func typescriptGenericArrowAt(source string, start int) bool {
 			}
 			return i < len(source) && source[i] == '('
 		case ',':
-			if angleDepth == 0 {
+			if angleDepth == 0 && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0 {
 				sawTopLevelComma = true
+			}
+		case '(':
+			parenDepth++
+		case ')':
+			if parenDepth > 0 {
+				parenDepth--
+			}
+		case '[':
+			bracketDepth++
+		case ']':
+			if bracketDepth > 0 {
+				bracketDepth--
+			}
+		case '{':
+			braceDepth++
+		case '}':
+			if braceDepth > 0 {
+				braceDepth--
 			}
 		case '\'', '"', '`':
 			return false
 		}
 	}
 	return false
+}
+
+func isJavaScriptBlockDeclarationKeyword(identifier string, allowTypeScript bool) bool {
+	if identifier == "class" {
+		return true
+	}
+	if !allowTypeScript {
+		return false
+	}
+	switch identifier {
+	case "enum", "interface", "namespace":
+		return true
+	default:
+		return false
+	}
 }
 
 func isJavaScriptStatementPrefix(identifier string) bool {
@@ -903,16 +956,20 @@ func javascriptRegexCanStart(source string, slash int) bool {
 			for i >= 0 && isJavaScriptIdentifierPart(source[i]) {
 				i--
 			}
-			switch source[i+1 : end] {
-			case "await", "case", "delete", "in", "instanceof", "new", "of", "return", "throw", "typeof", "void", "yield":
-				return true
-			default:
-				return false
-			}
+			return isJavaScriptRegexPrefixKeyword(source[i+1 : end])
 		}
 		return strings.ContainsRune("=(:,![{;?&|+-*%^~<>", rune(source[i]))
 	}
 	return true
+}
+
+func isJavaScriptRegexPrefixKeyword(identifier string) bool {
+	switch identifier {
+	case "await", "case", "delete", "in", "instanceof", "new", "of", "return", "throw", "typeof", "void", "yield":
+		return true
+	default:
+		return false
+	}
 }
 
 func isJavaScriptIdentifierPart(char byte) bool {

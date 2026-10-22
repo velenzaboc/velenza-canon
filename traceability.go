@@ -79,7 +79,19 @@ type parsedOODSpecEnvelope struct {
 	Sections map[string]json.RawMessage `json:"sections"`
 }
 
-type specSectionIndex map[string][]int
+type specSectionIndex struct {
+	sections         map[string][]int
+	aliasOwners      map[string]string
+	ambiguousAliases map[string]bool
+}
+
+func newSpecSectionIndex() specSectionIndex {
+	return specSectionIndex{
+		sections:         make(map[string][]int),
+		aliasOwners:      make(map[string]string),
+		ambiguousAliases: make(map[string]bool),
+	}
+}
 
 type sourceComment struct {
 	Text string
@@ -123,7 +135,7 @@ func ScanSpecCodeTraceability(specDir, codeDir string) (*SpecCodeTraceabilityRep
 	// A coordinate can name multiple sections when versionless aliases collide.
 	// Preserve all candidates so resolution can reject ambiguity instead of
 	// silently letting the last specification scanned win.
-	sectionIndex := make(specSectionIndex)
+	sectionIndex := newSpecSectionIndex()
 
 	for _, sf := range specFiles {
 		raw, err := os.ReadFile(sf)
@@ -142,6 +154,13 @@ func ScanSpecCodeTraceability(specDir, codeDir string) (*SpecCodeTraceabilityRep
 			relFile = base
 		}
 		relFile = filepath.ToSlash(relFile)
+		if env.DocID != "" {
+			sectionIndex.addAliasOwner(env.DocID, relFile)
+		}
+		sectionIndex.addAliasOwner(prefix, relFile)
+		if stem != "" {
+			sectionIndex.addAliasOwner(stem, relFile)
+		}
 
 		secIDs := make([]string, 0, len(env.Sections))
 		for secID := range env.Sections {
@@ -470,6 +489,11 @@ type javascriptLexMode struct {
 func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 	var comments []sourceComment
 	modes := []javascriptLexMode{{}}
+	// A regular expression may begin immediately after a control-statement
+	// header even though an ordinary closing parenthesis ends an expression.
+	var controlParens []bool
+	lastIdentifier := ""
+	regexAfterControlParen := false
 	line := 1
 	for i := 0; i < len(source); {
 		mode := &modes[len(modes)-1]
@@ -606,22 +630,58 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			next := skipQuoted(source, i, source[i], true)
 			line += strings.Count(source[i:next], "\n")
 			i = next
+			lastIdentifier = ""
+			regexAfterControlParen = false
 			continue
 		}
 		if source[i] == '`' {
 			modes = append(modes, javascriptLexMode{templateText: true})
 			i++
+			lastIdentifier = ""
+			regexAfterControlParen = false
 			continue
 		}
-		if allowJSX && source[i] == '<' && i+1 < len(source) && isJSXTagStart(source[i+1]) && javascriptExpressionCanStart(source, i) {
+		if allowJSX && source[i] == '<' && i+1 < len(source) && isJSXTagStart(source[i+1]) && javascriptExpressionCanStart(source, i) && !typescriptGenericArrowAt(source, i) {
 			modes = append(modes, javascriptLexMode{jsx: true, jsxDepth: 1})
 			i++
+			lastIdentifier = ""
+			regexAfterControlParen = false
 			continue
 		}
-		if source[i] == '/' && javascriptRegexCanStart(source, i) {
+		if source[i] == '/' && (regexAfterControlParen || javascriptRegexCanStart(source, i)) {
 			next := skipJavaScriptRegex(source, i)
 			line += strings.Count(source[i:next], "\n")
 			i = next
+			lastIdentifier = ""
+			regexAfterControlParen = false
+			continue
+		}
+		if isJavaScriptIdentifierStart(source[i]) {
+			end := i + 1
+			for end < len(source) && isJavaScriptIdentifierPart(source[end]) {
+				end++
+			}
+			lastIdentifier = source[i:end]
+			regexAfterControlParen = false
+			i = end
+			continue
+		}
+		if source[i] == '(' {
+			controlParens = append(controlParens, isJavaScriptControlKeyword(lastIdentifier))
+			lastIdentifier = ""
+			regexAfterControlParen = false
+			i++
+			continue
+		}
+		if source[i] == ')' {
+			control := false
+			if len(controlParens) > 0 {
+				control = controlParens[len(controlParens)-1]
+				controlParens = controlParens[:len(controlParens)-1]
+			}
+			lastIdentifier = ""
+			regexAfterControlParen = control
+			i++
 			continue
 		}
 		if mode.expression {
@@ -635,6 +695,8 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 				}
 			}
 		}
+		lastIdentifier = ""
+		regexAfterControlParen = false
 		i++
 	}
 	return comments
@@ -642,6 +704,38 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 
 func isJSXTagStart(char byte) bool {
 	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || char == '>'
+}
+
+func typescriptGenericArrowAt(source string, start int) bool {
+	angleDepth := 0
+	sawTopLevelComma := false
+	for i := start + 1; i < len(source) && source[i] != '\n'; i++ {
+		switch source[i] {
+		case '<':
+			angleDepth++
+		case '>':
+			if angleDepth > 0 {
+				angleDepth--
+				continue
+			}
+			if !sawTopLevelComma {
+				return false
+			}
+			// In TSX, the trailing comma is the unambiguous generic-arrow form.
+			i++
+			for i < len(source) && (source[i] == ' ' || source[i] == '\t' || source[i] == '\r' || source[i] == '\n') {
+				i++
+			}
+			return i < len(source) && source[i] == '('
+		case ',':
+			if angleDepth == 0 {
+				sawTopLevelComma = true
+			}
+		case '\'', '"', '`':
+			return false
+		}
+	}
+	return false
 }
 
 func javascriptExpressionCanStart(source string, offset int) bool {
@@ -679,6 +773,19 @@ func javascriptRegexCanStart(source string, slash int) bool {
 
 func isJavaScriptIdentifierPart(char byte) bool {
 	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9') || char == '_' || char == '$'
+}
+
+func isJavaScriptIdentifierStart(char byte) bool {
+	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || char == '_' || char == '$'
+}
+
+func isJavaScriptControlKeyword(identifier string) bool {
+	switch identifier {
+	case "catch", "for", "if", "switch", "while", "with":
+		return true
+	default:
+		return false
+	}
 }
 
 func skipJavaScriptRegex(source string, start int) int {
@@ -831,30 +938,48 @@ func parseShellHeredoc(line string, start int) (shellHeredoc, int, bool) {
 	if i >= len(line) {
 		return shellHeredoc{}, start + 1, false
 	}
+	var delimiter strings.Builder
 	quote := byte(0)
-	if line[i] == '\'' || line[i] == '"' {
-		quote = line[i]
-		i++
-	}
-	begin := i
+	sawCharacter := false
+	// Shell compares heredoc terminators after quote removal. Build that
+	// effective delimiter while retaining only characters, not quote syntax.
 	for i < len(line) {
 		if quote != 0 {
 			if line[i] == quote {
-				break
+				quote = 0
+				i++
+				continue
 			}
-		} else if line[i] == ' ' || line[i] == '\t' || strings.ContainsRune(";|&(){}<>", rune(line[i])) {
+			if quote == '"' && line[i] == '\\' && i+1 < len(line) && strings.ContainsRune("$`\"\\", rune(line[i+1])) {
+				i++
+			}
+			delimiter.WriteByte(line[i])
+			sawCharacter = true
+			i++
+			continue
+		}
+		if line[i] == ' ' || line[i] == '\t' || strings.ContainsRune(";|&(){}<>", rune(line[i])) {
 			break
 		}
+		if line[i] == '\'' || line[i] == '"' {
+			quote = line[i]
+			i++
+			continue
+		}
+		if line[i] == '\\' {
+			if i+1 >= len(line) {
+				return shellHeredoc{}, start + 1, false
+			}
+			i++
+		}
+		delimiter.WriteByte(line[i])
+		sawCharacter = true
 		i++
 	}
-	if begin == i || (quote != 0 && (i >= len(line) || line[i] != quote)) {
+	if !sawCharacter || quote != 0 {
 		return shellHeredoc{}, start + 1, false
 	}
-	delimiter := line[begin:i]
-	if quote != 0 {
-		i++
-	}
-	return shellHeredoc{delimiter: delimiter, stripTabs: stripTabs}, i, true
+	return shellHeredoc{delimiter: delimiter.String(), stripTabs: stripTabs}, i, true
 }
 
 func extractSQLComments(source string) []sourceComment {
@@ -898,7 +1023,7 @@ func extractSQLComments(source string) []sourceComment {
 			comments = append(comments, sourceComment{Text: source[start:i], Line: startLine})
 			continue
 		}
-		if source[i] == '\'' || source[i] == '"' {
+		if source[i] == '\'' || source[i] == '"' || source[i] == '`' {
 			next := skipSQLQuoted(source, i, source[i])
 			line += strings.Count(source[i:next], "\n")
 			i = next
@@ -998,16 +1123,30 @@ func addSpecSectionAliases(index specSectionIndex, specAlias string, sectionPath
 	for _, sectionPath := range sectionPaths {
 		key := specAlias + "#" + sectionPath
 		alreadyPresent := false
-		for _, candidate := range index[key] {
+		for _, candidate := range index.sections[key] {
 			if candidate == coverageIndex {
 				alreadyPresent = true
 				break
 			}
 		}
 		if !alreadyPresent {
-			index[key] = append(index[key], coverageIndex)
+			index.sections[key] = append(index.sections[key], coverageIndex)
 		}
 	}
+}
+
+func (index specSectionIndex) addAliasOwner(specAlias, owner string) {
+	specAlias = strings.ToLower(strings.TrimSpace(specAlias))
+	if specAlias == "" {
+		return
+	}
+	if existingOwner, ok := index.aliasOwners[specAlias]; ok && existingOwner != owner {
+		// Ambiguity belongs to the document alias, independent of whether a
+		// requested nested path happens to exist in only one of its owners.
+		index.ambiguousAliases[specAlias] = true
+		return
+	}
+	index.aliasOwners[specAlias] = owner
 }
 
 func resolveSpecSectionIndex(target string, sectionIndex specSectionIndex) (int, bool) {
@@ -1020,7 +1159,10 @@ func resolveSpecSectionIndex(target string, sectionIndex specSectionIndex) (int,
 	if specKey == "" || sectionPath == "" {
 		return 0, false
 	}
-	candidates := sectionIndex[specKey+"#"+sectionPath]
+	if sectionIndex.ambiguousAliases[specKey] {
+		return 0, false
+	}
+	candidates := sectionIndex.sections[specKey+"#"+sectionPath]
 	if len(candidates) != 1 {
 		return 0, false
 	}

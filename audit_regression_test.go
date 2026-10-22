@@ -285,6 +285,42 @@ func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
 			wantLine: 2,
 		},
 		{
+			name:     "javascript regex at arrow function body start",
+			ext:      ".js",
+			source:   "const f = () => { /* note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); };\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex at function expression body start",
+			ext:      ".js",
+			source:   "const f = function () { /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); };\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex at method body start",
+			ext:      ".js",
+			source:   "const object = { f() { /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); } };\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after direct else prefix",
+			ext:      ".js",
+			source:   "if (true) {} else /* note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after direct do prefix",
+			ext:      ".js",
+			source:   "do /* note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); while (false);\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript function expression division retains comment",
+			ext:      ".js",
+			source:   "const ratio = function () {} / 2; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+		{
 			name:     "javascript regex after else block",
 			ext:      ".js",
 			source:   "if (true) {} else {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",

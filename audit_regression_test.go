@@ -209,6 +209,70 @@ func TestAuditTraceAnnotationsAcceptBlockCommentsForSupportedSources(t *testing.
 	}
 }
 
+func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name     string
+		ext      string
+		source   string
+		wantLine int
+	}{
+		{
+			name:     "google sql backtick identifier",
+			ext:      ".sql",
+			source:   "SELECT `-- //spec:DOC-COMMENTS#not_a_comment`;\n-- //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "tsx generic arrow",
+			ext:      ".tsx",
+			source:   "const identity = <T,>(value: T): T => value;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "shell backslash quoted heredoc",
+			ext:      ".sh",
+			source:   "cat <<\\TRACE_EOF\n//spec:DOC-COMMENTS#not_a_comment\nTRACE_EOF\n# //spec:DOC-COMMENTS#comment\n",
+			wantLine: 4,
+		},
+		{
+			name:     "javascript regex character class",
+			ext:      ".js",
+			source:   "if (true) /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "typescript regex character class",
+			ext:      ".ts",
+			source:   "if (true) /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+tc.ext)
+			if err := os.WriteFile(path, []byte(tc.source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", tc.ext, err)
+			}
+			if len(annotations) != 1 {
+				t.Fatalf("annotations for %s = %+v, want only the genuine comment", tc.ext, annotations)
+			}
+			if annotations[0].Kind != "spec" || annotations[0].Target != "DOC-COMMENTS#comment" || annotations[0].Line != tc.wantLine {
+				t.Fatalf("annotation for %s = %+v, want real comment target at line %d", tc.ext, annotations[0], tc.wantLine)
+			}
+		})
+	}
+}
+
 func TestAuditTraceResolutionRequiresExactUnambiguousCoordinate(t *testing.T) {
 	t.Parallel()
 
@@ -319,6 +383,65 @@ func malformed() {}
 		}
 		if len(coverage.CoveredBy) != 1 || coverage.CoveredBy[0].Target != wantTarget {
 			t.Fatalf("coverage for %s = %+v, want exactly %q", coverage.SourceFile, coverage.CoveredBy, wantTarget)
+		}
+	}
+}
+
+func TestAuditTraceResolutionRejectsSharedAliasWithVersionUniquePath(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	specDir := filepath.Join(root, "specs")
+	codeDir := filepath.Join(root, "code")
+	if err := os.MkdirAll(specDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(codeDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	v1 := `{
+  "doc_id": "DOC-TRACE-UNIQUE-V1",
+  "sections": {
+    "s1_core": {
+      "only_v1": {"rule": "Version one only."}
+    }
+  }
+}`
+	v2 := `{
+  "doc_id": "DOC-TRACE-UNIQUE-V2",
+  "sections": {
+    "s1_core": {
+      "only_v2": {"rule": "Version two only."}
+    }
+  }
+}`
+	if err := os.WriteFile(filepath.Join(specDir, "TRACE_UNIQUE_v1.ood.json"), []byte(v1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(specDir, "TRACE_UNIQUE_v2.ood.json"), []byte(v2), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	const target = "TRACE_UNIQUE#s1_core.only_v1"
+	source := "package trace\n\n// //spec:" + target + "\nfunc ambiguous() {}\n"
+	if err := os.WriteFile(filepath.Join(codeDir, "trace.go"), []byte(source), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := ScanSpecCodeTraceability(specDir, codeDir)
+	if err != nil {
+		t.Fatalf("ScanSpecCodeTraceability: %v", err)
+	}
+	if report.SpecsScanned != 2 || report.TotalSections != 2 || report.CoveredSections != 0 {
+		t.Fatalf("trace counts = specs:%d total:%d covered:%d, want 2/2/0", report.SpecsScanned, report.TotalSections, report.CoveredSections)
+	}
+	if len(report.DanglingAnnotations) != 1 || report.DanglingAnnotations[0].Target != target {
+		t.Fatalf("dangling annotations = %+v, want only %q", report.DanglingAnnotations, target)
+	}
+	for _, coverage := range report.SectionCoverage {
+		if len(coverage.CoveredBy) != 0 {
+			t.Fatalf("shared versionless alias unexpectedly covered %s: %+v", coverage.SourceFile, coverage.CoveredBy)
 		}
 	}
 }

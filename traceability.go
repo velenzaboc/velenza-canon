@@ -492,6 +492,10 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 	// A regular expression may begin immediately after a control-statement
 	// header even though an ordinary closing parenthesis ends an expression.
 	var controlParens []bool
+	// Braces following a control-statement header delimit statement blocks.
+	// Keep them distinct from object literals so a slash after `if (...) {}`
+	// may start a regex without treating `const x = {} / 2` as one.
+	var statementBraces []bool
 	lastIdentifier := ""
 	regexAfterControlParen := false
 	line := 1
@@ -599,6 +603,12 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			i++
 			continue
 		}
+		if isJavaScriptHorizontalWhitespace(source[i]) {
+			// Whitespace does not separate a control keyword from its opening
+			// parenthesis or a statement boundary from a following regex.
+			i++
+			continue
+		}
 		if source[i] == '/' && i+1 < len(source) && source[i+1] == '/' {
 			start, startLine := i, line
 			i += 2
@@ -684,6 +694,24 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 			i++
 			continue
 		}
+		if !mode.expression && source[i] == '{' {
+			statementBraces = append(statementBraces, regexAfterControlParen)
+			lastIdentifier = ""
+			regexAfterControlParen = false
+			i++
+			continue
+		}
+		if !mode.expression && source[i] == '}' {
+			statementBlock := false
+			if len(statementBraces) > 0 {
+				statementBlock = statementBraces[len(statementBraces)-1]
+				statementBraces = statementBraces[:len(statementBraces)-1]
+			}
+			lastIdentifier = ""
+			regexAfterControlParen = statementBlock
+			i++
+			continue
+		}
 		if mode.expression {
 			switch source[i] {
 			case '{':
@@ -700,6 +728,15 @@ func extractJavaScriptComments(source string, allowJSX bool) []sourceComment {
 		i++
 	}
 	return comments
+}
+
+func isJavaScriptHorizontalWhitespace(char byte) bool {
+	switch char {
+	case ' ', '\t', '\r', '\f', '\v':
+		return true
+	default:
+		return false
+	}
 }
 
 func isJSXTagStart(char byte) bool {

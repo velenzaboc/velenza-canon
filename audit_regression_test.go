@@ -231,6 +231,12 @@ func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
 			wantLine: 2,
 		},
 		{
+			name:     "tsx constrained generic arrow",
+			ext:      ".tsx",
+			source:   "const identity = <T extends object>(value: T): T => value;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
 			name:     "shell backslash quoted heredoc",
 			ext:      ".sh",
 			source:   "cat <<\\TRACE_EOF\n//spec:DOC-COMMENTS#not_a_comment\nTRACE_EOF\n# //spec:DOC-COMMENTS#comment\n",
@@ -259,6 +265,36 @@ func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
 			ext:      ".ts",
 			source:   "if (true) {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
 			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after function declaration",
+			ext:      ".js",
+			source:   "function f() {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after else block",
+			ext:      ".js",
+			source:   "if (true) {} else {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after finally block",
+			ext:      ".js",
+			source:   "try {} finally {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after standalone block",
+			ext:      ".js",
+			source:   "{} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript object literal division keeps line comment",
+			ext:      ".js",
+			source:   "const ratio = {} / 2; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
 		},
 	}
 

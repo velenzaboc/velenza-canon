@@ -500,6 +500,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 	lastIdentifierStartedStatement := false
 	regexAfterControlParen := false
 	statementStart := true
+	regexCanStart := true
 	functionDeclarationPending := false
 	functionDeclarationParamDepth := 0
 	functionDeclarationBodyReady := false
@@ -520,6 +521,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			if mode.jsxText {
 				if source[i] == '{' {
 					modes = append(modes, javascriptLexMode{expression: true, braceDepth: 1})
+					regexCanStart = true
 					i++
 					continue
 				}
@@ -549,6 +551,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			}
 			if source[i] == '{' {
 				modes = append(modes, javascriptLexMode{expression: true, braceDepth: 1})
+				regexCanStart = true
 				i++
 				continue
 			}
@@ -557,6 +560,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 				i += 2
 				if mode.jsxDepth == 0 {
 					modes = modes[:len(modes)-1]
+					regexCanStart = false
 				} else {
 					mode.jsxText = true
 				}
@@ -569,6 +573,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 				i++
 				if mode.jsxDepth == 0 {
 					modes = modes[:len(modes)-1]
+					regexCanStart = false
 				} else {
 					mode.jsxText = true
 					mode.closingTag = false
@@ -596,11 +601,13 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			}
 			if source[i] == '`' {
 				modes = modes[:len(modes)-1]
+				regexCanStart = false
 				i++
 				continue
 			}
 			if source[i] == '$' && i+1 < len(source) && source[i+1] == '{' {
 				modes = append(modes, javascriptLexMode{expression: true, braceDepth: 1})
+				regexCanStart = true
 				i += 2
 				continue
 			}
@@ -654,6 +661,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
 			statementStart = false
+			regexCanStart = false
 			continue
 		}
 		if source[i] == '`' {
@@ -663,18 +671,20 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
 			statementStart = false
+			regexCanStart = false
 			continue
 		}
-		if allowJSX && source[i] == '<' && i+1 < len(source) && isJSXTagStart(source[i+1]) && javascriptExpressionCanStart(source, i) && !typescriptGenericArrowAt(source, i) {
+		if allowJSX && source[i] == '<' && i+1 < len(source) && isJSXTagStart(source[i+1]) && regexCanStart && !typescriptGenericArrowAt(source, i) {
 			modes = append(modes, javascriptLexMode{jsx: true, jsxDepth: 1})
 			i++
 			lastIdentifier = ""
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
 			statementStart = false
+			regexCanStart = false
 			continue
 		}
-		if source[i] == '/' && (statementStart || regexAfterControlParen || isJavaScriptRegexPrefixKeyword(lastIdentifier) || javascriptRegexCanStart(source, i)) {
+		if source[i] == '/' && regexCanStart {
 			next := skipJavaScriptRegex(source, i)
 			line += strings.Count(source[i:next], "\n")
 			i = next
@@ -682,6 +692,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
 			statementStart = false
+			regexCanStart = false
 			continue
 		}
 		if isJavaScriptIdentifierStart(source[i]) {
@@ -694,6 +705,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifier = identifier
 			lastIdentifierStartedStatement = startedStatement
 			regexAfterControlParen = false
+			regexCanStart = isJavaScriptRegexPrefixKeyword(identifier)
 			if identifier == "function" && startedStatement {
 				functionDeclarationPending = true
 				functionDeclarationParamDepth = 0
@@ -718,6 +730,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
 			statementStart = false
+			regexCanStart = true
 			i++
 			continue
 		}
@@ -736,6 +749,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = control
 			statementStart = false
+			regexCanStart = control
 			i++
 			continue
 		}
@@ -755,6 +769,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
 			statementStart = statementBlock
+			regexCanStart = statementBlock
 			i++
 			continue
 		}
@@ -768,6 +783,7 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = statementBlock
 			statementStart = statementBlock
+			regexCanStart = statementBlock
 			i++
 			continue
 		}
@@ -788,12 +804,32 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			functionDeclarationBodyReady = false
 			blockDeclarationPending = false
 			statementStart = true
+			regexCanStart = true
 		} else if source[i] == ':' && lastIdentifierStartedStatement {
 			// A labelled statement begins a fresh statement position. Colons in
 			// object literals and conditional expressions do not satisfy this.
 			statementStart = true
+			regexCanStart = true
 		} else {
 			statementStart = false
+			switch source[i] {
+			case '=', '(', '[', ',', ':', '?', '!', '~', '*', '%', '&', '|', '^', '<', '>':
+				regexCanStart = true
+			case '+', '-':
+				// Prefix and binary +/- require an expression next. Postfix
+				// ++/-- preserve the fact that the preceding expression ended.
+				if i+1 < len(source) && source[i+1] == source[i] {
+					i++
+				} else {
+					regexCanStart = true
+				}
+			case '/':
+				// This slash was not admitted as a regex, so it is a division
+				// operator; its right operand may itself begin with a regex.
+				regexCanStart = true
+			default:
+				regexCanStart = false
+			}
 		}
 		if source[i] == '[' {
 			bracketDepth++
@@ -946,34 +982,6 @@ func isJavaScriptDirectBlockKeyword(identifier string) bool {
 	default:
 		return false
 	}
-}
-
-func javascriptExpressionCanStart(source string, offset int) bool {
-	for i := offset - 1; i >= 0; i-- {
-		if source[i] == ' ' || source[i] == '\t' || source[i] == '\r' || source[i] == '\n' {
-			continue
-		}
-		return strings.ContainsRune("=(:,![{;?&|+-*%^~<>", rune(source[i]))
-	}
-	return true
-}
-
-func javascriptRegexCanStart(source string, slash int) bool {
-	for i := slash - 1; i >= 0; {
-		if source[i] == ' ' || source[i] == '\t' || source[i] == '\r' || source[i] == '\n' {
-			i--
-			continue
-		}
-		if isJavaScriptIdentifierPart(source[i]) {
-			end := i + 1
-			for i >= 0 && isJavaScriptIdentifierPart(source[i]) {
-				i--
-			}
-			return isJavaScriptRegexPrefixKeyword(source[i+1 : end])
-		}
-		return strings.ContainsRune("=(:,![{;?&|+-*%^~<>", rune(source[i]))
-	}
-	return true
 }
 
 func isJavaScriptRegexPrefixKeyword(identifier string) bool {

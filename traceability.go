@@ -705,7 +705,8 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifier = identifier
 			lastIdentifierStartedStatement = startedStatement
 			regexAfterControlParen = false
-			regexCanStart = isJavaScriptRegexPrefixKeyword(identifier)
+			regexCanStart = isJavaScriptRegexPrefixKeyword(identifier) ||
+				(startedStatement && isJavaScriptStatementBodyKeyword(identifier))
 			if identifier == "function" && startedStatement {
 				functionDeclarationPending = true
 				functionDeclarationParamDepth = 0
@@ -768,8 +769,11 @@ func extractJavaScriptComments(source string, allowJSX, allowTypeScript bool) []
 			lastIdentifier = ""
 			lastIdentifierStartedStatement = false
 			regexAfterControlParen = false
+			// The brace classification governs statement parsing and the token
+			// after the matching closing brace. Regex eligibility at the opening
+			// of a braced body is independent of that closing-brace role.
 			statementStart = statementBlock
-			regexCanStart = statementBlock
+			regexCanStart = true
 			i++
 			continue
 		}
@@ -969,6 +973,15 @@ func isJavaScriptBlockDeclarationKeyword(identifier string, allowTypeScript bool
 func isJavaScriptStatementPrefix(identifier string) bool {
 	switch identifier {
 	case "abstract", "async", "declare", "default", "do", "else", "export", "finally", "try":
+		return true
+	default:
+		return false
+	}
+}
+
+func isJavaScriptStatementBodyKeyword(identifier string) bool {
+	switch identifier {
+	case "do", "else":
 		return true
 	default:
 		return false

@@ -248,6 +248,18 @@ func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
 			source:   "if (true) /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
 			wantLine: 2,
 		},
+		{
+			name:     "javascript regex after statement block",
+			ext:      ".js",
+			source:   "if (true) {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "typescript regex after statement block",
+			ext:      ".ts",
+			source:   "if (true) {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
 	}
 
 	for _, tc := range cases {

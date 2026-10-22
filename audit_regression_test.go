@@ -1,0 +1,645 @@
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"sort"
+	"testing"
+)
+
+func TestAuditBootstrapListenerRequiresLoopback(t *testing.T) {
+	t.Parallel()
+
+	for _, address := range []string{
+		"127.0.0.1:8765",
+		"localhost:8765",
+		"[::1]:8765",
+	} {
+		address := address
+		t.Run("accept_"+address, func(t *testing.T) {
+			t.Parallel()
+			cfg := validIdentityBoundConfig()
+			cfg.AllowSpannerEmulator = false
+			cfg.ListenAddress = address
+			if err := cfg.Validate(); err != nil {
+				t.Fatalf("bootstrap loopback listen_address %q rejected: %v", address, err)
+			}
+		})
+	}
+
+	for _, address := range []string{
+		"",
+		"0.0.0.0:8765",
+		"[::]:8765",
+		"192.0.2.10:8765",
+		"[2001:db8::1]:8765",
+		"127.0.0.1",
+		":8765",
+	} {
+		address := address
+		t.Run("reject_"+address, func(t *testing.T) {
+			t.Parallel()
+			cfg := validIdentityBoundConfig()
+			cfg.AllowSpannerEmulator = false
+			cfg.ListenAddress = address
+			if err := cfg.Validate(); err == nil {
+				t.Fatalf("bootstrap non-loopback or malformed listen_address %q accepted", address)
+			}
+		})
+	}
+}
+
+func TestAuditTraceAnnotationsRequireRealCommentsForSupportedSources(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name   string
+		ext    string
+		source string
+	}{
+		{name: "go", ext: ".go", source: "package p\nvar example = \"//spec:DOC-COMMENTS#string_only\"\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "rust", ext: ".rs", source: "const EXAMPLE: &str = \"//spec:DOC-COMMENTS#string_only\";\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "typescript", ext: ".ts", source: "const example = \"//spec:DOC-COMMENTS#string_only\";\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "tsx", ext: ".tsx", source: "const example = \"//spec:DOC-COMMENTS#string_only\";\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "javascript", ext: ".js", source: "const example = \"//spec:DOC-COMMENTS#string_only\";\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "mjs", ext: ".mjs", source: "const example = \"//spec:DOC-COMMENTS#string_only\";\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "cjs", ext: ".cjs", source: "const example = \"//spec:DOC-COMMENTS#string_only\";\n// //spec:DOC-COMMENTS#comment\n"},
+		{name: "python", ext: ".py", source: "example = \"//spec:DOC-COMMENTS#string_only\"\n# //spec:DOC-COMMENTS#comment\n"},
+		{name: "shell", ext: ".sh", source: "example='//spec:DOC-COMMENTS#string_only'\n# //spec:DOC-COMMENTS#comment\n"},
+		{name: "sql", ext: ".sql", source: "SELECT '//spec:DOC-COMMENTS#string_only';\n-- //spec:DOC-COMMENTS#comment\n"},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+tc.ext)
+			if err := os.WriteFile(path, []byte(tc.source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", tc.ext, err)
+			}
+			if len(annotations) != 1 {
+				t.Fatalf("annotations for %s = %+v, want only the genuine comment", tc.ext, annotations)
+			}
+			if annotations[0].Kind != "spec" || annotations[0].Target != "DOC-COMMENTS#comment" {
+				t.Fatalf("annotation for %s = %+v, want real comment target", tc.ext, annotations[0])
+			}
+		})
+	}
+}
+
+func TestAuditTraceAnnotationsIgnoreMultilineStringsAndPreserveCommentLines(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name        string
+		ext         string
+		source      string
+		wantTargets []string
+		wantLines   []int
+	}{
+		{
+			name: "go raw string",
+			ext:  ".go",
+			source: "package p\nvar example = `\n//spec:DOC-COMMENTS#string_only\n`\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{5, 6},
+		},
+		{
+			name: "rust raw string",
+			ext:  ".rs",
+			source: "const EXAMPLE: &str = r###\"\n//spec:DOC-COMMENTS#string_only\n\"###;\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+		{
+			name: "javascript template literal",
+			ext:  ".js",
+			source: "const example = `\n//spec:DOC-COMMENTS#string_only\n`;\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+		{
+			name: "typescript template literal",
+			ext:  ".ts",
+			source: "const example: string = `\n//spec:DOC-COMMENTS#string_only\n`;\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+		{
+			name: "python triple quoted string",
+			ext:  ".py",
+			source: "example = \"\"\"\n//spec:DOC-COMMENTS#string_only\n\"\"\"\n" +
+				"# //spec:DOC-COMMENTS#line_comment\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment"},
+			wantLines:   []int{4},
+		},
+		{
+			name: "shell heredoc",
+			ext:  ".sh",
+			source: "cat <<'TRACE_EOF'\n//spec:DOC-COMMENTS#string_only\nTRACE_EOF\n" +
+				"# //spec:DOC-COMMENTS#line_comment\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment"},
+			wantLines:   []int{4},
+		},
+		{
+			name: "sql dollar quoted string",
+			ext:  ".sql",
+			source: "SELECT $trace$\n//spec:DOC-COMMENTS#string_only\n$trace$;\n" +
+				"-- //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+tc.ext)
+			if err := os.WriteFile(path, []byte(tc.source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", tc.ext, err)
+			}
+			if len(annotations) != len(tc.wantTargets) {
+				t.Fatalf("annotations for %s = %+v, want targets %v at lines %v", tc.ext, annotations, tc.wantTargets, tc.wantLines)
+			}
+			for i, annotation := range annotations {
+				if annotation.Kind != "spec" || annotation.Target != tc.wantTargets[i] || annotation.Line != tc.wantLines[i] {
+					t.Fatalf("annotation[%d] for %s = %+v, want target %q at line %d", i, tc.ext, annotation, tc.wantTargets[i], tc.wantLines[i])
+				}
+			}
+		})
+	}
+}
+
+func TestAuditTraceAnnotationsAcceptBlockCommentsForSupportedSources(t *testing.T) {
+	t.Parallel()
+
+	for _, ext := range []string{".go", ".rs", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".sql"} {
+		ext := ext
+		t.Run(ext, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+ext)
+			source := "value without an annotation\n/*\n * //spec:DOC-COMMENTS#block_comment\n */\n"
+			if err := os.WriteFile(path, []byte(source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", ext, err)
+			}
+			if len(annotations) != 1 || annotations[0].Kind != "spec" || annotations[0].Target != "DOC-COMMENTS#block_comment" || annotations[0].Line != 3 {
+				t.Fatalf("block-comment annotations for %s = %+v, want one target at line 3", ext, annotations)
+			}
+		})
+	}
+}
+
+func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name     string
+		ext      string
+		source   string
+		wantLine int
+	}{
+		{
+			name:     "google sql backtick identifier",
+			ext:      ".sql",
+			source:   "SELECT `-- //spec:DOC-COMMENTS#not_a_comment`;\n-- //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "tsx generic arrow",
+			ext:      ".tsx",
+			source:   "const identity = <T,>(value: T): T => value;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "tsx constrained generic arrow",
+			ext:      ".tsx",
+			source:   "const identity = <T extends object>(value: T): T => value;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "tsx generic arrow with function type constraint",
+			ext:      ".tsx",
+			source:   "const identity = <T extends (value: string) => string>(value: T): T => value;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "tsx genuine element with constrained-looking attributes",
+			ext:      ".tsx",
+			source:   "const element = <T extends=\"yes\" object>(//spec:DOC-COMMENTS#not_a_comment)</T>;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "shell backslash quoted heredoc",
+			ext:      ".sh",
+			source:   "cat <<\\TRACE_EOF\n//spec:DOC-COMMENTS#not_a_comment\nTRACE_EOF\n# //spec:DOC-COMMENTS#comment\n",
+			wantLine: 4,
+		},
+		{
+			name:     "javascript regex character class",
+			ext:      ".js",
+			source:   "if (true) /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "typescript regex character class",
+			ext:      ".ts",
+			source:   "if (true) /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after statement block",
+			ext:      ".js",
+			source:   "if (true) {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "typescript regex after statement block",
+			ext:      ".ts",
+			source:   "if (true) {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after function declaration",
+			ext:      ".js",
+			source:   "function f() {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex at arrow function body start",
+			ext:      ".js",
+			source:   "const f = () => { /* note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); };\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex at function expression body start",
+			ext:      ".js",
+			source:   "const f = function () { /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); };\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex at method body start",
+			ext:      ".js",
+			source:   "const object = { f() { /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); } };\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after direct else prefix",
+			ext:      ".js",
+			source:   "if (true) {} else /* note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after direct do prefix",
+			ext:      ".js",
+			source:   "do /* note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\"); while (false);\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript function expression division retains comment",
+			ext:      ".js",
+			source:   "const ratio = function () {} / 2; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+		{
+			name:     "javascript regex after else block",
+			ext:      ".js",
+			source:   "if (true) {} else {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after finally block",
+			ext:      ".js",
+			source:   "try {} finally {} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after standalone block",
+			ext:      ".js",
+			source:   "{} /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript object literal division keeps line comment",
+			ext:      ".js",
+			source:   "const ratio = {} / 2; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+		{
+			name:     "typescript regex after interface declaration",
+			ext:      ".ts",
+			source:   "interface Box { value: string }\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "typescript regex after enum declaration",
+			ext:      ".ts",
+			source:   "enum Mode { Read, Write }\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "typescript regex after namespace declaration",
+			ext:      ".ts",
+			source:   "namespace Audit { export const enabled = true }\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "javascript regex after statement boundary and block comment",
+			ext:      ".js",
+			source:   "; /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after statement boundary and line comment",
+			ext:      ".js",
+			source:   "; // ordinary note\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "javascript regex after assignment and block comment",
+			ext:      ".js",
+			source:   "const pattern = /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after assignment and line comment",
+			ext:      ".js",
+			source:   "const pattern = // ordinary note\n/[//spec:DOC-COMMENTS#not_a_comment]/;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "javascript regex as first call argument after block comment",
+			ext:      ".js",
+			source:   "consume(/* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/);\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after argument comma and block comment",
+			ext:      ".js",
+			source:   "consume(first, /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/);\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after conditional question and block comment",
+			ext:      ".js",
+			source:   "const selected = enabled ? /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/ : fallback;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after conditional colon and block comment",
+			ext:      ".js",
+			source:   "const selected = enabled ? fallback : /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after unary operator and block comment",
+			ext:      ".js",
+			source:   "const unmatched = ! /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after binary operator and block comment",
+			ext:      ".js",
+			source:   "const matched = enabled && /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after return and block comment",
+			ext:      ".js",
+			source:   "function pattern() { return /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/; }\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript division after expression and block comment",
+			ext:      ".js",
+			source:   "const ratio = {} /* ordinary note */ / 2; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+		{
+			name:     "javascript division after identifier and block comment",
+			ext:      ".js",
+			source:   "const ratio = numerator /* ordinary note */ / denominator; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+		{
+			name:     "javascript division after call and block comment",
+			ext:      ".js",
+			source:   "const ratio = numerator() /* ordinary note */ / denominator; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+tc.ext)
+			if err := os.WriteFile(path, []byte(tc.source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", tc.ext, err)
+			}
+			if len(annotations) != 1 {
+				t.Fatalf("annotations for %s = %+v, want only the genuine comment", tc.ext, annotations)
+			}
+			if annotations[0].Kind != "spec" || annotations[0].Target != "DOC-COMMENTS#comment" || annotations[0].Line != tc.wantLine {
+				t.Fatalf("annotation for %s = %+v, want real comment target at line %d", tc.ext, annotations[0], tc.wantLine)
+			}
+		})
+	}
+}
+
+func TestAuditTraceResolutionRequiresExactUnambiguousCoordinate(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	specDir := filepath.Join(root, "specs")
+	codeDir := filepath.Join(root, "code")
+	if err := os.MkdirAll(specDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(codeDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	v1 := `{
+  "doc_id": "DOC-TRACE-V1",
+  "sections": {
+    "s1_core": {
+      "requirements": {
+        "enforcement": {"rule": "Version one enforcement."}
+      }
+    }
+  }
+}`
+	v2 := `{
+  "doc_id": "DOC-TRACE-V2",
+  "sections": {
+    "s1_core": {
+      "requirements": {
+        "enforcement": {"rule": "Version two enforcement."}
+      }
+    }
+  }
+}`
+	if err := os.WriteFile(filepath.Join(specDir, "TRACE_SPEC_v1.ood.json"), []byte(v1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(specDir, "TRACE_SPEC_v2.ood.json"), []byte(v2), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	source := `package trace
+
+// Qualified v1 root coordinate remains valid.
+// //spec:TRACE_SPEC_v1#s1_core
+func v1() {}
+
+// Qualified v2 coordinate names an existing nested object.
+// //spec:TRACE_SPEC_v2#s1_core.requirements.enforcement
+func v2() {}
+
+// A versionless alias shared by v1 and v2 is ambiguous.
+// //spec:TRACE_SPEC#s1_core
+func ambiguous() {}
+
+// This nested component does not exist in v2.
+// //spec:TRACE_SPEC_v2#s1_core.requirements.missing
+func missing() {}
+
+// This explicitly qualified version does not exist.
+// //spec:TRACE_SPEC_v99#s1_core
+func nonexistentVersion() {}
+
+// A target without a section delimiter is malformed.
+// //spec:TRACE_SPEC_v1
+func malformed() {}
+`
+	if err := os.WriteFile(filepath.Join(codeDir, "trace.go"), []byte(source), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := ScanSpecCodeTraceability(specDir, codeDir)
+	if err != nil {
+		t.Fatalf("ScanSpecCodeTraceability: %v", err)
+	}
+	if report.SpecsScanned != 2 || report.TotalSections != 2 || report.CoveredSections != 2 {
+		t.Fatalf("trace counts = specs:%d total:%d covered:%d, want 2/2/2", report.SpecsScanned, report.TotalSections, report.CoveredSections)
+	}
+
+	wantDangling := []string{
+		"TRACE_SPEC#s1_core",
+		"TRACE_SPEC_v1",
+		"TRACE_SPEC_v2#s1_core.requirements.missing",
+		"TRACE_SPEC_v99#s1_core",
+	}
+	gotDangling := make([]string, 0, len(report.DanglingAnnotations))
+	for _, annotation := range report.DanglingAnnotations {
+		gotDangling = append(gotDangling, annotation.Target)
+	}
+	sort.Strings(gotDangling)
+	sort.Strings(wantDangling)
+	if len(gotDangling) != len(wantDangling) {
+		t.Fatalf("dangling targets = %v, want %v", gotDangling, wantDangling)
+	}
+	for i := range wantDangling {
+		if gotDangling[i] != wantDangling[i] {
+			t.Fatalf("dangling targets = %v, want %v", gotDangling, wantDangling)
+		}
+	}
+
+	wantCoverage := map[string]string{
+		"TRACE_SPEC_v1.ood.json": "TRACE_SPEC_v1#s1_core",
+		"TRACE_SPEC_v2.ood.json": "TRACE_SPEC_v2#s1_core.requirements.enforcement",
+	}
+	for _, coverage := range report.SectionCoverage {
+		wantTarget, ok := wantCoverage[coverage.SourceFile]
+		if !ok {
+			t.Fatalf("unexpected coverage source %q", coverage.SourceFile)
+		}
+		if len(coverage.CoveredBy) != 1 || coverage.CoveredBy[0].Target != wantTarget {
+			t.Fatalf("coverage for %s = %+v, want exactly %q", coverage.SourceFile, coverage.CoveredBy, wantTarget)
+		}
+	}
+}
+
+func TestAuditTraceResolutionRejectsSharedAliasWithVersionUniquePath(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	specDir := filepath.Join(root, "specs")
+	codeDir := filepath.Join(root, "code")
+	if err := os.MkdirAll(specDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(codeDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	v1 := `{
+  "doc_id": "DOC-TRACE-UNIQUE-V1",
+  "sections": {
+    "s1_core": {
+      "only_v1": {"rule": "Version one only."}
+    }
+  }
+}`
+	v2 := `{
+  "doc_id": "DOC-TRACE-UNIQUE-V2",
+  "sections": {
+    "s1_core": {
+      "only_v2": {"rule": "Version two only."}
+    }
+  }
+}`
+	if err := os.WriteFile(filepath.Join(specDir, "TRACE_UNIQUE_v1.ood.json"), []byte(v1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(specDir, "TRACE_UNIQUE_v2.ood.json"), []byte(v2), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	const target = "TRACE_UNIQUE#s1_core.only_v1"
+	source := "package trace\n\n// //spec:" + target + "\nfunc ambiguous() {}\n"
+	if err := os.WriteFile(filepath.Join(codeDir, "trace.go"), []byte(source), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := ScanSpecCodeTraceability(specDir, codeDir)
+	if err != nil {
+		t.Fatalf("ScanSpecCodeTraceability: %v", err)
+	}
+	if report.SpecsScanned != 2 || report.TotalSections != 2 || report.CoveredSections != 0 {
+		t.Fatalf("trace counts = specs:%d total:%d covered:%d, want 2/2/0", report.SpecsScanned, report.TotalSections, report.CoveredSections)
+	}
+	if len(report.DanglingAnnotations) != 1 || report.DanglingAnnotations[0].Target != target {
+		t.Fatalf("dangling annotations = %+v, want only %q", report.DanglingAnnotations, target)
+	}
+	for _, coverage := range report.SectionCoverage {
+		if len(coverage.CoveredBy) != 0 {
+			t.Fatalf("shared versionless alias unexpectedly covered %s: %+v", coverage.SourceFile, coverage.CoveredBy)
+		}
+	}
+}

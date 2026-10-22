@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
+	"net/netip"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/velenzaboc/velenza-canon/internal/gcpauth"
@@ -81,11 +84,10 @@ type SpecGraphConfig struct {
 
 	// ListenAddress is the host:port the MCP server binds to when serving
 	// the Streamable HTTP transport. REQUIRED — there is no default per
-	// Vision Principle 7 (binary_is_never_sot). For a single-user local
-	// development setup, bind to 127.0.0.1:<port> so the server is
-	// reachable only from the host. Network exposure requires the operator
-	// to set 0.0.0.0:<port> deliberately and layer transport authentication
-	// per StreamableHTTPOptions hooks (not configured here).
+	// Vision Principle 7 (binary_is_never_sot). Experimental bootstrap has
+	// no transport authentication and therefore requires a loopback host.
+	// Production runtime composition remains unavailable until its verified
+	// bearer adapter and external-ingestion circuit adapter are wired.
 	ListenAddress string `json:"listen_address"`
 
 	// Dedup is optional. When set, spec_graph_create runs three pre-admission
@@ -182,11 +184,11 @@ func (c SpecGraphConfig) Validate() error {
 	if c.AllowSpannerEmulator && c.Mode != ModeExperimentalBootstrap {
 		return fmt.Errorf("allow_spanner_emulator is forbidden outside experimental_bootstrap mode")
 	}
-	if c.AllowSpannerEmulator && !strings.HasPrefix(c.ListenAddress, "127.0.0.1:") && !strings.HasPrefix(c.ListenAddress, "localhost:") {
-		return fmt.Errorf("allow_spanner_emulator requires a loopback listen_address")
-	}
 
 	if c.Mode == ModeExperimentalBootstrap {
+		if err := validateLoopbackListenAddress(c.ListenAddress); err != nil {
+			return fmt.Errorf("experimental_bootstrap requires a loopback listen_address: %w", err)
+		}
 		if c.ExperimentalAdmitter == "" {
 			return fmt.Errorf("experimental_admitter required in experimental_bootstrap mode (the literal string the binary will use as admitted_by)")
 		}
@@ -328,6 +330,28 @@ func (c SpecGraphConfig) Validate() error {
 		}
 	}
 
+	return nil
+}
+
+func validateLoopbackListenAddress(address string) error {
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return fmt.Errorf("invalid host:port %q: %w", address, err)
+	}
+	if host == "" {
+		return fmt.Errorf("host is empty")
+	}
+	portNumber, err := strconv.Atoi(port)
+	if err != nil || portNumber < 0 || portNumber > 65535 {
+		return fmt.Errorf("port %q is not a numeric port in [0, 65535]", port)
+	}
+	if strings.EqualFold(host, "localhost") {
+		return nil
+	}
+	ip, err := netip.ParseAddr(host)
+	if err != nil || !ip.IsLoopback() {
+		return fmt.Errorf("host %q is not a loopback address", host)
+	}
 	return nil
 }
 

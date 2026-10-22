@@ -237,6 +237,18 @@ func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
 			wantLine: 2,
 		},
 		{
+			name:     "tsx generic arrow with function type constraint",
+			ext:      ".tsx",
+			source:   "const identity = <T extends (value: string) => string>(value: T): T => value;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "tsx genuine element with constrained-looking attributes",
+			ext:      ".tsx",
+			source:   "const element = <T extends=\"yes\" object>(//spec:DOC-COMMENTS#not_a_comment)</T>;\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
 			name:     "shell backslash quoted heredoc",
 			ext:      ".sh",
 			source:   "cat <<\\TRACE_EOF\n//spec:DOC-COMMENTS#not_a_comment\nTRACE_EOF\n# //spec:DOC-COMMENTS#comment\n",
@@ -294,6 +306,42 @@ func TestAuditTraceAnnotationsRejectLanguageSpecificLookalikes(t *testing.T) {
 			name:     "javascript object literal division keeps line comment",
 			ext:      ".js",
 			source:   "const ratio = {} / 2; // //spec:DOC-COMMENTS#comment\n",
+			wantLine: 1,
+		},
+		{
+			name:     "typescript regex after interface declaration",
+			ext:      ".ts",
+			source:   "interface Box { value: string }\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "typescript regex after enum declaration",
+			ext:      ".ts",
+			source:   "enum Mode { Read, Write }\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "typescript regex after namespace declaration",
+			ext:      ".ts",
+			source:   "namespace Audit { export const enabled = true }\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "javascript regex after statement boundary and block comment",
+			ext:      ".js",
+			source:   "; /* ordinary note */ /[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 2,
+		},
+		{
+			name:     "javascript regex after statement boundary and line comment",
+			ext:      ".js",
+			source:   "; // ordinary note\n/[//spec:DOC-COMMENTS#not_a_comment]/.test(\"x\");\n// //spec:DOC-COMMENTS#comment\n",
+			wantLine: 3,
+		},
+		{
+			name:     "javascript division after expression and block comment",
+			ext:      ".js",
+			source:   "const ratio = {} /* ordinary note */ / 2; // //spec:DOC-COMMENTS#comment\n",
 			wantLine: 1,
 		},
 	}

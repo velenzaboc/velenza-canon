@@ -92,6 +92,123 @@ func TestAuditTraceAnnotationsRequireRealCommentsForSupportedSources(t *testing.
 	}
 }
 
+func TestAuditTraceAnnotationsIgnoreMultilineStringsAndPreserveCommentLines(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name        string
+		ext         string
+		source      string
+		wantTargets []string
+		wantLines   []int
+	}{
+		{
+			name: "go raw string",
+			ext:  ".go",
+			source: "package p\nvar example = `\n//spec:DOC-COMMENTS#string_only\n`\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{5, 6},
+		},
+		{
+			name: "rust raw string",
+			ext:  ".rs",
+			source: "const EXAMPLE: &str = r###\"\n//spec:DOC-COMMENTS#string_only\n\"###;\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+		{
+			name: "javascript template literal",
+			ext:  ".js",
+			source: "const example = `\n//spec:DOC-COMMENTS#string_only\n`;\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+		{
+			name: "typescript template literal",
+			ext:  ".ts",
+			source: "const example: string = `\n//spec:DOC-COMMENTS#string_only\n`;\n" +
+				"// //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+		{
+			name: "python triple quoted string",
+			ext:  ".py",
+			source: "example = \"\"\"\n//spec:DOC-COMMENTS#string_only\n\"\"\"\n" +
+				"# //spec:DOC-COMMENTS#line_comment\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment"},
+			wantLines:   []int{4},
+		},
+		{
+			name: "shell heredoc",
+			ext:  ".sh",
+			source: "cat <<'TRACE_EOF'\n//spec:DOC-COMMENTS#string_only\nTRACE_EOF\n" +
+				"# //spec:DOC-COMMENTS#line_comment\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment"},
+			wantLines:   []int{4},
+		},
+		{
+			name: "sql dollar quoted string",
+			ext:  ".sql",
+			source: "SELECT $trace$\n//spec:DOC-COMMENTS#string_only\n$trace$;\n" +
+				"-- //spec:DOC-COMMENTS#line_comment\n/* //spec:DOC-COMMENTS#block_comment */\n",
+			wantTargets: []string{"DOC-COMMENTS#line_comment", "DOC-COMMENTS#block_comment"},
+			wantLines:   []int{4, 5},
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+tc.ext)
+			if err := os.WriteFile(path, []byte(tc.source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", tc.ext, err)
+			}
+			if len(annotations) != len(tc.wantTargets) {
+				t.Fatalf("annotations for %s = %+v, want targets %v at lines %v", tc.ext, annotations, tc.wantTargets, tc.wantLines)
+			}
+			for i, annotation := range annotations {
+				if annotation.Kind != "spec" || annotation.Target != tc.wantTargets[i] || annotation.Line != tc.wantLines[i] {
+					t.Fatalf("annotation[%d] for %s = %+v, want target %q at line %d", i, tc.ext, annotation, tc.wantTargets[i], tc.wantLines[i])
+				}
+			}
+		})
+	}
+}
+
+func TestAuditTraceAnnotationsAcceptBlockCommentsForSupportedSources(t *testing.T) {
+	t.Parallel()
+
+	for _, ext := range []string{".go", ".rs", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".sql"} {
+		ext := ext
+		t.Run(ext, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "source"+ext)
+			source := "value without an annotation\n/*\n * //spec:DOC-COMMENTS#block_comment\n */\n"
+			if err := os.WriteFile(path, []byte(source), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			annotations, err := extractFileAnnotations(path, filepath.Base(path))
+			if err != nil {
+				t.Fatalf("extractFileAnnotations(%s): %v", ext, err)
+			}
+			if len(annotations) != 1 || annotations[0].Kind != "spec" || annotations[0].Target != "DOC-COMMENTS#block_comment" || annotations[0].Line != 3 {
+				t.Fatalf("block-comment annotations for %s = %+v, want one target at line 3", ext, annotations)
+			}
+		})
+	}
+}
+
 func TestAuditTraceResolutionRequiresExactUnambiguousCoordinate(t *testing.T) {
 	t.Parallel()
 
@@ -150,6 +267,10 @@ func ambiguous() {}
 // //spec:TRACE_SPEC_v2#s1_core.requirements.missing
 func missing() {}
 
+// This explicitly qualified version does not exist.
+// //spec:TRACE_SPEC_v99#s1_core
+func nonexistentVersion() {}
+
 // A target without a section delimiter is malformed.
 // //spec:TRACE_SPEC_v1
 func malformed() {}
@@ -170,6 +291,7 @@ func malformed() {}
 		"TRACE_SPEC#s1_core",
 		"TRACE_SPEC_v1",
 		"TRACE_SPEC_v2#s1_core.requirements.missing",
+		"TRACE_SPEC_v99#s1_core",
 	}
 	gotDangling := make([]string, 0, len(report.DanglingAnnotations))
 	for _, annotation := range report.DanglingAnnotations {

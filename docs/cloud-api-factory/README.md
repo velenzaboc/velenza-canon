@@ -12,11 +12,13 @@ The goal is reusable machinery: pinned model parsing, evidence-bound API relatio
 | Candidate generation and verification stages | Existing documentation factory in `internal/providerplan` |
 | Shared provider authentication requirements and service residuals | Reusable profiles; actual grants and secrets remain Connector Vault responsibilities |
 | Source identity, source schemas, mapping generations and publication | OHM |
-| Source-neutral infrastructure record meanings | Infrastructure Resource Record, owner `1729172e-44a9-48bb-b833-9591cd105516` version 1, under Business Record Class Contract |
+| Source-neutral infrastructure record meanings | Infrastructure Resource Record, owner `1729172e-44a9-48bb-b833-9591cd105516` version 2, under Business Record Class Contract |
 | Implementation references and work evidence | Cambium and Trellis |
 | Effective posture, findings and policy/control assessment | Their domain owners and Canopy |
 
-The API hierarchy is provider → service → API surface/version → resource → operation. It is a graph: operations can involve several resources and shared definitions are referenced rather than copied. API/model revisions belong to catalog and mapping lineage; they do not create new customer source identities.
+The API hierarchy is provider â†’ service â†’ API surface/version â†’ resource â†’ operation. It is a graph: operations can involve several resources and shared definitions are referenced rather than copied. API/model revisions belong to catalog and mapping lineage; they do not create new customer source identities.
+
+The [portable neutral schema export](../../testdata/cloudapi/semantic-owner/infrastructure-resource-record-mapping-schema.export.json) binds the exact canonical owner bytes, version and validation profile. Its version-2 attachment-set migration and all uncertainty arms are part of the contract, not provider-specific conventions.
 
 The offline compiler cannot grant customer access, qualify its own evidence, admit an artifact, allocate an OHM semantic identity or publish customer records. Those boundaries remain explicit dependencies. Graph storage compatibility does not itself qualify or publish a candidate graph.
 
@@ -24,16 +26,16 @@ The offline compiler cannot grant customer access, qualify its own evidence, adm
 
 | Case | Selected acquisition facts | Neutral targets | Required distinctions |
 |---|---|---|---|
-| S3 | Paginated general-purpose bucket enumeration and documented bucket metadata | Storage container and scope references | Optional ARN; mutable reported creation time; prefix/region scope; no object content |
+| S3 | Paginated general-purpose bucket enumeration, report-only timestamps, versioning, default-encryption rules and distinct public-access-block flags | Storage container and scope references | Optional ARN; mutable reported creation time; prefix/region scope; no object content |
 | EC2 | Instance and volume descriptions | Compute instance, compute volume and attachment references | Account/region scope; exact volume identity; lifecycle ordering; exact capacity units |
-| Cloud Storage | Bucket list/detail metadata | Storage container and scope references | Project scope; metageneration is ordering metadata; deletion/soft-deletion is separately evidenced |
+| Cloud Storage | Bucket metadata, versioning, retention lock, declared customer key and public-access-prevention configuration | Storage container and scope references | Project scope; metageneration is ordering metadata; deletion/soft-deletion is separately evidenced |
 | Compute Engine | Aggregated instance and disk descriptions | Compute instance, compute volume and attachment references | Zonal/regional scope; inaccessible aggregate members; forward/reverse attachment references; `TERMINATED` means stopped and restartable |
 
 The AWS pair must reuse the same compatible provider/profile definitions; the Google pair must do likewise. Signing-service parameters, endpoint scope, response envelopes and operation permissions remain explicit residuals. A shared authentication requirement is not a shared grant unless the independently owned eligibility checks permit it.
 
 ## Required offline evidence
 
-The retained inputs under `testdata/cloudapi` distinguish exact official model bytes from synthetic response fixtures and supplemental, unqualified assertions. Every input is bound to its bytes and coordinate. Lifecycle and unit recipes resolve explicit evidence bindings containing the source URI, package-local path, full-body hash, byte range and slice hash. Loading verifies those bytes, and later binding mutation refuses. This establishes evidence integrity, not independent qualification of the proposed semantic interpretation. A digest calculated from a file at test time is not an independent expected pin.
+The retained inputs under `testdata/cloudapi` distinguish exact official model bytes from synthetic response fixtures and supplemental, unqualified assertions. Every input is bound to its bytes and coordinate. Lifecycle, unit and configuration recipes resolve explicit evidence bindings containing the source URI, package-local path, full-body hash, byte range and slice hash. Loading verifies those bytes, and later binding mutation refuses. This establishes evidence integrity, not independent qualification of the proposed semantic interpretation. A digest calculated from a file at test time is not an independent expected pin.
 
 Acceptance must establish all of the following:
 
@@ -44,7 +46,7 @@ Acceptance must establish all of the following:
 5. **Exact values:** numbers, units, timestamps, enums, lists and references follow the declared type and cardinality rules. Null, absence, not-observed, inaccessible, redacted and unsupported values cannot silently become one another.
 6. **Identity and relationships:** source coordinates stay private; neutral identities follow OHM's identity contract. Name similarity, API revision, arrival order, ETag or an ordinary update never proves identity equivalence or recreation. Cross-scope and unresolved references cannot manufacture relationships.
 7. **Currentness:** pagination and scope gaps cannot prove deletion. Duplicate, reordered, partial and revoked-access observations exercise the declared refusal or uncertainty outcome. Replay and mapping succession must preserve the prior evidence and identity rules.
-8. **Compiler boundaries:** all four retained models feed the candidate builder. Schema-valid fixture bodies separately exercise the existing four-stage compiler with an explicitly test-only verifier. These tests establish file and stage plumbing; they do not establish production `Verify` acceptance of the cloud catalog. Native graph conversion requires separately supplied manifest commitments, classification/derivation bindings and gap contexts. Missing context must refuse.
+8. **Compiler boundaries:** all four retained models feed the candidate builder. The native conformance tests use the real `Verify` implementation with explicitly test-only authority and derivation profiles over retained model bytes. Ordinary candidate-builder tests and native conformance are separate evidence; neither establishes qualified production acceptance of every cloud catalog operation. Native graph conversion requires separately supplied manifest commitments, classification/derivation bindings, canonical source-operation crosswalks and exact applicability/gap contexts. Missing context must refuse.
 
 Storage configuration observations do not establish effective public exposure, encryption assurance or compliance. In particular, S3's reported bucket creation time can change, and its general-purpose `ListBuckets` operation does not establish directory-bucket ARN coverage. The service fixtures retain these distinctions. Lifecycle translation is also evidence-specific: Google Compute Engine's `TERMINATED` can be restarted, while EC2's `terminated` cannot. Neither response alone authorizes deletion of an OHM record.
 
@@ -74,6 +76,8 @@ go run ./cmd/cloud-api-factory \
   --source-package /absolute/path/to/sealed-source-package.json \
   --compiled-output-root /absolute/path/to/new-compiled-candidates
 ```
+
+On Windows, use the native absolute path form, for example `D:\Meridian\worktrees\new-cloud-candidates`; the exclusive publisher requires a clean platform-native path.
 
 The input and output paths are local. Model fetching, customer API calls and credential acquisition are separate operations. Missing or mismatched scaffold/evidence inputs must refuse. Test-only scaffolding demonstrates the compiler boundary; it does not supply production qualification.
 

@@ -58,6 +58,42 @@ type CloudNativeEvidenceReference struct {
 	Locator       CloudCatalogEvidenceLocator
 }
 
+// CloudNativeOperationCrosswalk is supplied by the sealed source-package
+// author. It binds a provider catalog operation to the canonical source
+// operation identity used by Verify; catalog strings are never treated as
+// that identity in strict native mode.
+type CloudNativeOperationCrosswalk struct {
+	SourceSymbol                     string
+	CanonicalSourceOperationIdentity json.RawMessage
+	OperationSemanticKey             string
+	OperationSymbolID                string
+	ResourceAccesses                 []CloudNativeRelationshipCrosswalk
+}
+
+type CloudNativeResourceCrosswalk struct {
+	SourceSymbol        string
+	ResourceSemanticKey string
+	ResourceSymbolID    string
+}
+
+func CloudNativeResourceBindingKey(modelSourceID, resourceID string) string {
+	return lengthPrefixedIdentityKey(modelSourceID, resourceID)
+}
+
+// CloudNativeRelationshipCrosswalk carries the canonical relationship identity
+// computed by the sealed source-package applicability profile. The catalog is
+// evidence only; it may not invent an operation/resource or auth claim.
+type CloudNativeRelationshipCrosswalk struct {
+	Label          string
+	SourceSymbolID string
+	TargetSymbolID string
+	RelationshipID string
+}
+
+func CloudNativeOperationBindingKey(modelSourceID, operationID string) string {
+	return lengthPrefixedIdentityKey(modelSourceID, operationID)
+}
+
 // CloudNativeGraphContext is intentionally proof-heavy. A key is the value
 // returned by CloudNativeSymbolBindingKey or CloudNativeGapBindingKey.
 // EvidenceManifestSHA256ByEvidenceID binds "model" and each supplemental
@@ -69,6 +105,59 @@ type CloudNativeGraphContext struct {
 	SymbolDerivationBindings           map[string]json.RawMessage
 	GapContexts                        map[string]CloudNativeGapContext
 	HierarchyEvidence                  map[string][]CloudNativeEvidenceReference
+	// SelectedOperationIDs is an explicit candidate selection, keyed by the
+	// retained model source id. When present it prevents a native plan from
+	// classifying the whole provider model by accident.
+	SelectedOperationIDs map[string][]string
+	// OperationCrosswalks enables strict native mode when non-nil. Every
+	// selected operation must have a matching canonical source identity.
+	OperationCrosswalks map[string]CloudNativeOperationCrosswalk
+	ResourceCrosswalks  map[string]CloudNativeResourceCrosswalk
+	// RelationshipLabels is the sealed applicability selection for hierarchy
+	// and catalog-envelope edges, keyed by canonical capi_rel identity.
+	RelationshipLabels map[string]string
+}
+
+// CloudNativeOfflineVerificationOptions binds a pre-sealed source-package
+// scaffold to one provider's retained offline models. Unlike production source
+// verification, it has no source-owner authentication or current-generation
+// claim. The existing factory runner still executes its normal Verify path.
+type CloudNativeOfflineVerificationOptions struct {
+	Context           CloudNativeGraphContext
+	Models            []PinnedCloudModel
+	SourcePackagePath string
+	OutputRoot        string
+}
+
+// CompileCloudNativeOfflineVerification is the only native-cloud bridge into
+// the source-package compiler. It first makes the candidate JSONL, then
+// requires the supplied sealed scaffold's api_graph artifact to contain those
+// exact bytes before invoking the normal four-stage compiler and verifier.
+// It never selects production authority, credentials, or admission.
+func CompileCloudNativeOfflineVerification(options CloudNativeOfflineVerificationOptions) (DocumentationFactorySourceCompileResult, error) {
+	graph, err := BuildCloudNativeGraphCandidateJSONL(options.Context, options.Models)
+	if err != nil {
+		return DocumentationFactorySourceCompileResult{}, fmt.Errorf("build native offline graph: %w", err)
+	}
+	prepared, err := prepareDocumentationFactorySourceCompilation(options.SourcePackagePath)
+	if err != nil {
+		return DocumentationFactorySourceCompileResult{}, fmt.Errorf("prepare sealed native source package: %w", err)
+	}
+	var matched bool
+	for _, generated := range prepared.manifest.GeneratedDocuments {
+		if generated.PackageRole != sourcePackageOutputRoleAPIGraphArtifact {
+			continue
+		}
+		material, ok := prepared.materials[generated.coordinate()]
+		if !ok || !bytes.Equal(material.raw, graph) {
+			return DocumentationFactorySourceCompileResult{}, fmt.Errorf("sealed api_graph_artifact does not bind exact native offline graph bytes")
+		}
+		matched = true
+	}
+	if !matched {
+		return DocumentationFactorySourceCompileResult{}, fmt.Errorf("sealed source package has no api_graph_artifact")
+	}
+	return compilePreparedDocumentationFactorySourcePackage(DocumentationFactorySourceCompileOptions{SourcePackagePath: options.SourcePackagePath, OutputRoot: options.OutputRoot}, prepared, defaultDocumentationFactorySourceCompilerDependencies(), nil, nil)
 }
 
 func CloudNativeSymbolBindingKey(role, semanticKey string) string {
@@ -105,6 +194,9 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 		}
 		catalogs[i] = catalog
 	}
+	if err := validateCloudNativeSelectedOperations(context, models, catalogs); err != nil {
+		return nil, err
+	}
 	sort.Slice(catalogs, func(i, j int) bool {
 		return cloudNativeCatalogIdentity(catalogs[i]) < cloudNativeCatalogIdentity(catalogs[j])
 	})
@@ -112,6 +204,8 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 	locators := map[string]evidenceLocator{}
 	symbols := map[string]apiSymbol{}
 	gaps := make([]graphGap, 0)
+	usedOperationCrosswalks := map[string]bool{}
+	usedResourceCrosswalks := map[string]bool{}
 	addSymbol := func(role, semantic, display string, evidence []CloudCatalogEvidenceLocator, model PinnedCloudModel) (apiSymbol, error) {
 		ids := make([]string, 0, len(evidence))
 		for _, item := range evidence {
@@ -197,34 +291,67 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 			for _, v := range ev {
 				locs = append(locs, v.Locator)
 			}
-			if gap, err := cloudNativeGap(context, provider.ID, "provider_has_service:"+service.ID, "api_symbol_object", "api_relationship", locs, *model); err != nil {
+			if gap, err := cloudNativeRelationshipGap(context, "provider_has_service", provider.ID, service.ID, locs, *model); err != nil {
 				return nil, err
 			} else {
 				gaps = append(gaps, gap)
 			}
 		}
-		all := cloudNativeCatalogLocators(catalog)
+		selected := cloudNativeSelectedOperations(context, *model)
+		all := cloudNativeSelectedCatalogLocators(catalog, selected)
 		api, err := addSymbol("vendor_api", cloudNativeSemanticKey(catalog, "api", catalog.APISurfaceID), catalog.APISurfaceID+" "+catalog.APIVersion, all, *model)
 		if err != nil {
 			return nil, err
 		}
-		if gap, err := cloudNativeGap(context, service.ID, "service_has_api:"+api.ID, "api_symbol_object", "api_relationship", all, *model); err != nil {
+		if gap, err := cloudNativeRelationshipGap(context, "service_has_api", service.ID, api.ID, all, *model); err != nil {
 			return nil, err
 		} else {
 			gaps = append(gaps, gap)
 		}
 		resources := map[string]apiSymbol{}
 		for _, resource := range catalog.Resources {
+			if len(selected) != 0 {
+				found := false
+				for _, operation := range resource.OperationIDs {
+					if selected[operation] {
+						found = true
+						break
+					}
+				}
+				if !found {
+					continue
+				}
+			}
 			evidence := []CloudCatalogEvidenceLocator{resource.Locator}
 			if resource.DeclarationEvidenceLocator != nil {
 				evidence = append(evidence, *resource.DeclarationEvidenceLocator)
 			}
-			symbol, err := addSymbol("resource", cloudNativeSemanticKey(catalog, "resource", resource.ID), resource.ID, evidence, *model)
+			semantic := cloudNativeSemanticKey(catalog, "resource", resource.ID)
+			var strictResource *CloudNativeResourceCrosswalk
+			if context.OperationCrosswalks != nil {
+				resourceKey := CloudNativeResourceBindingKey(model.Source.ID, resource.ID)
+				binding, exists := context.ResourceCrosswalks[resourceKey]
+				if !exists || binding.SourceSymbol == "" || binding.ResourceSemanticKey == "" || binding.ResourceSymbolID != stableID("capi_sym", lengthPrefixedIdentityKey("resource", binding.ResourceSemanticKey)) {
+					return nil, fmt.Errorf("selected native resource %q lacks canonical sealed source crosswalk", resource.ID)
+				}
+				semantic = binding.ResourceSemanticKey
+				strictResource = &binding
+				usedResourceCrosswalks[resourceKey] = true
+			}
+			symbol, err := addSymbol("resource", semantic, resource.ID, evidence, *model)
 			if err != nil {
 				return nil, err
 			}
+			if strictResource != nil && symbol.ID != strictResource.ResourceSymbolID {
+				return nil, fmt.Errorf("resource %q emitted symbol does not equal sealed crosswalk", resource.ID)
+			}
+			if strictResource != nil {
+				if err := cloudNativeStrictBinding(context.SymbolDerivationBindings[CloudNativeSymbolBindingKey("resource", semantic)], symbol, strictResource.SourceSymbol, "resource", context.Manifest.EvidenceSelectionRosterSHA256); err != nil {
+					return nil, fmt.Errorf("resource %q strict binding: %w", resource.ID, err)
+				}
+			}
 			resources[resource.ID] = symbol
-			if gap, err := cloudNativeGap(context, api.ID, "api_has_resource:"+symbol.ID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+			if gap, err := cloudNativeRelationshipGap(context, "api_has_resource", api.ID, symbol.ID, evidence, *model); err != nil {
 				return nil, err
 			} else {
 				gaps = append(gaps, gap)
@@ -239,30 +366,87 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 			auth[requirement.ID] = symbol
 		}
 		for _, operation := range catalog.Operations {
+			if len(selected) != 0 && !selected[operation.ID] {
+				continue
+			}
 			evidence := append([]CloudCatalogEvidenceLocator{operation.Locator}, cloudNativeAssociationLocators(operation)...)
-			op, err := addSymbol("operation", cloudNativeSemanticKey(catalog, "operation", operation.ID), operation.ID, evidence, *model)
+			semantic := cloudNativeSemanticKey(catalog, "operation", operation.ID)
+			var strictCrosswalk *CloudNativeOperationCrosswalk
+			if context.OperationCrosswalks != nil {
+				operationKey := CloudNativeOperationBindingKey(model.Source.ID, operation.ID)
+				binding, exists := context.OperationCrosswalks[operationKey]
+				if !exists {
+					return nil, fmt.Errorf("selected native operation %q lacks sealed source crosswalk", operation.ID)
+				}
+				var identity map[string]interface{}
+				if err := strictUnmarshal(binding.CanonicalSourceOperationIdentity, &identity); err != nil {
+					return nil, fmt.Errorf("operation %q canonical source identity: %w", operation.ID, err)
+				}
+				computed, err := sourceOperationSemanticKey(binding.SourceSymbol, identity)
+				if err != nil {
+					return nil, fmt.Errorf("operation %q canonical source identity: %w", operation.ID, err)
+				}
+				if binding.OperationSemanticKey != computed || binding.OperationSymbolID != stableID("capi_sym", lengthPrefixedIdentityKey("operation", computed)) {
+					return nil, fmt.Errorf("operation %q sealed source crosswalk does not equal canonical operation symbol", operation.ID)
+				}
+				semantic = computed
+				strictCrosswalk = &binding
+				usedOperationCrosswalks[operationKey] = true
+			}
+			op, err := addSymbol("operation", semantic, operation.ID, evidence, *model)
 			if err != nil {
 				return nil, err
 			}
-			// The registry has no provider/service/version node roles. The vendor_api
-			// semantic key is the evidence-bound Matryoshka envelope for those values.
-			if gap, err := cloudNativeGap(context, api.ID, "api_has_operation:"+op.ID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+			if strictCrosswalk != nil && op.ID != strictCrosswalk.OperationSymbolID {
+				return nil, fmt.Errorf("operation %q emitted symbol does not equal sealed crosswalk", operation.ID)
+			}
+			if strictCrosswalk != nil {
+				if err := cloudNativeStrictBinding(context.SymbolDerivationBindings[CloudNativeSymbolBindingKey("operation", semantic)], op, strictCrosswalk.SourceSymbol, "operation", context.Manifest.EvidenceSelectionRosterSHA256); err != nil {
+					return nil, fmt.Errorf("operation %q strict binding: %w", operation.ID, err)
+				}
+			}
+			// Provider and service are explicit evidence-bound envelope nodes; the
+			// version remains part of the vendor_api's exact semantic identity.
+			if gap, err := cloudNativeRelationshipGap(context, "api_has_operation", api.ID, op.ID, evidence, *model); err != nil {
 				return nil, err
 			} else {
 				gaps = append(gaps, gap)
 			}
 			_ = op
+			if strictCrosswalk != nil {
+				seenRelationships := map[string]bool{}
+				for _, relation := range strictCrosswalk.ResourceAccesses {
+					if relation.SourceSymbolID != op.ID || relation.Label == "" || relation.TargetSymbolID == "" || relation.RelationshipID != stableID("capi_rel", lengthPrefixedIdentityKey(relation.Label, relation.SourceSymbolID, relation.TargetSymbolID)) {
+						return nil, fmt.Errorf("operation %q has noncanonical sealed relationship crosswalk", operation.ID)
+					}
+					if seenRelationships[relation.RelationshipID] {
+						return nil, fmt.Errorf("operation %q repeats sealed relationship crosswalk %q", operation.ID, relation.RelationshipID)
+					}
+					seenRelationships[relation.RelationshipID] = true
+					if _, exists := resourcesByNativeID(resources)[relation.TargetSymbolID]; !exists {
+						if _, authExists := resourcesByNativeID(auth)[relation.TargetSymbolID]; !authExists {
+							return nil, fmt.Errorf("operation %q relationship target is not a selected resource/auth symbol", operation.ID)
+						}
+					}
+					if gap, err := cloudNativeGap(context, op.ID, relation.RelationshipID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+						return nil, err
+					} else {
+						gaps = append(gaps, gap)
+					}
+				}
+				continue
+			}
 			for _, resourceID := range operation.ResourceIDs {
 				resource, found := resources[resourceID]
 				if !found {
 					return nil, fmt.Errorf("operation %q references unknown catalog resource %q", operation.ID, resourceID)
 				}
-				if gap, err := cloudNativeGap(context, op.ID, "operation_resource_association:"+resource.ID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+				if gap, err := cloudNativeRelationshipGap(context, "operation_reads_resource", op.ID, resource.ID, evidence, *model); err != nil {
 					return nil, err
 				} else {
 					gaps = append(gaps, gap)
 				}
-				if gap, err := cloudNativeGap(context, resource.ID, "resource_has_operation:"+op.ID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+				if gap, err := cloudNativeRelationshipGap(context, "resource_has_operation", resource.ID, op.ID, evidence, *model); err != nil {
 					return nil, err
 				} else {
 					gaps = append(gaps, gap)
@@ -273,7 +457,7 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 				if !found {
 					return nil, fmt.Errorf("operation %q references unknown authentication requirement %q", operation.ID, requirementID)
 				}
-				if gap, err := cloudNativeGap(context, op.ID, "operation_requires_auth_scheme:"+requirement.ID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+				if gap, err := cloudNativeRelationshipGap(context, "operation_requires_auth_scheme", op.ID, requirement.ID, evidence, *model); err != nil {
 					return nil, err
 				} else {
 					gaps = append(gaps, gap)
@@ -281,6 +465,11 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 			}
 		}
 		_ = index
+	}
+	if context.OperationCrosswalks != nil {
+		if len(usedOperationCrosswalks) != len(context.OperationCrosswalks) || len(usedResourceCrosswalks) != len(context.ResourceCrosswalks) {
+			return nil, fmt.Errorf("strict native crosswalk maps contain unknown or unselected entries")
+		}
 	}
 
 	rows := make([]any, 0, 2+len(locators)+len(symbols)+len(gaps))
@@ -318,6 +507,71 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 	return cloudNativeJSONL(rows)
 }
 
+func cloudNativeSelectedOperations(context CloudNativeGraphContext, model PinnedCloudModel) map[string]bool {
+	ids := context.SelectedOperationIDs[model.Source.ID]
+	selected := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		selected[id] = true
+	}
+	return selected
+}
+
+func resourcesByNativeID(values map[string]apiSymbol) map[string]apiSymbol {
+	result := make(map[string]apiSymbol, len(values))
+	for _, value := range values {
+		result[value.ID] = value
+	}
+	return result
+}
+
+func cloudNativeStrictBinding(raw json.RawMessage, symbol apiSymbol, sourceSymbol, surfaceKind, roster string) error {
+	var binding candidateAPISymbolDerivationBinding
+	if err := strictUnmarshal(raw, &binding); err != nil {
+		return fmt.Errorf("is not candidate API symbol derivation binding: %w", err)
+	}
+	if binding.Kind != apiSymbolDerivationBindingKind || binding.SourceSymbol != sourceSymbol || binding.SurfaceKind != surfaceKind || binding.EvidenceSelectionRosterSHA256 != roster {
+		return fmt.Errorf("does not equal sealed source/surface/roster binding")
+	}
+	if binding.ID != candidateAPISymbolDerivationBindingID(symbol.ID, binding) {
+		return fmt.Errorf("candidate derivation binding id does not equal symbol binding")
+	}
+	return nil
+}
+
+func validateCloudNativeSelectedOperations(context CloudNativeGraphContext, models []PinnedCloudModel, catalogs []CloudCatalog) error {
+	if context.SelectedOperationIDs == nil {
+		return nil
+	}
+	byModel := make(map[string]CloudCatalog, len(models))
+	for index, model := range models {
+		byModel[model.Source.ID] = catalogs[index]
+	}
+	for sourceID, operations := range context.SelectedOperationIDs {
+		catalog, found := byModel[sourceID]
+		if !found {
+			return fmt.Errorf("selected operation set names unknown retained model source %q", sourceID)
+		}
+		if len(operations) == 0 {
+			return fmt.Errorf("selected operation set for retained model source %q is empty", sourceID)
+		}
+		known := map[string]struct{}{}
+		for _, operation := range catalog.Operations {
+			known[operation.ID] = struct{}{}
+		}
+		seen := map[string]struct{}{}
+		for _, operation := range operations {
+			if _, duplicate := seen[operation]; duplicate {
+				return fmt.Errorf("selected operation set for retained model source %q duplicates %q", sourceID, operation)
+			}
+			seen[operation] = struct{}{}
+			if _, exists := known[operation]; !exists {
+				return fmt.Errorf("selected operation set for retained model source %q names unknown operation %q", sourceID, operation)
+			}
+		}
+	}
+	return nil
+}
+
 func validateCloudNativeGraphContext(c CloudNativeGraphContext) error {
 	m := c.Manifest
 	for _, pair := range []struct{ name, value string }{{"artifact", m.Artifact}, {"artifact_version", m.ArtifactVersion}, {"canonical_ood_graph_sha256", m.CanonicalOODGraphSHA256}, {"provider_neutral_profile_sha256", m.ProviderNeutralProfileSHA256}, {"source_contract_index_sha256", m.SourceContractIndexSHA256}, {"sample_shape_index_sha256", m.SampleShapeIndexSHA256}, {"protocol_contract_index_sha256", m.ProtocolContractIndexSHA256}, {"evidence_selection_roster_sha256", m.EvidenceSelectionRosterSHA256}, {"operation_applicability_profile_sha256", m.OperationApplicabilityProfileSHA256}, {"field_mapping_candidate_sha256", m.FieldMappingCandidateSHA256}, {"field_security_policy_sha256", m.FieldSecurityPolicySHA256}, {"mapping_transitive_dependency_roster_sha256", m.MappingTransitiveDependencyRosterSHA256}, {"documentation_claim_derivation_profile_sha256", m.DocumentationClaimDerivationProfileSHA256}, {"api_graph_applicability_profile_sha256", m.APIGraphApplicabilityProfileSHA256}, {"evidence_locator_manifest_sha256", m.EvidenceLocatorManifestSHA256}} {
@@ -340,6 +594,9 @@ func cloudNativeGap(c CloudNativeGraphContext, blockedSubjectID, blockedClaimID,
 	if !ok {
 		return graphGap{}, fmt.Errorf("native graph gap %s/%s lacks sealed applicability context", blockedSubjectID, blockedClaimID)
 	}
+	if ctx.BlockedSubjectKind != blockedSubjectKind || ctx.BlockedClaimKind != blockedClaimKind || ctx.BlockedClaimID != blockedClaimID {
+		return graphGap{}, fmt.Errorf("native graph gap %s/%s does not equal sealed subject/claim context", blockedSubjectID, blockedClaimID)
+	}
 	ids := make([]string, 0, len(evidence))
 	for _, item := range evidence {
 		locator, err := cloudNativeEvidenceLocator(c, model, item)
@@ -356,6 +613,24 @@ func cloudNativeGap(c CloudNativeGraphContext, blockedSubjectID, blockedClaimID,
 	}
 	gap.ID = stableID("capi_gap", identity)
 	return gap, nil
+}
+
+func cloudNativeRelationshipGap(c CloudNativeGraphContext, label, sourceID, targetID string, evidence []CloudCatalogEvidenceLocator, model PinnedCloudModel) (graphGap, error) {
+	if c.OperationCrosswalks == nil {
+		legacy := label + ":" + targetID
+		switch label {
+		case "operation_reads_resource":
+			legacy = "operation_resource_association:" + targetID
+		case "operation_requires_auth_scheme":
+			legacy = "operation_requires_auth_scheme:" + targetID
+		}
+		return cloudNativeGap(c, sourceID, legacy, "api_symbol_object", "api_relationship", evidence, model)
+	}
+	claimID := stableID("capi_rel", lengthPrefixedIdentityKey(label, sourceID, targetID))
+	if actual, ok := c.RelationshipLabels[claimID]; !ok || actual != label {
+		return graphGap{}, fmt.Errorf("native strict relationship %q lacks sealed canonical selection", claimID)
+	}
+	return cloudNativeGap(c, sourceID, claimID, "api_symbol_object", "api_relationship", evidence, model)
 }
 
 func cloudNativeEvidenceLocator(c CloudNativeGraphContext, model PinnedCloudModel, item CloudCatalogEvidenceLocator) (evidenceLocator, error) {
@@ -445,6 +720,42 @@ func cloudNativeCatalogLocators(c CloudCatalog) []CloudCatalogEvidenceLocator {
 	}
 	for _, v := range c.Authentication {
 		out = append(out, v.Locator)
+	}
+	return out
+}
+
+// cloudNativeSelectedCatalogLocators keeps the API envelope bounded by the
+// explicit candidate operation selection.  A selected target must never
+// silently classify every operation/resource in a retained provider model.
+func cloudNativeSelectedCatalogLocators(c CloudCatalog, selected map[string]bool) []CloudCatalogEvidenceLocator {
+	if len(selected) == 0 {
+		return cloudNativeCatalogLocators(c)
+	}
+	out := make([]CloudCatalogEvidenceLocator, 0)
+	for _, resource := range c.Resources {
+		included := false
+		for _, operationID := range resource.OperationIDs {
+			if selected[operationID] {
+				included = true
+				break
+			}
+		}
+		if !included {
+			continue
+		}
+		out = append(out, resource.Locator)
+		if resource.DeclarationEvidenceLocator != nil {
+			out = append(out, *resource.DeclarationEvidenceLocator)
+		}
+	}
+	for _, operation := range c.Operations {
+		if selected[operation.ID] {
+			out = append(out, operation.Locator)
+			out = append(out, cloudNativeAssociationLocators(operation)...)
+		}
+	}
+	for _, authentication := range c.Authentication {
+		out = append(out, authentication.Locator)
 	}
 	return out
 }

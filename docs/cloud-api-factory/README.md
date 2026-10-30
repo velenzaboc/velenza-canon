@@ -77,7 +77,7 @@ go run ./cmd/cloud-api-factory \
   --compiled-output-root /absolute/path/to/new-compiled-candidates
 ```
 
-On Windows, use the native absolute path form, for example `D:\Meridian\worktrees\new-cloud-candidates`; the exclusive publisher requires a clean platform-native path.
+On Windows, use the native absolute path form, for example `D:\work\new-cloud-candidates`; the exclusive publisher requires a clean platform-native path.
 
 The input and output paths are local. Model fetching, customer API calls and credential acquisition are separate operations. Missing or mismatched scaffold/evidence inputs must refuse. Test-only scaffolding demonstrates the compiler boundary; it does not supply production qualification.
 

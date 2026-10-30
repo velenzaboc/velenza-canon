@@ -376,12 +376,29 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 				return nil, err
 			}
 			auth[requirement.ID] = symbol
+			// This is documentation of a provider-supported scheme only.  The
+			// catalog's trait locator carries neither a credential nor a scope
+			// grant, and the explicit fail-closed gap deliberately avoids
+			// materializing an authority-bearing relationship.
+			if gap, err := cloudNativeRelationshipGap(context, "provider_supports_auth_scheme", provider.ID, symbol.ID, []CloudCatalogEvidenceLocator{requirement.Locator}, *model); err != nil {
+				return nil, err
+			} else {
+				gaps = append(gaps, gap)
+			}
 		}
 		for _, operation := range catalog.Operations {
 			if len(selected) != 0 && !selected[operation.ID] {
 				continue
 			}
-			evidence := append([]CloudCatalogEvidenceLocator{operation.Locator}, cloudNativeAssociationLocators(operation)...)
+			// The operation definition is the complete classification roster for
+			// the operation symbol.  Supplemental catalog assertions establish a
+			// candidate operation/resource pairing; they are relationship
+			// provenance, not additional operation-classification occurrences.
+			// Keeping those two rosters separate is required by the source
+			// applicability contract, whose access locator union must exactly
+			// equal the operation symbol roster.
+			operationEvidence := []CloudCatalogEvidenceLocator{operation.Locator}
+			relationshipEvidence := append([]CloudCatalogEvidenceLocator{operation.Locator}, cloudNativeAssociationLocators(operation)...)
 			semantic := cloudNativeSemanticKey(catalog, "operation", operation.ID)
 			var strictCrosswalk *CloudNativeOperationCrosswalk
 			if context.OperationCrosswalks != nil {
@@ -405,7 +422,7 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 				strictCrosswalk = &binding
 				usedOperationCrosswalks[operationKey] = true
 			}
-			op, err := addSymbol("operation", semantic, operation.ID, evidence, *model)
+			op, err := addSymbol("operation", semantic, operation.ID, operationEvidence, *model)
 			if err != nil {
 				return nil, err
 			}
@@ -419,7 +436,7 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 			}
 			// Provider and service are explicit evidence-bound envelope nodes; the
 			// version remains part of the vendor_api's exact semantic identity.
-			if gap, err := cloudNativeRelationshipGap(context, "api_has_operation", api.ID, op.ID, evidence, *model); err != nil {
+			if gap, err := cloudNativeRelationshipGap(context, "api_has_operation", api.ID, op.ID, relationshipEvidence, *model); err != nil {
 				return nil, err
 			} else {
 				gaps = append(gaps, gap)
@@ -440,7 +457,23 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 							return nil, fmt.Errorf("operation %q relationship target is not a selected resource/auth symbol", operation.ID)
 						}
 					}
-					if gap, err := cloudNativeGap(context, op.ID, relation.RelationshipID, "api_symbol_object", "api_relationship", evidence, *model); err != nil {
+					if gap, err := cloudNativeGap(context, op.ID, relation.RelationshipID, "api_symbol_object", "api_relationship", relationshipEvidence, *model); err != nil {
+						return nil, err
+					} else {
+						gaps = append(gaps, gap)
+					}
+				}
+				// Resource-to-operation is navigation hierarchy, distinct from the
+				// source operation-to-resource applicability edge above.  It is
+				// still a selected fail-closed candidate relationship in strict
+				// mode, so require its own canonical relationship/gap context
+				// rather than infer a positive inverse from the access crosswalk.
+				for _, resourceID := range operation.ResourceIDs {
+					resource, found := resources[resourceID]
+					if !found {
+						return nil, fmt.Errorf("operation %q references unknown catalog resource %q", operation.ID, resourceID)
+					}
+					if gap, err := cloudNativeRelationshipGap(context, "resource_has_operation", resource.ID, op.ID, relationshipEvidence, *model); err != nil {
 						return nil, err
 					} else {
 						gaps = append(gaps, gap)
@@ -453,12 +486,12 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 				if !found {
 					return nil, fmt.Errorf("operation %q references unknown catalog resource %q", operation.ID, resourceID)
 				}
-				if gap, err := cloudNativeRelationshipGap(context, "operation_reads_resource", op.ID, resource.ID, evidence, *model); err != nil {
+				if gap, err := cloudNativeRelationshipGap(context, "operation_reads_resource", op.ID, resource.ID, relationshipEvidence, *model); err != nil {
 					return nil, err
 				} else {
 					gaps = append(gaps, gap)
 				}
-				if gap, err := cloudNativeRelationshipGap(context, "resource_has_operation", resource.ID, op.ID, evidence, *model); err != nil {
+				if gap, err := cloudNativeRelationshipGap(context, "resource_has_operation", resource.ID, op.ID, relationshipEvidence, *model); err != nil {
 					return nil, err
 				} else {
 					gaps = append(gaps, gap)
@@ -469,7 +502,7 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 				if !found {
 					return nil, fmt.Errorf("operation %q references unknown authentication requirement %q", operation.ID, requirementID)
 				}
-				if gap, err := cloudNativeRelationshipGap(context, "operation_requires_auth_scheme", op.ID, requirement.ID, evidence, *model); err != nil {
+				if gap, err := cloudNativeRelationshipGap(context, "operation_requires_auth_scheme", op.ID, requirement.ID, relationshipEvidence, *model); err != nil {
 					return nil, err
 				} else {
 					gaps = append(gaps, gap)

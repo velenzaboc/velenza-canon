@@ -92,12 +92,68 @@ func cloudNativeSnapshotSource(t *testing.T, modelID string) CloudCatalogSourceI
 	}
 	for _, snapshot := range doc.Snapshots {
 		if snapshot.ModelSourceID == modelID {
-			if snapshot.SnapshotSource.FormatRevision != cloudNativeSnapshotFormat || !strings.Contains(snapshot.SnapshotSource.URI, doc.RepositoryCommit) {
+			model := cloudNativeSnapshotModelByID(t, loadPinnedCloudModelsForCompilerProof(t), modelID)
+			if snapshot.OriginalSource != model.Source || snapshot.ExpectedSHA256 != model.ExpectedSHA256 || sha256Hex(model.Raw) != snapshot.ExpectedSHA256 || snapshot.SnapshotSource.FormatRevision != cloudNativeSnapshotFormat || !strings.HasPrefix(snapshot.SnapshotSource.URI, "https://raw.githubusercontent.com/velenzaboc/velenza-canon/"+doc.RepositoryCommit+"/") || strings.Contains(snapshot.SnapshotSource.URI, "?") {
 				t.Fatal("snapshot is not commit pinned")
 			}
 			return snapshot.SnapshotSource
 		}
 	}
 	t.Fatalf("snapshot source for %q missing", modelID)
+	return CloudCatalogSourceIdentity{}
+}
+
+func cloudNativeSnapshotSupplementalSource(t *testing.T, modelID, evidenceID string) CloudCatalogSourceIdentity {
+	t.Helper()
+	raw, err := os.ReadFile("../../testdata/cloudapi/native-source-snapshots.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		SchemaVersion    string `json:"schema_version"`
+		AuthorityPosture string `json:"authority_posture"`
+		RepositoryCommit string `json:"repository_commit"`
+		Snapshots        []struct {
+			ModelSourceID         string                     `json:"model_source_id"`
+			OriginalSource        CloudCatalogSourceIdentity `json:"original_source"`
+			SnapshotSource        CloudCatalogSourceIdentity `json:"snapshot_source"`
+			ExpectedSHA256        string                     `json:"expected_sha256"`
+			SupplementalSnapshots []struct {
+				EvidenceID     string `json:"evidence_id"`
+				OriginalURI    string `json:"original_uri"`
+				SnapshotURI    string `json:"snapshot_uri"`
+				ExpectedSHA256 string `json:"expected_sha256"`
+			} `json:"supplemental_snapshots"`
+		} `json:"snapshots"`
+	}
+	if err := strictUnmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if doc.SchemaVersion != cloudNativeSnapshotSchema || doc.AuthorityPosture != cloudNativeSnapshotPosture || doc.RepositoryCommit != cloudNativeSnapshotCommit {
+		t.Fatal("native supplemental snapshot authority is not closed")
+	}
+	for _, snapshot := range doc.Snapshots {
+		if snapshot.ModelSourceID != modelID {
+			continue
+		}
+		for _, supplemental := range snapshot.SupplementalSnapshots {
+			if supplemental.EvidenceID == evidenceID {
+				model := cloudNativeSnapshotModelByID(t, loadPinnedCloudModelsForCompilerProof(t), modelID)
+				var original *CloudCatalogSupplementalEvidence
+				for index := range model.SupplementalEvidence {
+					if model.SupplementalEvidence[index].ID == evidenceID {
+						original = &model.SupplementalEvidence[index]
+						break
+					}
+				}
+				if original == nil || original.Source.URI != supplemental.OriginalURI || original.ExpectedSHA256 != supplemental.ExpectedSHA256 || sha256Hex(original.Raw) != supplemental.ExpectedSHA256 || !strings.HasPrefix(supplemental.SnapshotURI, "https://raw.githubusercontent.com/velenzaboc/velenza-canon/"+doc.RepositoryCommit+"/") || strings.Contains(supplemental.SnapshotURI, "?") {
+					t.Fatal("supplemental snapshot metadata does not close over retained evidence")
+				}
+				path := strings.TrimPrefix(supplemental.SnapshotURI, "https://raw.githubusercontent.com/velenzaboc/velenza-canon/"+doc.RepositoryCommit+"/")
+				return CloudCatalogSourceIdentity{ID: "velenza-snapshot-" + modelID + "-" + evidenceID, URI: supplemental.SnapshotURI, StableCoordinate: "velenza-canon@" + doc.RepositoryCommit + "/" + path, FormatRevision: cloudNativeSnapshotFormat}
+			}
+		}
+	}
+	t.Fatalf("supplemental snapshot %q/%q missing", modelID, evidenceID)
 	return CloudCatalogSourceIdentity{}
 }

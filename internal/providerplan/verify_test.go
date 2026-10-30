@@ -13,33 +13,37 @@ import (
 )
 
 type testFixture struct {
-	options                   Options
-	planPath                  string
-	oodPath                   string
-	evidencePath              string
-	evidenceByRole            map[string]string
-	planRows                  []interface{}
-	roles                     []string
-	constraints               []relationshipConstraint
-	families                  []string
-	locatorID                 string
-	symbolByRole              map[string]string
-	sourceSymbolByRole        map[string]string
-	sourceReadOperationSymbol string
-	sourceOperationID         string
-	dependencyByRole          map[string]string
-	schemaByRole              map[string]string
-	artifactCoordinateByRole  map[string]stageMaterialCoordinate
-	planStageSchemaRaw        []byte
-	applicability             fixtureApplicabilityBinding
-	ruleByLabel               map[string]string
-	claimRuleID               string
-	sourceOperationIdentity   map[string]interface{}
-	derivationTargets         map[string]artifactInput
-	derivationTargetAuthority dependencySemanticDerivationTargetSchemaAuthority
-	derivationTargetPaths     map[string]string
-	derivationTargetSchemas   map[string]string
-	documentationDerivation   *testDocumentationDerivationBundle
+	options                         Options
+	planPath                        string
+	oodPath                         string
+	evidencePath                    string
+	evidenceByRole                  map[string]string
+	planRows                        []interface{}
+	roles                           []string
+	constraints                     []relationshipConstraint
+	relationshipSubjectEndpoints    map[string]string
+	relationshipDefaultDispositions map[string]string
+	nativeSelectedOperationOnly     bool
+	families                        []string
+	locatorID                       string
+	symbolByRole                    map[string]string
+	sourceSymbolByRole              map[string]string
+	sourceReadOperationSymbol       string
+	sourceOperationID               string
+	dependencyByRole                map[string]string
+	schemaByRole                    map[string]string
+	artifactCoordinateByRole        map[string]stageMaterialCoordinate
+	planStageSchemaRaw              []byte
+	applicability                   fixtureApplicabilityBinding
+	ruleByLabel                     map[string]string
+	claimRuleID                     string
+	sourceOperationIdentity         map[string]interface{}
+	derivationTargets               map[string]artifactInput
+	derivationTargetAuthority       dependencySemanticDerivationTargetSchemaAuthority
+	derivationTargetPaths           map[string]string
+	derivationTargetSchemas         map[string]string
+	documentationDerivation         *testDocumentationDerivationBundle
+	classificationSelections        map[string]map[string][]sourceClassificationOccurrence
 }
 
 type fixtureApplicabilityBinding struct {
@@ -1745,25 +1749,29 @@ func TestRawInputReadersSeparateStructuredUTF8FromByteNeutralEvidenceBodies(t *t
 }
 
 type testPrimaryEvidenceFixture struct {
-	body                []byte
-	derivationPattern   string
-	providerDescription string
-	provider            string
-	sourceRef           string
-	sourceURL           string
-	representation      string
-	representationCoord string
-	artifactPrefix      string
-	sourceSymbolPrefix  string
-	operationName       string
-	readOperationSource string
-	sectionRoot         string
-	protocolBody        []byte
-	protocolLiteralA    string
-	protocolLiteralB    string
-	singleDocument      bool
-	additionalRanges    []officialProviderEvidenceRange
-	sampleRange         *officialProviderEvidenceRange
+	body                             []byte
+	derivationPattern                string
+	fieldDerivationPattern           string
+	providerDescription              string
+	provider                         string
+	sourceRef                        string
+	sourceURL                        string
+	representation                   string
+	representationCoord              string
+	artifactPrefix                   string
+	sourceSymbolPrefix               string
+	operationName                    string
+	readOperationSource              string
+	sectionRoot                      string
+	protocolBody                     []byte
+	protocolSourceRef                string
+	protocolSourceURL                string
+	protocolLiteralA                 string
+	protocolLiteralB                 string
+	singleDocument                   bool
+	additionalRanges                 []officialProviderEvidenceRange
+	sampleRange                      *officialProviderEvidenceRange
+	protocolClassifierResourceSource string
 	// exactRoleClassificationRanges replaces a role's default whole-document
 	// classification occurrence when an explicit range names that same source
 	// symbol. It is test-only and defaults to false for existing fixtures.
@@ -1775,7 +1783,13 @@ type testPrimaryEvidenceFixture struct {
 	additionalProtocolRangeBuilder func(string, string) []officialProviderEvidenceRange
 	extraRoles                     []string
 	extraConstraints               []relationshipConstraint
-	derivationBuilder              testDocumentationDerivationBuilder
+	// relationshipSubjectEndpoints is test-only fixture authority for labels
+	// whose applicability subject is not the legacy target-operation default.
+	// Values are the closed "source" or "target" endpoint names.
+	relationshipSubjectEndpoints    map[string]string
+	relationshipDefaultDispositions map[string]string
+	nativeSelectedOperationOnly     bool
+	derivationBuilder               testDocumentationDerivationBuilder
 }
 
 type testDocumentationDerivationBuilder func(*testing.T, sourceClassificationSelectionProof, map[string]exactEvidenceBody) *testDocumentationDerivationBundle
@@ -1842,6 +1856,9 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	if len(primary.body) == 0 || primary.derivationPattern == "" || primary.providerDescription == "" || primary.provider == "" || primary.sourceRef == "" || primary.sourceURL == "" || primary.representation == "" || primary.representationCoord == "" || primary.artifactPrefix == "" || primary.sourceSymbolPrefix == "" || primary.operationName == "" || primary.sectionRoot == "" || (!primary.singleDocument && len(primary.protocolBody) == 0) || primary.protocolLiteralA == "" || primary.protocolLiteralB == "" {
 		t.Fatal("test primary evidence fixture is incomplete")
 	}
+	if primary.fieldDerivationPattern == "" {
+		primary.fieldDerivationPattern = primary.derivationPattern
+	}
 	dir := t.TempDir()
 	body := bytes.Clone(primary.body)
 	bodyDigest := sha256Hex(body)
@@ -1854,6 +1871,12 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	artifactPrefix := primary.artifactPrefix
 	protocolSourceRef := sourceRef + ".protocol-contract"
 	protocolSourceURL := strings.TrimSuffix(sourceURL, "/") + "/protocol-contract"
+	if primary.protocolSourceRef != "" {
+		protocolSourceRef = primary.protocolSourceRef
+	}
+	if primary.protocolSourceURL != "" {
+		protocolSourceURL = primary.protocolSourceURL
+	}
 	primaryEvidenceArtifact := artifactPrefix + "_evidence_manifest"
 	protocolEvidenceArtifact := artifactPrefix + "_protocol_evidence_manifest"
 	classificationArtifact := artifactPrefix + "_source_classification_roster"
@@ -2186,6 +2209,10 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	}
 	derivationInputSourceSymbols := []string{sourceReadOperationSymbol, sourceSymbolByRole["resource"]}
 	sort.Strings(derivationInputSourceSymbols)
+	minimumMatchesPerOccurrence := 1
+	if primary.nativeSelectedOperationOnly && !primary.singleDocument {
+		minimumMatchesPerOccurrence = 0
+	}
 	derivationProgramObject := map[string]interface{}{
 		"program_kind":                           exactDocumentationDerivationProgramKind,
 		"input_encoding":                         exactDocumentationDerivationEncodingUTF8,
@@ -2210,7 +2237,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 				"target_binding_kind": exactDocumentationTargetRowMember, "target_member_json_pointer": "/resource_accesses",
 				"target_row_selector":                  []interface{}{map[string]interface{}{"target_row_json_pointer": "/source_symbol", "expected_string_template": sourceReadOperationSymbol}},
 				"target_member_identity_json_pointers": []interface{}{"/source_symbol"},
-				"pattern":                              primary.derivationPattern, "maximum_match_bytes": 65536, "minimum_matches_per_occurrence": 1, "maximum_matches_per_occurrence": 1,
+				"pattern":                              primary.derivationPattern, "maximum_match_bytes": 65536, "minimum_matches_per_occurrence": minimumMatchesPerOccurrence, "maximum_matches_per_occurrence": 1,
 				"output_fields": accessFactOutput, "exact_output_field_names": sortedSetKeys(stringMapKeysAsSet(accessFactOutput)),
 			},
 			map[string]interface{}{
@@ -2218,7 +2245,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 				"target_artifact_role": dependencySemanticRoleSourceContract, "target_row_kind": "field_contract",
 				"target_binding_kind": exactDocumentationTargetWholeRow, "target_member_json_pointer": "",
 				"target_row_selector": []interface{}{}, "target_member_identity_json_pointers": []interface{}{},
-				"pattern": primary.derivationPattern, "maximum_match_bytes": 65536, "minimum_matches_per_occurrence": 1, "maximum_matches_per_occurrence": 1,
+				"pattern": primary.fieldDerivationPattern, "maximum_match_bytes": 65536, "minimum_matches_per_occurrence": minimumMatchesPerOccurrence, "maximum_matches_per_occurrence": 1,
 				"output_fields": fieldFactOutput, "exact_output_field_names": sortedSetKeys(stringMapKeysAsSet(fieldFactOutput)),
 			},
 		},
@@ -2245,6 +2272,9 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 				{Ref: sourceRef, URL: sourceURL}: evidenceManifestDigest,
 			},
 		},
+	}
+	if !primary.singleDocument {
+		derivationBodies[protocolBodyDigest] = exactEvidenceBody{Bytes: protocolBody, Coordinates: map[evidenceSourceCoordinate]string{{Ref: protocolSourceRef, URL: protocolSourceURL}: protocolEvidenceManifestDigest}}
 	}
 	var derivationFacts []exactDocumentationDerivedFact
 	var sourceAccessFact, sourceFieldFact exactDocumentationDerivedFact
@@ -2523,12 +2553,16 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	protocolCoordinate := map[string]interface{}{"source_content_sha256": protocolBodyDigest, "byte_start_offset": 0, "byte_end_offset_exclusive": len(protocolBody), "selected_range_byte_count": len(protocolBody), "selected_range_sha256": protocolBodyDigest}
 	protocolAssertionA := "fixture_protocol_a"
 	protocolAssertionB := "fixture_protocol_b"
+	protocolResourceSource := sourceSymbolByRole["resource"]
+	if primary.protocolClassifierResourceSource != "" {
+		protocolResourceSource = primary.protocolClassifierResourceSource
+	}
 	protocolOperationIdentity := map[string]interface{}{"identity_kind": "protocol_assertion_operation", "identity_components": map[string]interface{}{"assertion_set": "fixture_change_event_write"}}
 	canonicalProtocolOperationIdentity, err := canonicalSourceOperationIdentity(protocolOperationIdentity)
 	if err != nil {
 		t.Fatal(err)
 	}
-	protocolFactID := stableID("opfact", lengthPrefixedIdentityKey(sourceSymbolByRole["operation"], sourceSymbolByRole["resource"], "change_event_write", string(canonicalProtocolOperationIdentity), protocolAssertionA, protocolAssertionB))
+	protocolFactID := stableID("opfact", lengthPrefixedIdentityKey(sourceSymbolByRole["operation"], protocolResourceSource, "change_event_write", string(canonicalProtocolOperationIdentity), protocolAssertionA, protocolAssertionB))
 	protocolFactLocatorSet := map[string]struct{}{classificationLocator.ID: {}, protocolEvidenceLocator.ID: {}}
 	protocolFactLocatorIDs := sortedSetKeys(protocolFactLocatorSet)
 	writeJSONL(t, protocolContractPath, []interface{}{map[string]interface{}{
@@ -2538,12 +2572,19 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	}, map[string]interface{}{
 		"row_kind": "protocol_assertion_projection", "assertion_id": protocolAssertionB, "assertion_class": "fixture_contract", "candidate_semantics": "second candidate meaning", "required_velenza_boc_consequence": "preserve exact provider assertion", "evidence_match_literal": primary.protocolLiteralB, "source_ref": protocolSourceRef, "source_url": protocolSourceURL, "evidence_body_sha256": protocolBodyDigest, "evidence_hydration_coordinate": protocolCoordinate, "diagnostic_navigation_coordinate": map[string]interface{}{"line_number": 1, "literal_occurrence_selected": 1, "literal_match_count": bytes.Count(protocolBody, []byte(primary.protocolLiteralB))}, "evidence_status": "candidate_exact_hydration", "plan_semantic_disposition": map[string]interface{}{"kind": "preserved_contradiction", "bindings": []string{"fixture_contradiction"}},
 	}, map[string]interface{}{
-		"row_kind": "operation_classifier_fact", "operation_classifier_fact_id": protocolFactID, "source_symbol": sourceSymbolByRole["operation"], "resource_source_symbol": sourceSymbolByRole["resource"], "semantic_class": "change_event_write", "source_operation_identity": protocolOperationIdentity, "protocol_assertion_ids": []string{protocolAssertionA, protocolAssertionB}, "evidence_locator_ids": protocolFactLocatorIDs, "source_bytes_present": false,
+		"row_kind": "operation_classifier_fact", "operation_classifier_fact_id": protocolFactID, "source_symbol": sourceSymbolByRole["operation"], "resource_source_symbol": protocolResourceSource, "semantic_class": "change_event_write", "source_operation_identity": protocolOperationIdentity, "protocol_assertion_ids": []string{protocolAssertionA, protocolAssertionB}, "evidence_locator_ids": protocolFactLocatorIDs, "source_bytes_present": false,
 	}, map[string]interface{}{
 		"row_kind": "provider_contract_contradiction", "contradiction_id": "fixture_contradiction", "assertions": []string{protocolAssertionA, protocolAssertionB}, "evidence_hydration_coordinates": []interface{}{map[string]interface{}{"assertion_id": protocolAssertionA, "source_ref": protocolSourceRef, "coordinate": protocolCoordinate}, map[string]interface{}{"assertion_id": protocolAssertionB, "source_ref": protocolSourceRef, "coordinate": protocolCoordinate}}, "disposition": "preserve both exact assertions and fail closed until resolved",
 	}, map[string]interface{}{
 		"row_kind": "validation_summary", "evidence_body_count": 1, "evidence_exact_source_bytes": len(protocolBody), "protocol_section_projection_count": 0, "protocol_assertion_projection_count": 2, "operation_classifier_fact_count": 1, "preserved_provider_contradiction_count": 1, "source_export_is_only_evidence_body": true, "selected_representation_is_only_evidence_body": true, "exact_hydration_coordinates_present": true, "exact_evidence_locator_binding_count": 6, "authoritative_locator_form": zeroBasedHalfOpenLocatorForm, "diagnostic_line_and_section_coordinates_are_authority": false, "result": "candidate_protocol_contract_index_complete",
 	}})
+	if primary.nativeSelectedOperationOnly {
+		removeJSONLMatchingRow(t, protocolContractPath, "operation_classifier_fact", func(map[string]interface{}) bool { return true })
+		mutateJSONLRow(t, protocolContractPath, "validation_summary", func(row map[string]interface{}) {
+			row["operation_classifier_fact_count"] = json.Number("0")
+			row["exact_evidence_locator_binding_count"] = json.Number("4")
+		})
+	}
 	dependencyByRole["protocol_contract"] = protocolContractPath
 
 	claimSchemaForOutput := func(output map[string]interface{}) map[string]interface{} {
@@ -2973,7 +3014,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	if primary.singleDocument {
 		protocolEvidenceRolePath = evidencePath
 	}
-	fixture := &testFixture{planPath: planPath, oodPath: oodPath, evidencePath: evidencePath, evidenceByRole: map[string]string{"entity": evidencePath, "protocol": protocolEvidenceRolePath}, planRows: planRows, roles: roles, constraints: constraints, families: families, locatorID: locatorID, symbolByRole: symbolByRole, sourceSymbolByRole: sourceSymbolByRole, sourceReadOperationSymbol: sourceReadOperationSymbol, sourceOperationID: sourceOperationID, dependencyByRole: dependencyByRole, schemaByRole: map[string]string{}, artifactCoordinateByRole: map[string]stageMaterialCoordinate{}, sourceOperationIdentity: sourceOperationIdentity, derivationTargetPaths: map[string]string{}, derivationTargetSchemas: map[string]string{}}
+	fixture := &testFixture{planPath: planPath, oodPath: oodPath, evidencePath: evidencePath, evidenceByRole: map[string]string{"entity": evidencePath, "protocol": protocolEvidenceRolePath}, planRows: planRows, roles: roles, constraints: constraints, relationshipSubjectEndpoints: primary.relationshipSubjectEndpoints, relationshipDefaultDispositions: primary.relationshipDefaultDispositions, nativeSelectedOperationOnly: primary.nativeSelectedOperationOnly, families: families, locatorID: locatorID, symbolByRole: symbolByRole, sourceSymbolByRole: sourceSymbolByRole, sourceReadOperationSymbol: sourceReadOperationSymbol, sourceOperationID: sourceOperationID, dependencyByRole: dependencyByRole, schemaByRole: map[string]string{}, artifactCoordinateByRole: map[string]stageMaterialCoordinate{}, sourceOperationIdentity: sourceOperationIdentity, derivationTargetPaths: map[string]string{}, derivationTargetSchemas: map[string]string{}}
 	if derivationBundle != nil {
 		fixture.derivationTargets = derivationBundle.targetArtifacts
 		fixture.derivationTargetAuthority = derivationBundle.targetAuthority
@@ -3110,10 +3151,18 @@ func buildFixtureApplicabilityClosure(t *testing.T, fixture *testFixture, semant
 		ruleID := "fixture_relationship_" + constraint.EdgeLabel
 		fixture.ruleByLabel[constraint.EdgeLabel] = ruleID
 		endpoint, subjectRole := "source", constraint.SourceRole
-		if constraint.TargetRole == "operation" {
+		if fixture.relationshipSubjectEndpoints[constraint.EdgeLabel] == "target" || (fixture.relationshipSubjectEndpoints[constraint.EdgeLabel] == "" && constraint.TargetRole == "operation") {
 			endpoint, subjectRole = "target", constraint.TargetRole
+		} else if endpointOverride := fixture.relationshipSubjectEndpoints[constraint.EdgeLabel]; endpointOverride != "" && endpointOverride != "source" {
+			t.Fatalf("fixture relationship %q has invalid subject endpoint %q", constraint.EdgeLabel, endpointOverride)
 		}
 		defaultDisposition := applicabilityDispositionOptional
+		if override := fixture.relationshipDefaultDispositions[constraint.EdgeLabel]; override != "" {
+			if override != applicabilityDispositionRequired && override != applicabilityDispositionOptional && override != applicabilityDispositionInapplicable {
+				t.Fatalf("fixture relationship %q has invalid default disposition %q", constraint.EdgeLabel, override)
+			}
+			defaultDisposition = override
+		}
 		orderedRules := []interface{}{}
 		switch constraint.EdgeLabel {
 		case "operation_reads_resource":
@@ -3298,7 +3347,11 @@ func writeFixtureOperationApplicability(t *testing.T, fixture *testFixture, path
 	resourceID := fixture.symbolByRole["resource"]
 	resourceSemanticIdentity := fixturePlanSymbol(t, fixture, resourceID).SemanticKey
 	operationKinds := map[string]string{fixture.sourceOperationID: "request_response_read_operation", fixture.symbolByRole["operation"]: "event_driven_write_operation"}
-	for _, operationID := range []string{fixture.symbolByRole["operation"], fixture.sourceOperationID} {
+	operationIDs := []string{fixture.symbolByRole["operation"], fixture.sourceOperationID}
+	if fixture.nativeSelectedOperationOnly {
+		operationIDs = []string{fixture.sourceOperationID}
+	}
+	for _, operationID := range operationIDs {
 		symbol := fixturePlanSymbol(t, fixture, operationID)
 		relationshipIDs := fixtureIncidentRelationshipIDs(fixture, operationID)
 		propertyIDs := fixtureOperationPropertyIDs(fixture, operationID)
@@ -3356,8 +3409,12 @@ func writeFixtureOperationApplicability(t *testing.T, fixture *testFixture, path
 			"row_kind": "operation_applicability", "operation_applicability_id": applicabilityID, "operation_candidate_api_symbol_id": operationID, "operation_semantic_identity": symbol.SemanticKey, "operation_kind": operationKinds[operationID], "source_symbol": sourceSymbol, "source_operation_identity": sourceIdentity, "resource_accesses": []interface{}{access}, "subject_traits": traits, "source_operation_property_claim_ids": []string{}, "actual_relationship_ids": relationshipIDs, "actual_property_claim_ids": propertyIDs, "evidence_locator_ids": locatorIDs, "evidence_fact_ids": evidenceFactIDs, "applicability_profile_binding": binding, "derivation_binding": map[string]interface{}{"classifier_profile_id": classifierReference.id, "classifier_profile_version": classifierReference.version, "classifier_profile_sha256": classifierReference.digest, "exact_input_locator_ids": locatorIDs, "exact_input_fact_ids": evidenceFactIDs}, "source_bytes_present": false,
 		})
 	}
+	kinds := []interface{}{map[string]interface{}{"operation_kind": "request_response_read_operation", "count": 1}}
+	if !fixture.nativeSelectedOperationOnly {
+		kinds = append([]interface{}{map[string]interface{}{"operation_kind": "event_driven_write_operation", "count": 1}}, kinds...)
+	}
 	rows = append(rows,
-		map[string]interface{}{"row_kind": "validation_summary", "operation_applicability_count": 2, "persisted_optional_absence_row_count": 0, "persisted_inapplicable_absence_row_count": 0, "candidate_subject_count": len(fixturePlanSymbols(fixture)) + len(fixturePlanRelationships(fixture)), "actual_relationship_fact_count": len(fixturePlanRelationships(fixture)), "actual_property_fact_count": len(fixturePlanProperties(fixture)), "sparse_required_gap_count": len(fixturePlanGaps(fixture)), "captured_operation_kind_counts": []interface{}{map[string]interface{}{"operation_kind": "event_driven_write_operation", "count": 1}, map[string]interface{}{"operation_kind": "request_response_read_operation", "count": 1}}, "subject_set_root_sha256": fixture.summary().SubjectSetRootSHA256, "fact_set_root_sha256": fixture.summary().FactSetRootSHA256, "gap_set_root_sha256": fixture.summary().GapSetRootSHA256, "source_bytes_present": false, "result": "candidate_complete_operation_applicability"},
+		map[string]interface{}{"row_kind": "validation_summary", "operation_applicability_count": len(operationIDs), "persisted_optional_absence_row_count": 0, "persisted_inapplicable_absence_row_count": 0, "candidate_subject_count": len(fixturePlanSymbols(fixture)) + len(fixturePlanRelationships(fixture)), "actual_relationship_fact_count": len(fixturePlanRelationships(fixture)), "actual_property_fact_count": len(fixturePlanProperties(fixture)), "sparse_required_gap_count": len(fixturePlanGaps(fixture)), "captured_operation_kind_counts": kinds, "subject_set_root_sha256": fixture.summary().SubjectSetRootSHA256, "fact_set_root_sha256": fixture.summary().FactSetRootSHA256, "gap_set_root_sha256": fixture.summary().GapSetRootSHA256, "source_bytes_present": false, "result": "candidate_complete_operation_applicability"},
 	)
 	writeJSONL(t, path, rows)
 }

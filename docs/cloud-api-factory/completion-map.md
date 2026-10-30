@@ -51,6 +51,18 @@ The native operation identity is deliberately separate from catalog revision ide
 
 The retained-model verifier tests use immutable repository snapshots of the exact upstream bytes. The origin URI and capture pin remain separately recorded in `testdata/cloudapi/native-source-snapshots.json`; a snapshot coordinate never rewrites the original source. Test-only authority and derivation scaffolding establish execution conformance, not provider authentication, a qualified semantic interpretation or a current production generation. A test fixture's successful receipt cannot replace those owners.
 
+The native adapter keeps operation-definition evidence separate from supplemental operation/resource association evidence. The former determines the operation's exact classification and source applicability; the latter remains on relationship gaps and API provenance. Both `resource_has_operation` navigation and `provider_supports_auth_scheme` support have explicit, separately bound gap contexts. A resource-access edge cannot silently stand in for navigation, and provider authentication support cannot create a credential grant.
+
+### Verification layers and their limits
+
+| Proof | Exact coverage | What remains outside that proof |
+|---|---|---|
+| Retained-model compiler conformance | All four complete retained model bodies through source-package compilation, four factory stages and real `Verify`, using test-only marker derivation profiles | Qualified interpretation of each provider capability |
+| Native catalog conformance | Actual selected S3 `ListBuckets`, EC2 `DescribeInstances`, Cloud Storage `storage.buckets.list` and Compute `compute.instances.aggregatedList` catalogs through the native adapter, exact generated graph bytes, full source-package compiler and real `Verify`; AWS also carries its distinct retained association document | Production source authentication/current-generation authority and qualified source classifications; the assertions and unresolved associations remain candidates |
+| Neutral mapping acceptance | Nine acquisition mappings over six resource types, the exact version-2 neutral owner/export, synthetic response/request fixtures and refusal cases | Actual customer responses, durable OHM identity/publication and complete semantic coverage of the providers |
+
+These proofs are complementary. The native compiler fixtures use explicitly test-owned source and mapping scaffolding; they do not claim that all 31 neutral mapping recipes have passed together as one qualified production source package. Qualifying and composing that complete mapping package is a remaining pre-runtime work item. The fixture receipts must report successful derivation/verification while keeping source authority, graph admission and factory completion false.
+
 The order matters: first qualify the exact evidence and mapping bundle; then admit it; then exercise acquisition and durable OHM publication. A working kernel alone does not finish the factory or the provider integrations.
 
 ### Remaining work before runtime
@@ -67,7 +79,7 @@ These are concrete work packages outside the kernel. Their authority cannot be r
 | Mapping succession and acquisition package | Extension Protocol factory outputs and OHM source identity/currentness owners | Produce source-instance configuration, coordinate extraction, update comparison, acquisition/reconciliation policy, mapping-generation transitions and lineage references as candidates. Prove stable source identity across credential rotation and API/model upgrades, and reject incomplete-page deletion or stale-generation overwrites. Live durability still requires runtime acceptance. |
 | Linked delivery evidence | Canon, Inarch, Cambium, Trellis and Canopy | Bind exact source snapshot → owner/profile versions → generated package → implementation/test revision → independent acceptance. Add admission and runtime evidence only when those events actually occur. Graph search results and repository delivery do not confer admission. |
 
-The original cross-repository research and contract inventory is retained in [the CSP factory gap analysis](https://github.com/velenzaboc/no13-infra/blob/56012bb70b42193b49bd7ffb2cc8a29a42d3f7b1/docs/research/csp-api-factory-20261029/factory-arbor-gap-analysis.md). Its dated implementation observations remain historical evidence; this completion map records the newer offline preparation and its remaining boundaries.
+The original cross-repository research and contract inventory remains in the canonical owner's research bundle, tracked by `CSP-API-FACTORY-CONTRACT-20261029`. Its dated implementation observations remain historical evidence; this completion map records the newer offline preparation and its remaining boundaries. The portable neutral schema export carries the exact owner identity and revision without publishing internal repository locations.
 
 ## Four final acceptance cases
 

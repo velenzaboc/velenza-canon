@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -74,6 +75,88 @@ func TestBuildCloudNativeGraphCandidateJSONLUsesOnlyNativeRowsAndRetainedEvidenc
 	if bytes.Contains(first, []byte(`cloud_api_`)) {
 		t.Fatal("legacy arbitrary cloud_api row leaked into native body")
 	}
+}
+
+func TestBuildCloudNativeGraphCandidateJSONLKeepsSupplementalAssociationOutOfOperationSymbol(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "testdata", "cloudapi", "official", "aws", "s3-2006-03-01.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	model := awsDeclaredCandidateModel(t, raw, "s3", "2006-03-01", sha256Hex(raw), []cloudCatalogTestAssociation{{resource: "com.amazonaws.s3#Bucket", operation: "com.amazonaws.s3#ListBuckets"}})
+	catalog, err := ParsePinnedCloudModel(model)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var operation CloudCatalogOperation
+	for _, candidate := range catalog.Operations {
+		if candidate.ID == "com.amazonaws.s3#ListBuckets" {
+			operation = candidate
+			break
+		}
+	}
+	if operation.ID == "" || len(operation.ResourceAssociationEvidence) != 1 {
+		t.Fatalf("fixture did not retain asserted association: %#v", operation)
+	}
+	context := nativeGraphTestContext(t, model, catalog)
+	context.SelectedOperationIDs = map[string][]string{model.Source.ID: {operation.ID}}
+	const supplementalManifest = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+	context.EvidenceManifestSHA256ByEvidenceID["declarations"] = supplementalManifest
+	context.Manifest.EvidenceManifestBindings = append(context.Manifest.EvidenceManifestBindings, evidenceManifestBinding{EvidenceManifestSHA256: supplementalManifest, EvidenceBodyKind: evidenceBodyKindSourceDocument, ConsumerRoles: []string{"api_graph_projection"}})
+	primary, err := cloudNativeEvidenceLocator(context, model, operation.Locator)
+	if err != nil {
+		t.Fatal(err)
+	}
+	association, err := cloudNativeEvidenceLocator(context, model, operation.ResourceAssociationEvidence[0].EvidenceLocator)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := BuildCloudNativeGraphCandidateJSONL(context, []PinnedCloudModel{model})
+	if err != nil {
+		t.Fatal(err)
+	}
+	opID := stableID("capi_sym", lengthPrefixedIdentityKey("operation", cloudNativeSemanticKey(catalog, "operation", operation.ID)))
+	apiID := stableID("capi_sym", lengthPrefixedIdentityKey("vendor_api", cloudNativeSemanticKey(catalog, "api", catalog.APISurfaceID)))
+	var foundOperation, foundAPIGap bool
+	for _, line := range bytes.Split(bytes.TrimSpace(body), []byte{'\n'}) {
+		var row struct {
+			RowKind string `json:"row_kind"`
+		}
+		if err := json.Unmarshal(line, &row); err != nil {
+			t.Fatal(err)
+		}
+		switch row.RowKind {
+		case "candidate_api_symbol":
+			var symbol apiSymbol
+			if err := strictUnmarshal(line, &symbol); err != nil {
+				t.Fatal(err)
+			}
+			if symbol.ID == opID {
+				foundOperation = true
+				if got := symbol.EvidenceLocatorIDs; len(got) != 1 || got[0] != primary.ID {
+					t.Fatalf("operation classification roster=%v, want only primary locator %q", got, primary.ID)
+				}
+			}
+		case "candidate_graph_gap":
+			var gap graphGap
+			if err := strictUnmarshal(line, &gap); err != nil {
+				t.Fatal(err)
+			}
+			if gap.BlockedSubjectID == apiID && gap.BlockedClaimID == "api_has_operation:"+opID {
+				foundAPIGap = true
+				if got := stringSliceSet(gap.EvidenceLocatorIDs); !containsCloudNativeString(got, primary.ID) || !containsCloudNativeString(got, association.ID) || len(got) != 2 {
+					t.Fatalf("API/operation provenance roster=%v, want primary and supplemental association", gap.EvidenceLocatorIDs)
+				}
+			}
+		}
+	}
+	if !foundOperation || !foundAPIGap {
+		t.Fatalf("missing operation or association provenance gap: operation=%t api_gap=%t", foundOperation, foundAPIGap)
+	}
+}
+
+func containsCloudNativeString(values map[string]struct{}, want string) bool {
+	_, ok := values[want]
+	return ok
 }
 
 func TestBuildCloudNativeGraphCandidateJSONLRefusesMissingProofOrMixedProvider(t *testing.T) {
@@ -167,6 +250,31 @@ func TestBuildCloudNativeGraphCandidateJSONLStrictModeUsesCanonicalCrosswalks(t 
 	}
 	if _, err := BuildCloudNativeGraphCandidateJSONL(bad, []PinnedCloudModel{model}); err == nil || !strings.Contains(err.Error(), "does not equal canonical") {
 		t.Fatalf("bad strict crosswalk=%v", err)
+	}
+	wrongBinding := context
+	wrongBinding.SymbolDerivationBindings = map[string]json.RawMessage{}
+	for key, value := range context.SymbolDerivationBindings {
+		wrongBinding.SymbolDerivationBindings[key] = value
+	}
+	wrongBinding.SymbolDerivationBindings[CloudNativeSymbolBindingKey("operation", crosswalk.OperationSemanticKey)] = nativeStrictBinding(t, apiSymbol{ID: crosswalk.OperationSymbolID, Role: "operation", SemanticKey: crosswalk.OperationSemanticKey}, "wrong.source_symbol", "operation", context.Manifest.EvidenceSelectionRosterSHA256)
+	if _, err := BuildCloudNativeGraphCandidateJSONL(wrongBinding, []PinnedCloudModel{model}); err == nil || !strings.Contains(err.Error(), "sealed source/surface/roster") {
+		t.Fatalf("wrong strict source binding=%v", err)
+	}
+	resourceClaim := stableID("capi_rel", lengthPrefixedIdentityKey("resource_has_operation", crosswalk.ResourceAccesses[0].TargetSymbolID, crosswalk.OperationSymbolID))
+	authSemantic := cloudNativeSemanticKey(catalog, "auth", catalog.Authentication[0].ID)
+	authID := stableID("capi_sym", lengthPrefixedIdentityKey("auth_scheme", authSemantic))
+	providerID := stableID("capi_sym", lengthPrefixedIdentityKey("provider", cloudNativeProviderSemanticKey(catalog.ProviderID)))
+	authClaim := stableID("capi_rel", lengthPrefixedIdentityKey("provider_supports_auth_scheme", providerID, authID))
+	for name, missingClaim := range map[string]string{"resource hierarchy": resourceClaim, "provider auth": authClaim} {
+		missingHierarchy := context
+		missingHierarchy.RelationshipLabels = map[string]string{}
+		for key, value := range context.RelationshipLabels {
+			missingHierarchy.RelationshipLabels[key] = value
+		}
+		delete(missingHierarchy.RelationshipLabels, missingClaim)
+		if _, err := BuildCloudNativeGraphCandidateJSONL(missingHierarchy, []PinnedCloudModel{model}); err == nil || !strings.Contains(err.Error(), "lacks sealed canonical selection") {
+			t.Fatalf("missing strict %s selection=%v", name, err)
+		}
 	}
 	extra := context
 	extra.OperationCrosswalks = map[string]CloudNativeOperationCrosswalk{}
@@ -268,6 +376,10 @@ func nativeGraphStrictTestContext(t *testing.T, model PinnedCloudModel, catalog 
 	providerSemantic := cloudNativeProviderSemanticKey(catalog.ProviderID)
 	providerID := stableID("capi_sym", lengthPrefixedIdentityKey("provider", providerSemantic))
 	serviceID := stableID("capi_sym", lengthPrefixedIdentityKey("service", cloudNativeServiceSemanticKey(catalog.ProviderID, catalog.ServiceID)))
+	if len(catalog.Authentication) != 1 {
+		t.Fatalf("strict fixture authentication=%#v", catalog.Authentication)
+	}
+	authID := stableID("capi_sym", lengthPrefixedIdentityKey("auth_scheme", cloudNativeSemanticKey(catalog, "auth", catalog.Authentication[0].ID)))
 	context.OperationCrosswalks = map[string]CloudNativeOperationCrosswalk{CloudNativeOperationBindingKey(model.Source.ID, operation.ID): {SourceSymbol: "fixture.operation", CanonicalSourceOperationIdentity: mustNativeTestJSON(t, identity), OperationSemanticKey: semantic, OperationSymbolID: operationID, ResourceAccesses: []CloudNativeRelationshipCrosswalk{{Label: "operation_reads_resource", SourceSymbolID: operationID, TargetSymbolID: resourceID, RelationshipID: stableID("capi_rel", lengthPrefixedIdentityKey("operation_reads_resource", operationID, resourceID))}}}}
 	context.ResourceCrosswalks = map[string]CloudNativeResourceCrosswalk{CloudNativeResourceBindingKey(model.Source.ID, catalog.Resources[0].ID): {SourceSymbol: "fixture.resource", ResourceSemanticKey: resourceSemantic, ResourceSymbolID: resourceID}}
 	context.Summary = &CloudNativeSummaryContext{}
@@ -275,7 +387,7 @@ func nativeGraphStrictTestContext(t *testing.T, model PinnedCloudModel, catalog 
 	context.SymbolDerivationBindings[CloudNativeSymbolBindingKey("operation", semantic)] = nativeStrictBinding(t, apiSymbol{ID: operationID, Role: "operation", SemanticKey: semantic}, "fixture.operation", "operation", context.Manifest.EvidenceSelectionRosterSHA256)
 	context.RelationshipLabels = map[string]string{}
 	context.GapContexts = map[string]CloudNativeGapContext{}
-	for _, edge := range []struct{ label, source, target string }{{"provider_has_service", providerID, serviceID}, {"service_has_api", serviceID, apiID}, {"api_has_resource", apiID, resourceID}, {"api_has_operation", apiID, operationID}, {"operation_reads_resource", operationID, resourceID}} {
+	for _, edge := range []struct{ label, source, target string }{{"provider_has_service", providerID, serviceID}, {"provider_supports_auth_scheme", providerID, authID}, {"service_has_api", serviceID, apiID}, {"api_has_resource", apiID, resourceID}, {"api_has_operation", apiID, operationID}, {"operation_reads_resource", operationID, resourceID}, {"resource_has_operation", resourceID, operationID}} {
 		claim := stableID("capi_rel", lengthPrefixedIdentityKey(edge.label, edge.source, edge.target))
 		context.RelationshipLabels[claim] = edge.label
 		context.GapContexts[CloudNativeGapBindingKey(edge.source, claim)] = CloudNativeGapContext{GapClass: "unqualified_catalog_association", BlockedSubjectKind: "api_symbol_object", BlockedClaimKind: "api_relationship", BlockedClaimID: claim, ApplicabilityProfileID: "test_profile", ApplicabilityProfileVersion: "1", ApplicabilityProfileSHA256: strings.Repeat("a", 64), ApplicabilityRuleID: "test_rule", GapProofBinding: json.RawMessage(`{"candidate_only":true}`), DerivationBinding: json.RawMessage(`{"candidate_only":true}`)}
@@ -331,7 +443,7 @@ func TestBuildCloudNativeGraphCandidateJSONLRefusesInvalidSelectedOperationSets(
 
 func nativeGraphTestModel(t *testing.T) PinnedCloudModel {
 	t.Helper()
-	raw := []byte(`{"kind":"discovery#restDescription","name":"example","version":"v1","protocol":"rest","resources":{"things":{"methods":{"list":{"id":"example.things.list"}}}}}`)
+	raw := []byte(`{"kind":"discovery#restDescription","name":"example","version":"v1","protocol":"rest","auth":{"oauth2":{"scopes":{"https://example.invalid/auth/read":{"description":"read"}}}},"resources":{"things":{"methods":{"list":{"id":"example.things.list"}}}}}`)
 	return PinnedCloudModel{Format: CloudCatalogFormatGoogleDiscoveryREST, Source: CloudCatalogSourceIdentity{ID: "model", URI: "https://example.invalid/discovery", StableCoordinate: "example/discovery", FormatRevision: "v1"}, ProviderID: "gcp", ServiceID: "example", APISurfaceID: "example", APIVersion: "v1", Raw: raw, ExpectedSHA256: sha256Hex(raw)}
 }
 
@@ -372,6 +484,10 @@ func nativeGraphTestContext(t *testing.T, model PinnedCloudModel, catalog CloudC
 	for _, resource := range catalog.Resources {
 		resourceID := stableID("capi_sym", lengthPrefixedIdentityKey("resource", cloudNativeSemanticKey(catalog, "resource", resource.ID)))
 		gap(apiID, "api_has_resource:"+resourceID)
+	}
+	for _, requirement := range catalog.Authentication {
+		authID := stableID("capi_sym", lengthPrefixedIdentityKey("auth_scheme", cloudNativeSemanticKey(catalog, "auth", requirement.ID)))
+		gap(providerID, "provider_supports_auth_scheme:"+authID)
 	}
 	for _, operation := range catalog.Operations {
 		opID := stableID("capi_sym", lengthPrefixedIdentityKey("operation", cloudNativeSemanticKey(catalog, "operation", operation.ID)))

@@ -169,6 +169,39 @@ func (a *SpannerSubstrateAdapter) CheckOODGraphSchema(ctx context.Context) error
 		sort.Strings(missing)
 		return fmt.Errorf("%w: missing tables %v", ErrSchemaNotApplied, missing)
 	}
+	columnStmt := spanner.Statement{
+		SQL: `SELECT column_name FROM information_schema.columns WHERE table_schema = '' AND table_name=@table AND column_name IN UNNEST(@names)`,
+		Params: map[string]interface{}{
+			"table": objectT,
+			"names": []string{"api_element_role", "api_element_role_locator_manifest_hash"},
+		},
+	}
+	columnIter := client.Single().Query(ctx, columnStmt)
+	defer columnIter.Stop()
+	foundColumns := map[string]bool{}
+	for {
+		row, err := columnIter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("check_ood_graph_schema columns query: %w", err)
+		}
+		var name string
+		if err := row.Columns(&name); err != nil {
+			return fmt.Errorf("check_ood_graph_schema columns decode: %w", err)
+		}
+		foundColumns[name] = true
+	}
+	missingColumns := []string{}
+	for _, name := range []string{"api_element_role", "api_element_role_locator_manifest_hash"} {
+		if !foundColumns[name] {
+			missingColumns = append(missingColumns, name)
+		}
+	}
+	if len(missingColumns) > 0 {
+		return fmt.Errorf("%w: OODGraphObjects missing required columns %v; apply bootstrap/migrations/003_ood_graph_api_role_locator.sql", ErrSchemaNotApplied, missingColumns)
+	}
 	return nil
 }
 
@@ -658,6 +691,7 @@ func writeGraphObjectInTx(_ context.Context, tx *spanner.ReadWriteTransaction, t
 	cols := []string{
 		"organization_id", "graph_snapshot_id", "graph_object_id",
 		"object_class",
+		"api_element_role", "api_element_role_locator_manifest_hash",
 		"source_authority_id", "source_artifact_class", "source_ref_kind",
 		"source_stable_reference", "version_coordinate", "section_path",
 		"graph_address",
@@ -679,6 +713,7 @@ func writeGraphObjectInTx(_ context.Context, tx *spanner.ReadWriteTransaction, t
 	vals := []interface{}{
 		o.OrganizationID, o.GraphSnapshotID, o.GraphObjectID,
 		o.ObjectClass,
+		nullableString(o.APIElementRole), nullableString(o.APIElementRoleLocatorManifestHash),
 		o.SourceAuthorityID, o.SourceArtifactClass, o.SourceRefKind,
 		o.SourceStableReference, o.VersionCoordinate, o.SectionPath,
 		o.GraphAddress,

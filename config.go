@@ -295,6 +295,9 @@ func (c SpecGraphConfig) Validate() error {
 	if err := validateExternalReferenceEdgeIsolation(c.EdgeLabels); err != nil {
 		return err
 	}
+	if err := validateAPIRelationshipRegistryForConfig(c); err != nil {
+		return err
+	}
 	if len(c.ExternalSources) > 0 {
 		if err := validateExternalReferenceEdgeRegistry(c.EdgeLabels); err != nil {
 			return err

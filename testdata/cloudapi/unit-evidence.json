@@ -1,0 +1,18 @@
+{
+  "schema": "velenza.cloud_api_unit_evidence/1",
+  "status": "asserted_candidate_unqualified",
+  "purpose": "Primary-source unit observation for offline conversion tests; a field name alone is never a unit assertion.",
+  "observations": [
+    {
+      "id": "gcp.compute.disk.size_gb_is_gib",
+      "provider": "gcp",
+      "source_path": "official/units/gcp-compute-resize-persistent-disk.html",
+      "source_sha256": "1adbb1a324d8b11d4b6e85e58f057afdf1cb0db0ae16177a15155db5faed8dad",
+      "source_url": "https://docs.cloud.google.com/compute/docs/disks/resize-persistent-disk",
+      "fetched_at": "2026-10-29",
+      "locator": {"encoding":"utf-8","start_byte":355261,"end_byte_exclusive":355458,"slice_sha256":"5f3c1ca86e51913f8830035cd99e87cbb9884dad67feeee0aedf17322e3da00c"},
+      "observation": "The retained REST resize documentation identifies DISK_SIZE as gibibytes (GiB), while the request field is named sizeGb.",
+      "offline_rule": "A conversion to bytes for this explicitly evidenced case uses GiB (2^30 bytes); do not infer units from a provider field name in other cases."
+    }
+  ]
+}

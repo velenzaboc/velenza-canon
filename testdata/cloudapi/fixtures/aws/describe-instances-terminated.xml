@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/"><requestId>fixture-request-terminated</requestId><reservationSet><item><ownerId>111122223333</ownerId><instancesSet><item><instanceId>i-0fixtureterminated</instanceId><instanceState><name>terminated</name></instanceState><placement><availabilityZone>us-east-1a</availabilityZone></placement></item></instancesSet></item></reservationSet></DescribeInstancesResponse>

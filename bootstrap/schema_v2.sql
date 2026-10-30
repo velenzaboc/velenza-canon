@@ -61,6 +61,8 @@ CREATE TABLE OODGraphObjects (
   graph_snapshot_id          STRING(36)   NOT NULL,
   graph_object_id            STRING(36)   NOT NULL,
   object_class               STRING(64)   NOT NULL,
+  api_element_role           STRING(64),
+  api_element_role_locator_manifest_hash STRING(64),
   source_authority_id        STRING(36)   NOT NULL,
   source_artifact_class      STRING(64)   NOT NULL,
   source_ref_kind            STRING(32)   NOT NULL,
@@ -239,7 +241,7 @@ CREATE TABLE OODGraphProjectionArtifacts (
 
 
 -- ---------- Indexes ----------
--- §6.spanner_ddl_model.statements: 14 indexes covering uniqueness enforcement
+-- §6.spanner_ddl_model.statements: indexes covering uniqueness enforcement
 -- (per §6.identity_and_uniqueness_constraints) + lookup paths used by §10
 -- retrieval contracts and §9 temporal traversal.
 
@@ -275,6 +277,10 @@ CREATE INDEX OODGraphEdgesByReciprocity
 
 CREATE INDEX OODGraphObjectsBySourceReference
   ON OODGraphObjects (organization_id, source_authority_id, source_ref_kind, source_stable_reference, version_coordinate);
+
+CREATE NULL_FILTERED INDEX OODGraphObjectsByApiRoleLocatorManifest
+  ON OODGraphObjects (organization_id, api_element_role_locator_manifest_hash, graph_object_id)
+  WHERE api_element_role_locator_manifest_hash IS NOT NULL;
 
 CREATE INDEX OODGraphSymbolsByObject
   ON OODGraphSymbols (organization_id, graph_snapshot_id, graph_object_id, symbol_kind);

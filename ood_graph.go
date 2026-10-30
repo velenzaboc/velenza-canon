@@ -23,30 +23,32 @@ import (
 // Identity tuple per §3.object_class_identity_rules; uniqueness enforced by
 // OODGraphObjectsByIdentityTuple and OODGraphObjectsByAddress indexes.
 type GraphObject struct {
-	OrganizationID         string                 `json:"organization_id"`
-	GraphSnapshotID        string                 `json:"graph_snapshot_id"`
-	GraphObjectID          string                 `json:"graph_object_id"`
-	ObjectClass            string                 `json:"object_class"`
-	SourceAuthorityID      string                 `json:"source_authority_id"`
-	SourceArtifactClass    string                 `json:"source_artifact_class"`
-	SourceRefKind          string                 `json:"source_ref_kind"` // id | name | coordinate | path
-	SourceStableReference  string                 `json:"source_stable_reference"`
-	VersionCoordinate      string                 `json:"version_coordinate"`
-	SectionPath            string                 `json:"section_path"`
-	GraphAddress           string                 `json:"graph_address"`
-	SourceContentHash      string                 `json:"source_content_hash,omitempty"`
-	SourceContentHashOwner string                 `json:"source_content_hash_owner,omitempty"`
-	MaterializationRunID   string                 `json:"materialization_run_id"`
-	ProjectionRole         string                 `json:"projection_role"`
-	ValidationState        string                 `json:"validation_state"`
-	Status                 string                 `json:"status"`           // active | superseded | invalid | archived
-	VisibilityScope        string                 `json:"visibility_scope"` // tenant | organization | platform
-	SearchText             string                 `json:"search_text,omitempty"`
-	SearchPayload          map[string]interface{} `json:"search_payload,omitempty"`
-	Embedding              []float32              `json:"-"`
-	EmbeddingModel         string                 `json:"embedding_model"`
-	CreatedAt              time.Time              `json:"created_at"`
-	UpdatedAt              time.Time              `json:"updated_at"`
+	OrganizationID                    string                 `json:"organization_id"`
+	GraphSnapshotID                   string                 `json:"graph_snapshot_id"`
+	GraphObjectID                     string                 `json:"graph_object_id"`
+	ObjectClass                       string                 `json:"object_class"`
+	APIElementRole                    string                 `json:"api_element_role,omitempty"`
+	APIElementRoleLocatorManifestHash string                 `json:"api_element_role_locator_manifest_hash,omitempty"`
+	SourceAuthorityID                 string                 `json:"source_authority_id"`
+	SourceArtifactClass               string                 `json:"source_artifact_class"`
+	SourceRefKind                     string                 `json:"source_ref_kind"` // id | name | coordinate | path
+	SourceStableReference             string                 `json:"source_stable_reference"`
+	VersionCoordinate                 string                 `json:"version_coordinate"`
+	SectionPath                       string                 `json:"section_path"`
+	GraphAddress                      string                 `json:"graph_address"`
+	SourceContentHash                 string                 `json:"source_content_hash,omitempty"`
+	SourceContentHashOwner            string                 `json:"source_content_hash_owner,omitempty"`
+	MaterializationRunID              string                 `json:"materialization_run_id"`
+	ProjectionRole                    string                 `json:"projection_role"`
+	ValidationState                   string                 `json:"validation_state"`
+	Status                            string                 `json:"status"`           // active | superseded | invalid | archived
+	VisibilityScope                   string                 `json:"visibility_scope"` // tenant | organization | platform
+	SearchText                        string                 `json:"search_text,omitempty"`
+	SearchPayload                     map[string]interface{} `json:"search_payload,omitempty"`
+	Embedding                         []float32              `json:"-"`
+	EmbeddingModel                    string                 `json:"embedding_model"`
+	CreatedAt                         time.Time              `json:"created_at"`
+	UpdatedAt                         time.Time              `json:"updated_at"`
 }
 
 // GraphSymbol mirrors OODGraphSymbols (§6.table_surfaces.ood_graph_symbols).

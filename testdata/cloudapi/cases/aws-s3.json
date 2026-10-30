@@ -1,0 +1,84 @@
+{
+  "targets": [
+    {
+      "provider_id": "aws",
+      "service_id": "s3",
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#ListBuckets",
+      "source_object_type": "com.amazonaws.s3#Bucket",
+      "record_class_symbol": "storage_container",
+      "record_class_contract_ref": "",
+      "source_schema_version": "2006-03-01",
+      "source_mapping_version": "bounded-s3-list-buckets-1",
+      "stable_identity_source_fields": [
+        "Name"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "Name",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.s3#Bucket/members/Name",
+            "start_byte": 1186517,
+            "end_byte": 1186686
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "com.amazonaws.s3#ListBuckets",
+        "object_schema_id": "com.amazonaws.s3#Bucket",
+        "neutral": {
+          "owner_ref": "",
+          "owner_sha256": "",
+          "class_symbol": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": "",
+          "fields": null
+        },
+        "fields": [
+          {
+            "source_pointer": "/BucketArn",
+            "source_field_id": "BucketArn",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/BucketRegion",
+            "source_field_id": "BucketRegion",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CreationDate",
+            "source_field_id": "CreationDate",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Name",
+            "source_field_id": "Name",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "display_name",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ]
+      }
+    }
+  ],
+  "recipes": {
+    "list_buckets_page": {
+      "object_pointer": "/ListAllMyBucketsResult/Buckets/Bucket",
+      "identity_source_pointer": "/Name",
+      "identity_source_field_id": "Name",
+      "continuation_pointer": "/ListAllMyBucketsResult/ContinuationToken",
+      "observation_state": "incomplete",
+      "coverage": "partial_page",
+      "creation_date_is_not_incarnation_evidence": true,
+      "general_purpose_list_buckets_does_not_require_or_emit_bucket_arn": true
+    }
+  }
+}

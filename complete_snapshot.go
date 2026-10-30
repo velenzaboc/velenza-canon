@@ -562,6 +562,7 @@ func loadCarryForwardObjects(ctx context.Context, client spannerStatementQueryer
 	}
 	stmt := spanner.Statement{SQL: fmt.Sprintf(`SELECT s.graph_version,
 o.organization_id, o.graph_snapshot_id, o.graph_object_id, o.object_class,
+	o.api_element_role, o.api_element_role_locator_manifest_hash,
 o.source_authority_id, o.source_artifact_class, o.source_ref_kind,
 o.source_stable_reference, o.version_coordinate, o.section_path, o.graph_address,
 o.source_content_hash, o.source_content_hash_owner, o.materialization_run_id,
@@ -585,9 +586,9 @@ ORDER BY s.graph_version, s.graph_snapshot_id, o.graph_object_id`, objectT, snap
 		}
 		var version int64
 		var o GraphObject
-		var contentHash, contentOwner, searchText spanner.NullString
+		var apiRole, apiLocator, contentHash, contentOwner, searchText spanner.NullString
 		var searchPayload spanner.NullJSON
-		if err := row.Columns(&version, &o.OrganizationID, &o.GraphSnapshotID, &o.GraphObjectID, &o.ObjectClass,
+		if err := row.Columns(&version, &o.OrganizationID, &o.GraphSnapshotID, &o.GraphObjectID, &o.ObjectClass, &apiRole, &apiLocator,
 			&o.SourceAuthorityID, &o.SourceArtifactClass, &o.SourceRefKind, &o.SourceStableReference,
 			&o.VersionCoordinate, &o.SectionPath, &o.GraphAddress, &contentHash, &contentOwner,
 			&o.MaterializationRunID, &o.ProjectionRole, &o.ValidationState, &o.Status,
@@ -595,6 +596,8 @@ ORDER BY s.graph_version, s.graph_snapshot_id, o.graph_object_id`, objectT, snap
 			return nil, fmt.Errorf("decode carry-forward object: %w", err)
 		}
 		o.SourceContentHash = contentHash.StringVal
+		o.APIElementRole = apiRole.StringVal
+		o.APIElementRoleLocatorManifestHash = apiLocator.StringVal
 		o.SourceContentHashOwner = contentOwner.StringVal
 		o.SearchText = searchText.StringVal
 		if searchPayload.Valid {

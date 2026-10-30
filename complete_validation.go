@@ -236,6 +236,9 @@ func validateCompleteObject(ctx context.Context, object GraphObject, batch Mater
 	if object.ProjectionRole != desc.ProjectionRole() {
 		return fmt.Errorf("projection_role=%q, want registry value %q", object.ProjectionRole, desc.ProjectionRole())
 	}
+	if err := validateAPIElementRoleObject(object); err != nil {
+		return err
+	}
 	if object.OrganizationID != batch.Run.OrganizationID || object.GraphSnapshotID != batch.Snapshot.GraphSnapshotID || object.MaterializationRunID != batch.Run.MaterializationRunID {
 		return fmt.Errorf("organization/snapshot/run binding mismatch")
 	}
@@ -506,6 +509,9 @@ func validateCompleteEdge(ctx context.Context, edge GraphEdge, objects map[strin
 		return fmt.Errorf("edge family or diagnostic policy differs from registry")
 	}
 	if err := validateEdgeEndpointClasses(desc, source.GraphObjectID, source.ObjectClass, target.GraphObjectID, target.ObjectClass); err != nil {
+		return err
+	}
+	if err := validateAPIRelationshipEndpoints(desc, source, target); err != nil {
 		return err
 	}
 	if edge.SourceEndpointClass != source.ObjectClass || edge.TargetEndpointClass != target.ObjectClass || edge.SourceVersionCoordinate != source.VersionCoordinate || edge.TargetVersionCoordinate != target.VersionCoordinate {

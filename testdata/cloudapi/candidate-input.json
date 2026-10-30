@@ -1,0 +1,1974 @@
+{
+  "models": [
+    {
+      "format": "smithy_json",
+      "source": {
+        "id": "aws-s3-model",
+        "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json",
+        "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01",
+        "format_revision": "smithy-2"
+      },
+      "provider_id": "aws",
+      "service_id": "s3",
+      "api_surface_id": "s3",
+      "api_version": "2006-03-01",
+      "expected_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "supplemental_evidence": [
+        {
+          "id": "association-evidence",
+          "source": {
+            "id": "cloudapi-association-evidence",
+            "uri": "urn:velenza:testdata:cloudapi-association-evidence",
+            "stable_coordinate": "testdata/cloudapi/association-evidence.json@sha256:707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b",
+            "format_revision": "velenza.cloud_api_resource_association_evidence/3"
+          },
+          "expected_sha256": "707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b"
+        }
+      ],
+      "resource_declarations": [
+        {
+          "resource_id": "com.amazonaws.s3#Bucket",
+          "structure_shape_id": "com.amazonaws.s3#Bucket",
+          "role": "asserted_candidate_unqualified",
+          "structure_locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.s3#Bucket",
+            "start_byte": 1186453,
+            "end_byte": 1188128
+          },
+          "evidence_locator": {
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_declarations/0",
+            "start_byte": 6898,
+            "end_byte": 7263
+          }
+        }
+      ],
+      "resource_operation_assertions": [
+        {
+          "resource_id": "com.amazonaws.s3#Bucket",
+          "operation_id": "com.amazonaws.s3#ListBuckets",
+          "evidence_locator": {
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_operation_assertions/0",
+            "start_byte": 8074,
+            "end_byte": 8188
+          }
+        }
+      ],
+      "model_path": "official/aws/s3-2006-03-01.json",
+      "supplemental_evidence_paths": [
+        "association-evidence.json"
+      ]
+    },
+    {
+      "format": "smithy_json",
+      "source": {
+        "id": "aws-ec2-model",
+        "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json",
+        "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15",
+        "format_revision": "smithy-2"
+      },
+      "provider_id": "aws",
+      "service_id": "ec2",
+      "api_surface_id": "ec2",
+      "api_version": "2016-11-15",
+      "expected_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "supplemental_evidence": [
+        {
+          "id": "association-evidence",
+          "source": {
+            "id": "cloudapi-association-evidence",
+            "uri": "urn:velenza:testdata:cloudapi-association-evidence",
+            "stable_coordinate": "testdata/cloudapi/association-evidence.json@sha256:707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b",
+            "format_revision": "velenza.cloud_api_resource_association_evidence/3"
+          },
+          "expected_sha256": "707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b"
+        }
+      ],
+      "resource_declarations": [
+        {
+          "resource_id": "com.amazonaws.ec2#Instance",
+          "structure_shape_id": "com.amazonaws.ec2#Instance",
+          "role": "asserted_candidate_unqualified",
+          "structure_locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.ec2#Instance",
+            "start_byte": 3855151,
+            "end_byte": 3879746
+          },
+          "evidence_locator": {
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_declarations/1",
+            "start_byte": 7271,
+            "end_byte": 7645
+          }
+        },
+        {
+          "resource_id": "com.amazonaws.ec2#Volume",
+          "structure_shape_id": "com.amazonaws.ec2#Volume",
+          "role": "asserted_candidate_unqualified",
+          "structure_locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.ec2#Volume",
+            "start_byte": 6644219,
+            "end_byte": 6652582
+          },
+          "evidence_locator": {
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_declarations/2",
+            "start_byte": 7653,
+            "end_byte": 8021
+          }
+        }
+      ],
+      "resource_operation_assertions": [
+        {
+          "resource_id": "com.amazonaws.ec2#Instance",
+          "operation_id": "com.amazonaws.ec2#DescribeInstances",
+          "evidence_locator": {
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_operation_assertions/1",
+            "start_byte": 8196,
+            "end_byte": 8320
+          }
+        },
+        {
+          "resource_id": "com.amazonaws.ec2#Volume",
+          "operation_id": "com.amazonaws.ec2#DescribeVolumes",
+          "evidence_locator": {
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_operation_assertions/2",
+            "start_byte": 8328,
+            "end_byte": 8448
+          }
+        }
+      ],
+      "model_path": "official/aws/ec2-2016-11-15.json",
+      "supplemental_evidence_paths": [
+        "association-evidence.json"
+      ]
+    },
+    {
+      "format": "google_discovery_rest",
+      "source": {
+        "id": "gcp-storage-model",
+        "uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+        "stable_coordinate": "gcp/storage/v1",
+        "format_revision": "discovery"
+      },
+      "provider_id": "gcp",
+      "service_id": "storage",
+      "api_surface_id": "storage",
+      "api_version": "v1",
+      "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "model_path": "official/gcp/storage-v1.discovery.json"
+    },
+    {
+      "format": "google_discovery_rest",
+      "source": {
+        "id": "gcp-compute-model",
+        "uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+        "stable_coordinate": "gcp/compute/v1",
+        "format_revision": "discovery"
+      },
+      "provider_id": "gcp",
+      "service_id": "compute",
+      "api_surface_id": "compute",
+      "api_version": "v1",
+      "expected_sha256": "e3059e418cdd44f3ef343aa62fa4105759e450366dbe567bb827f7bf310678d7",
+      "model_path": "official/gcp/compute-v1.discovery.json"
+    }
+  ],
+  "neutral_schema_export_path": "semantic-owner/infrastructure-resource-record-mapping-schema.export.json",
+  "neutral_schema_export_sha256": "d568e24bd90b1f3460baadc722d38bcc99648a7f24866b3ca843884a3a43595c",
+  "targets": [
+    {
+      "provider_id": "aws",
+      "service_id": "s3",
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#ListBuckets",
+      "source_object_type": "com.amazonaws.s3#Bucket",
+      "record_class_symbol": "storage_container",
+      "record_class_contract_ref": "",
+      "source_schema_version": "2006-03-01",
+      "source_mapping_version": "bounded-s3-list-buckets-1",
+      "stable_identity_source_fields": [
+        "Name"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "Name",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.s3#Bucket/members/Name",
+            "start_byte": 1186517,
+            "end_byte": 1186686
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "com.amazonaws.s3#ListBuckets",
+        "object_schema_id": "com.amazonaws.s3#Bucket",
+        "neutral": {
+          "owner_ref": "",
+          "owner_sha256": "",
+          "class_symbol": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": "",
+          "fields": null
+        },
+        "fields": [
+          {
+            "source_pointer": "/BucketArn",
+            "source_field_id": "BucketArn",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/BucketRegion",
+            "source_field_id": "BucketRegion",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CreationDate",
+            "source_field_id": "CreationDate",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Name",
+            "source_field_id": "Name",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "display_name",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ]
+      }
+    },
+    {
+      "provider_id": "aws",
+      "service_id": "ec2",
+      "api_surface_id": "ec2",
+      "operation_id": "com.amazonaws.ec2#DescribeInstances",
+      "source_object_type": "com.amazonaws.ec2#Instance",
+      "record_class_symbol": "compute_instance",
+      "record_class_contract_ref": "",
+      "source_schema_version": "2016-11-15",
+      "source_mapping_version": "candidate-1",
+      "stable_identity_source_fields": [
+        "InstanceId"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "InstanceId",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.ec2#Instance/members/InstanceId",
+            "start_byte": 3871894,
+            "end_byte": 3872164
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "com.amazonaws.ec2#DescribeInstances",
+        "object_schema_id": "com.amazonaws.ec2#Instance",
+        "neutral": {
+          "owner_ref": "",
+          "owner_sha256": "",
+          "class_symbol": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": "",
+          "fields": null
+        },
+        "fields": [
+          {
+            "source_pointer": "/AmiLaunchIndex",
+            "source_field_id": "AmiLaunchIndex",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Architecture",
+            "source_field_id": "Architecture",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/BlockDeviceMappings",
+            "source_field_id": "BlockDeviceMappings",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/BootMode",
+            "source_field_id": "BootMode",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CapacityBlockId",
+            "source_field_id": "CapacityBlockId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CapacityReservationId",
+            "source_field_id": "CapacityReservationId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CapacityReservationSpecification",
+            "source_field_id": "CapacityReservationSpecification",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ClientToken",
+            "source_field_id": "ClientToken",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CpuOptions",
+            "source_field_id": "CpuOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CurrentInstanceBootMode",
+            "source_field_id": "CurrentInstanceBootMode",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/EbsOptimized",
+            "source_field_id": "EbsOptimized",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ElasticGpuAssociations",
+            "source_field_id": "ElasticGpuAssociations",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ElasticInferenceAcceleratorAssociations",
+            "source_field_id": "ElasticInferenceAcceleratorAssociations",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/EnaSupport",
+            "source_field_id": "EnaSupport",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/EnclaveOptions",
+            "source_field_id": "EnclaveOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/HibernationOptions",
+            "source_field_id": "HibernationOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Hypervisor",
+            "source_field_id": "Hypervisor",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/IamInstanceProfile",
+            "source_field_id": "IamInstanceProfile",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ImageId",
+            "source_field_id": "ImageId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/InstanceId",
+            "source_field_id": "InstanceId",
+            "disposition": "maps_exact_source_fact",
+            "explicit_null_disposition": "source_private_only",
+            "target_field": "display_name",
+            "projection": "exact"
+          },
+          {
+            "source_pointer": "/InstanceLifecycle",
+            "source_field_id": "InstanceLifecycle",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/InstanceType",
+            "source_field_id": "InstanceType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Ipv6Address",
+            "source_field_id": "Ipv6Address",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/KernelId",
+            "source_field_id": "KernelId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/KeyName",
+            "source_field_id": "KeyName",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/LaunchTime",
+            "source_field_id": "LaunchTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Licenses",
+            "source_field_id": "Licenses",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/MaintenanceOptions",
+            "source_field_id": "MaintenanceOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/MetadataOptions",
+            "source_field_id": "MetadataOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Monitoring",
+            "source_field_id": "Monitoring",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/NetworkInterfaces",
+            "source_field_id": "NetworkInterfaces",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/NetworkPerformanceOptions",
+            "source_field_id": "NetworkPerformanceOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Operator",
+            "source_field_id": "Operator",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/OutpostArn",
+            "source_field_id": "OutpostArn",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Placement",
+            "source_field_id": "Placement",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Platform",
+            "source_field_id": "Platform",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/PlatformDetails",
+            "source_field_id": "PlatformDetails",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/PrivateDnsName",
+            "source_field_id": "PrivateDnsName",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/PrivateDnsNameOptions",
+            "source_field_id": "PrivateDnsNameOptions",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/PrivateIpAddress",
+            "source_field_id": "PrivateIpAddress",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ProductCodes",
+            "source_field_id": "ProductCodes",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/PublicDnsName",
+            "source_field_id": "PublicDnsName",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/PublicIpAddress",
+            "source_field_id": "PublicIpAddress",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/RamdiskId",
+            "source_field_id": "RamdiskId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/RootDeviceName",
+            "source_field_id": "RootDeviceName",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/RootDeviceType",
+            "source_field_id": "RootDeviceType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SecondaryInterfaces",
+            "source_field_id": "SecondaryInterfaces",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SecurityGroups",
+            "source_field_id": "SecurityGroups",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SourceDestCheck",
+            "source_field_id": "SourceDestCheck",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SpotInstanceRequestId",
+            "source_field_id": "SpotInstanceRequestId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SriovNetSupport",
+            "source_field_id": "SriovNetSupport",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/StateReason",
+            "source_field_id": "StateReason",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/StateTransitionReason",
+            "source_field_id": "StateTransitionReason",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SubnetId",
+            "source_field_id": "SubnetId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Tags",
+            "source_field_id": "Tags",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/TpmSupport",
+            "source_field_id": "TpmSupport",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/UsageOperation",
+            "source_field_id": "UsageOperation",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/UsageOperationUpdateTime",
+            "source_field_id": "UsageOperationUpdateTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/VirtualizationType",
+            "source_field_id": "VirtualizationType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/VpcId",
+            "source_field_id": "VpcId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ],
+        "nested": [
+          {
+            "parent_pointer": "/State",
+            "wire_codec_profile": "smithy_ec2_query_xml",
+            "fields": [
+              {
+                "source_pointer": "/State/Code",
+                "wire_pointer": "/instanceState/code",
+                "source_field_id": "Code",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/State/Name",
+                "wire_pointer": "/instanceState/name",
+                "source_field_id": "Name",
+                "disposition": "maps_exact_lifecycle_fact",
+                "target_field": "lifecycle_state",
+                "projection": "exact",
+                "explicit_null_disposition": "source_private_only",
+                "lifecycle_recipe": {
+                  "evidence_refs": [
+                    "aws.ec2.terminated_permanent"
+                  ],
+                  "source_to_neutral": {
+                    "pending": "provisioning",
+                    "running": "running",
+                    "shutting-down": "terminating",
+                    "stopped": "stopped",
+                    "stopping": "stopped",
+                    "terminated": "terminated"
+                  },
+                  "unknown_value_policy": "refuse"
+                }
+              }
+            ]
+          }
+        ],
+        "evidence_bindings": [
+          {
+            "id": "aws.ec2.terminated_permanent",
+            "source_uri": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html",
+            "source_path": "official/lifecycle/aws-ec2-instance-lifecycle.html",
+            "expected_sha256": "7634d0c3a7336702c4143f09e042d416f4b72da601185558db15561671983e08",
+            "start_byte": 12378,
+            "end_byte": 12449,
+            "slice_sha256": "4e6e99da894aa3e19ea0a34937b1ecc1608b9ca01a8f63f37d19456b35523aa7"
+          }
+        ]
+      }
+    },
+    {
+      "provider_id": "aws",
+      "service_id": "ec2",
+      "api_surface_id": "ec2",
+      "operation_id": "com.amazonaws.ec2#DescribeVolumes",
+      "source_object_type": "com.amazonaws.ec2#Volume",
+      "record_class_symbol": "compute_volume",
+      "record_class_contract_ref": "",
+      "source_schema_version": "2016-11-15",
+      "source_mapping_version": "candidate-1",
+      "stable_identity_source_fields": [
+        "VolumeId"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "VolumeId",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.ec2#Volume/members/VolumeId",
+            "start_byte": 6649533,
+            "end_byte": 6649797
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "com.amazonaws.ec2#DescribeVolumes",
+        "object_schema_id": "com.amazonaws.ec2#Volume",
+        "neutral": {
+          "owner_ref": "",
+          "owner_sha256": "",
+          "class_symbol": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": "",
+          "fields": null
+        },
+        "fields": [
+          {
+            "source_pointer": "/AvailabilityZone",
+            "source_field_id": "AvailabilityZone",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/AvailabilityZoneId",
+            "source_field_id": "AvailabilityZoneId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/CreateTime",
+            "source_field_id": "CreateTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Encrypted",
+            "source_field_id": "Encrypted",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/FastRestored",
+            "source_field_id": "FastRestored",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Iops",
+            "source_field_id": "Iops",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/KmsKeyId",
+            "source_field_id": "KmsKeyId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/MultiAttachEnabled",
+            "source_field_id": "MultiAttachEnabled",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Operator",
+            "source_field_id": "Operator",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/OutpostArn",
+            "source_field_id": "OutpostArn",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/OwnerId",
+            "source_field_id": "OwnerId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Size",
+            "source_field_id": "Size",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "capacity_bytes",
+            "projection": "checked_positive_integer_gib_to_bytes",
+            "source_unit": "gib",
+            "explicit_null_disposition": "source_private_only",
+            "unit_evidence_ref": "aws.ec2.volume.size_is_gib"
+          },
+          {
+            "source_pointer": "/SnapshotId",
+            "source_field_id": "SnapshotId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SourceVolumeId",
+            "source_field_id": "SourceVolumeId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/SseType",
+            "source_field_id": "SseType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/State",
+            "source_field_id": "State",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Tags",
+            "source_field_id": "Tags",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/Throughput",
+            "source_field_id": "Throughput",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/VolumeArn",
+            "source_field_id": "VolumeArn",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/VolumeId",
+            "source_field_id": "VolumeId",
+            "disposition": "maps_exact_source_fact",
+            "explicit_null_disposition": "source_private_only",
+            "target_field": "display_name",
+            "projection": "exact"
+          },
+          {
+            "source_pointer": "/VolumeInitializationRate",
+            "source_field_id": "VolumeInitializationRate",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/VolumeType",
+            "source_field_id": "VolumeType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ],
+        "nested": [
+          {
+            "parent_pointer": "/Attachments",
+            "wire_codec_profile": "smithy_ec2_query_xml",
+            "fields": [
+              {
+                "source_pointer": "/Attachments/*/AssociatedResource",
+                "wire_pointer": "/attachmentSet/item/associatedResource",
+                "source_field_id": "AssociatedResource",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/AttachTime",
+                "wire_pointer": "/attachmentSet/item/attachTime",
+                "source_field_id": "AttachTime",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/DeleteOnTermination",
+                "wire_pointer": "/attachmentSet/item/deleteOnTermination",
+                "source_field_id": "DeleteOnTermination",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/Device",
+                "wire_pointer": "/attachmentSet/item/device",
+                "source_field_id": "Device",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/EbsCardIndex",
+                "wire_pointer": "/attachmentSet/item/ebsCardIndex",
+                "source_field_id": "EbsCardIndex",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/InstanceId",
+                "wire_pointer": "/attachmentSet/item/instanceId",
+                "source_field_id": "InstanceId",
+                "disposition": "maps_exact_relationship_fact",
+                "target_field": "attached_compute_instance_reference",
+                "projection": "bounded_zero_or_one_relationship_reference",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/InstanceOwningService",
+                "wire_pointer": "/attachmentSet/item/instanceOwningService",
+                "source_field_id": "InstanceOwningService",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/State",
+                "wire_pointer": "/attachmentSet/item/status",
+                "source_field_id": "State",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              },
+              {
+                "source_pointer": "/Attachments/*/VolumeId",
+                "wire_pointer": "/attachmentSet/item/volumeId",
+                "source_field_id": "VolumeId",
+                "disposition": "source_private_only",
+                "explicit_null_disposition": "source_private_only"
+              }
+            ]
+          }
+        ],
+        "evidence_bindings": [
+          {
+            "id": "aws.ec2.volume.size_is_gib",
+            "source_uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json",
+            "source_path": "official/aws/ec2-2016-11-15.json",
+            "expected_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+            "start_byte": 6649979,
+            "end_byte": 6650018,
+            "slice_sha256": "ba418eae0a5ca34cd15899ea61a0f08b51e1a9832c41ef3600a3295a393d85f4"
+          }
+        ]
+      }
+    },
+    {
+      "provider_id": "gcp",
+      "service_id": "storage",
+      "api_surface_id": "storage",
+      "operation_id": "storage.buckets.list",
+      "source_object_type": "Bucket",
+      "record_class_symbol": "storage_container",
+      "record_class_contract_ref": "",
+      "source_schema_version": "v1",
+      "source_mapping_version": "candidate-1",
+      "stable_identity_source_fields": [
+        "name"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "name",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/schemas/Bucket/properties/name",
+            "start_byte": 29872,
+            "end_byte": 30038
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "storage.buckets.list",
+        "object_schema_id": "Bucket",
+        "neutral": {},
+        "fields": [
+          {
+            "source_pointer": "/acl",
+            "source_field_id": "acl",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/autoclass",
+            "source_field_id": "autoclass",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/billing",
+            "source_field_id": "billing",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/cors",
+            "source_field_id": "cors",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/customPlacementConfig",
+            "source_field_id": "customPlacementConfig",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/defaultEventBasedHold",
+            "source_field_id": "defaultEventBasedHold",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/defaultObjectAcl",
+            "source_field_id": "defaultObjectAcl",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/encryption",
+            "source_field_id": "encryption",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/etag",
+            "source_field_id": "etag",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/generation",
+            "source_field_id": "generation",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/hardDeleteTime",
+            "source_field_id": "hardDeleteTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/hierarchicalNamespace",
+            "source_field_id": "hierarchicalNamespace",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/iamConfiguration",
+            "source_field_id": "iamConfiguration",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/id",
+            "source_field_id": "id",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ipFilter",
+            "source_field_id": "ipFilter",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/kind",
+            "source_field_id": "kind",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/labels",
+            "source_field_id": "labels",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lifecycle",
+            "source_field_id": "lifecycle",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/location",
+            "source_field_id": "location",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/locationType",
+            "source_field_id": "locationType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/logging",
+            "source_field_id": "logging",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/metageneration",
+            "source_field_id": "metageneration",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/name",
+            "source_field_id": "name",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "display_name",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/objectRetention",
+            "source_field_id": "objectRetention",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/owner",
+            "source_field_id": "owner",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/projectNumber",
+            "source_field_id": "projectNumber",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/retentionPolicy",
+            "source_field_id": "retentionPolicy",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/rpo",
+            "source_field_id": "rpo",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPZI",
+            "source_field_id": "satisfiesPZI",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPZS",
+            "source_field_id": "satisfiesPZS",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/selfLink",
+            "source_field_id": "selfLink",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/softDeletePolicy",
+            "source_field_id": "softDeletePolicy",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/softDeleteTime",
+            "source_field_id": "softDeleteTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/storageClass",
+            "source_field_id": "storageClass",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/timeCreated",
+            "source_field_id": "timeCreated",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/updated",
+            "source_field_id": "updated",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/versioning",
+            "source_field_id": "versioning",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/website",
+            "source_field_id": "website",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ]
+      }
+    },
+    {
+      "provider_id": "gcp",
+      "service_id": "compute",
+      "api_surface_id": "compute",
+      "operation_id": "compute.instances.aggregatedList",
+      "source_object_type": "Instance",
+      "record_class_symbol": "compute_instance",
+      "record_class_contract_ref": "",
+      "source_schema_version": "v1",
+      "source_mapping_version": "candidate-1",
+      "stable_identity_source_fields": [
+        "id"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "id",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/schemas/Instance/properties/id",
+            "start_byte": 2573421,
+            "end_byte": 2573655
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "compute.instances.aggregatedList",
+        "object_schema_id": "Instance",
+        "neutral": {
+          "owner_ref": "",
+          "owner_sha256": "",
+          "class_symbol": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": "",
+          "fields": null
+        },
+        "fields": [
+          {
+            "source_pointer": "/advancedMachineFeatures",
+            "source_field_id": "advancedMachineFeatures",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/canIpForward",
+            "source_field_id": "canIpForward",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/confidentialInstanceConfig",
+            "source_field_id": "confidentialInstanceConfig",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/cpuPlatform",
+            "source_field_id": "cpuPlatform",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/creationTimestamp",
+            "source_field_id": "creationTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/deletionProtection",
+            "source_field_id": "deletionProtection",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/description",
+            "source_field_id": "description",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/disks",
+            "source_field_id": "disks",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/displayDevice",
+            "source_field_id": "displayDevice",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/fingerprint",
+            "source_field_id": "fingerprint",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/guestAccelerators",
+            "source_field_id": "guestAccelerators",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/hostname",
+            "source_field_id": "hostname",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/id",
+            "source_field_id": "id",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/instanceEncryptionKey",
+            "source_field_id": "instanceEncryptionKey",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/keyRevocationActionType",
+            "source_field_id": "keyRevocationActionType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/kind",
+            "source_field_id": "kind",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/labelFingerprint",
+            "source_field_id": "labelFingerprint",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/labels",
+            "source_field_id": "labels",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lastStartTimestamp",
+            "source_field_id": "lastStartTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lastStopTimestamp",
+            "source_field_id": "lastStopTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lastSuspendedTimestamp",
+            "source_field_id": "lastSuspendedTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/localSsdEncryptionMode",
+            "source_field_id": "localSsdEncryptionMode",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/machineType",
+            "source_field_id": "machineType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/metadata",
+            "source_field_id": "metadata",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/minCpuPlatform",
+            "source_field_id": "minCpuPlatform",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/name",
+            "source_field_id": "name",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "display_name",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/networkInterfaces",
+            "source_field_id": "networkInterfaces",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/networkPerformanceConfig",
+            "source_field_id": "networkPerformanceConfig",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/params",
+            "source_field_id": "params",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/privateIpv6GoogleAccess",
+            "source_field_id": "privateIpv6GoogleAccess",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/reservationAffinity",
+            "source_field_id": "reservationAffinity",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/resourcePolicies",
+            "source_field_id": "resourcePolicies",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/resourceStatus",
+            "source_field_id": "resourceStatus",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPzi",
+            "source_field_id": "satisfiesPzi",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPzs",
+            "source_field_id": "satisfiesPzs",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/scheduling",
+            "source_field_id": "scheduling",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/selfLink",
+            "source_field_id": "selfLink",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/serviceAccounts",
+            "source_field_id": "serviceAccounts",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/shieldedInstanceConfig",
+            "source_field_id": "shieldedInstanceConfig",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/shieldedInstanceIntegrityPolicy",
+            "source_field_id": "shieldedInstanceIntegrityPolicy",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceMachineImage",
+            "source_field_id": "sourceMachineImage",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceMachineImageEncryptionKey",
+            "source_field_id": "sourceMachineImageEncryptionKey",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/startRestricted",
+            "source_field_id": "startRestricted",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/status",
+            "source_field_id": "status",
+            "disposition": "maps_exact_lifecycle_fact",
+            "explicit_null_disposition": "source_private_only",
+            "target_field": "lifecycle_state",
+            "projection": "exact",
+            "lifecycle_recipe": {
+              "evidence_refs": [
+                "gcp.compute.terminated_restartable"
+              ],
+              "source_to_neutral": {
+                "RUNNING": "running",
+                "TERMINATED": "stopped"
+              },
+              "unsupported_source_values": [
+                "DEPROVISIONING",
+                "PENDING",
+                "PENDING_STOP",
+                "PROVISIONING",
+                "REPAIRING",
+                "STAGING",
+                "STOPPED",
+                "STOPPING",
+                "SUSPENDED",
+                "SUSPENDING"
+              ],
+              "unknown_value_policy": "refuse"
+            }
+          },
+          {
+            "source_pointer": "/statusMessage",
+            "source_field_id": "statusMessage",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/tags",
+            "source_field_id": "tags",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/workloadIdentityConfig",
+            "source_field_id": "workloadIdentityConfig",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/zone",
+            "source_field_id": "zone",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ],
+        "evidence_bindings": [
+          {
+            "id": "gcp.compute.terminated_restartable",
+            "source_uri": "https://docs.cloud.google.com/compute/docs/instances/stop-start-instance",
+            "source_path": "official/lifecycle/gcp-compute-stop-start-instance.html",
+            "expected_sha256": "d00c426c3f0c8b2d57d40ea205c1e4921f2f20bc15ebff0941cb189f1825a69a",
+            "start_byte": 327084,
+            "end_byte": 327263,
+            "slice_sha256": "8da16a65353fa4c867f194efb7646fefdc83be82a02bedabbac18f127a0ef7ed"
+          }
+        ]
+      }
+    },
+    {
+      "provider_id": "gcp",
+      "service_id": "compute",
+      "api_surface_id": "compute",
+      "operation_id": "compute.disks.aggregatedList",
+      "source_object_type": "Disk",
+      "record_class_symbol": "compute_volume",
+      "record_class_contract_ref": "",
+      "source_schema_version": "v1",
+      "source_mapping_version": "candidate-1",
+      "stable_identity_source_fields": [
+        "id"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "id",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/schemas/Disk/properties/id",
+            "start_byte": 713832,
+            "end_byte": 714066
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "compute.disks.aggregatedList",
+        "object_schema_id": "Disk",
+        "neutral": {
+          "owner_ref": "",
+          "owner_sha256": "",
+          "class_symbol": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": "",
+          "fields": null
+        },
+        "fields": [
+          {
+            "source_pointer": "/accessMode",
+            "source_field_id": "accessMode",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/architecture",
+            "source_field_id": "architecture",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/asyncPrimaryDisk",
+            "source_field_id": "asyncPrimaryDisk",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/asyncSecondaryDisks",
+            "source_field_id": "asyncSecondaryDisks",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/creationTimestamp",
+            "source_field_id": "creationTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/description",
+            "source_field_id": "description",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/diskEncryptionKey",
+            "source_field_id": "diskEncryptionKey",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/enableConfidentialCompute",
+            "source_field_id": "enableConfidentialCompute",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/guestOsFeatures",
+            "source_field_id": "guestOsFeatures",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/id",
+            "source_field_id": "id",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/kind",
+            "source_field_id": "kind",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/labelFingerprint",
+            "source_field_id": "labelFingerprint",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/labels",
+            "source_field_id": "labels",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lastAttachTimestamp",
+            "source_field_id": "lastAttachTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lastDetachTimestamp",
+            "source_field_id": "lastDetachTimestamp",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/licenseCodes",
+            "source_field_id": "licenseCodes",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/licenses",
+            "source_field_id": "licenses",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/locationHint",
+            "source_field_id": "locationHint",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/name",
+            "source_field_id": "name",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "display_name",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/options",
+            "source_field_id": "options",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/params",
+            "source_field_id": "params",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/physicalBlockSizeBytes",
+            "source_field_id": "physicalBlockSizeBytes",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/provisionedIops",
+            "source_field_id": "provisionedIops",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/provisionedThroughput",
+            "source_field_id": "provisionedThroughput",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/region",
+            "source_field_id": "region",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/replicaZones",
+            "source_field_id": "replicaZones",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/resourcePolicies",
+            "source_field_id": "resourcePolicies",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/resourceStatus",
+            "source_field_id": "resourceStatus",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPzi",
+            "source_field_id": "satisfiesPzi",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPzs",
+            "source_field_id": "satisfiesPzs",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/selfLink",
+            "source_field_id": "selfLink",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sizeGb",
+            "source_field_id": "sizeGb",
+            "disposition": "maps_exact_source_fact",
+            "explicit_null_disposition": "source_private_only",
+            "target_field": "capacity_bytes",
+            "projection": "checked_positive_integer_gib_to_bytes",
+            "source_unit": "gib",
+            "unit_evidence_ref": "gcp.compute.disk.size_gb_is_gib"
+          },
+          {
+            "source_pointer": "/sourceConsistencyGroupPolicy",
+            "source_field_id": "sourceConsistencyGroupPolicy",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceConsistencyGroupPolicyId",
+            "source_field_id": "sourceConsistencyGroupPolicyId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceDisk",
+            "source_field_id": "sourceDisk",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceDiskId",
+            "source_field_id": "sourceDiskId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceImage",
+            "source_field_id": "sourceImage",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceImageEncryptionKey",
+            "source_field_id": "sourceImageEncryptionKey",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceImageId",
+            "source_field_id": "sourceImageId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceInstantSnapshot",
+            "source_field_id": "sourceInstantSnapshot",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceInstantSnapshotId",
+            "source_field_id": "sourceInstantSnapshotId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceSnapshot",
+            "source_field_id": "sourceSnapshot",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceSnapshotEncryptionKey",
+            "source_field_id": "sourceSnapshotEncryptionKey",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceSnapshotId",
+            "source_field_id": "sourceSnapshotId",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/sourceStorageObject",
+            "source_field_id": "sourceStorageObject",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/status",
+            "source_field_id": "status",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/storagePool",
+            "source_field_id": "storagePool",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/type",
+            "source_field_id": "type",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/zone",
+            "source_field_id": "zone",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ],
+        "nested": [
+          {
+            "parent_pointer": "/users",
+            "wire_codec_profile": "discovery_json",
+            "fields": [
+              {
+                "source_pointer": "/users/*",
+                "wire_pointer": "/users/*",
+                "source_field_id": "*",
+                "disposition": "maps_exact_relationship_fact",
+                "target_field": "attached_compute_instance_reference",
+                "projection": "bounded_zero_or_one_relationship_reference",
+                "explicit_null_disposition": "source_private_only"
+              }
+            ]
+          }
+        ],
+        "evidence_bindings": [
+          {
+            "id": "gcp.compute.disk.size_gb_is_gib",
+            "source_uri": "https://docs.cloud.google.com/compute/docs/disks/resize-persistent-disk",
+            "source_path": "official/units/gcp-compute-resize-persistent-disk.html",
+            "expected_sha256": "1adbb1a324d8b11d4b6e85e58f057afdf1cb0db0ae16177a15155db5faed8dad",
+            "start_byte": 355261,
+            "end_byte": 355458,
+            "slice_sha256": "5f3c1ca86e51913f8830035cd99e87cbb9884dad67feeee0aedf17322e3da00c"
+          }
+        ]
+      }
+    }
+  ]
+}

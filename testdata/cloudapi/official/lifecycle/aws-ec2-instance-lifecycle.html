@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Amazon EC2 instance state changes - Amazon Elastic Compute Cloud</title><meta name="viewport" content="width=device-width,initial-scale=1" /><meta name="assets_root" content="/assets" /><meta name="target_state" content="ec2-instance-lifecycle" /><meta name="default_state" content="ec2-instance-lifecycle" /><link rel="icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="shortcut icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="canonical" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" /><link rel="alternate" type="text/markdown" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.md" title="Markdown version" /><meta name="description" content="Describes the state changes for an Amazon EC2, from launch to termination." /><meta name="deployment_region" content="IAD" /><meta name="product" content="Amazon Elastic Compute Cloud" /><meta name="guide" content="User Guide" /><meta name="abstract" content="Use Amazon EC2 to configure, launch, and manage virtual servers in the AWS cloud." /><meta name="guide-locale" content="en_us" /><meta name="tocs" content="toc-contents.json" /><link rel="canonical" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="id-id" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="id" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="de-de" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="de" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="en-us" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="en" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="es-es" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="es" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="fr-fr" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="fr" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="it-it" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="it" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="ja-jp" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="ja" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="ko-kr" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="ko" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="pt-br" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="pt" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_cn/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="zh-cn" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_tw/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="zh-tw" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" hreflang="x-default" /><meta name="feedback-item" content="EC2" /><meta name="this_doc_product" content="Amazon Elastic Compute Cloud" /><meta name="this_doc_guide" content="User Guide" /><head xmlns="http://www.w3.org/1999/xhtml"> <script defer="" src="/assets/r/awsdocs-doc-page.2.0.0.js"></script><link href="/assets/r/awsdocs-doc-page.2.0.0.css" rel="stylesheet"/></head>
+<script defer="" id="awsc-panorama-bundle" type="text/javascript" src="https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js" data-config="{'appEntity':'aws-documentation','region':'us-east-1','service':'ec2'}"></script><meta id="panorama-serviceSubSection" value="User Guide" /><meta id="panorama-serviceConsolePage" value="Amazon EC2 instance state changes" /></head><body class="awsdocs awsui"><div class="awsdocs-container"><p><a href="ec2-instance-lifecycle.md">View a markdown version of this page</a></p><awsdocs-header></awsdocs-header><awsui-app-layout id="app-layout" class="awsui-util-no-gutters" ng-controller="ContentController as $ctrl" header-selector="awsdocs-header" navigation-hide="false" navigation-width="$ctrl.navWidth" navigation-open="$ctrl.navOpen" navigation-change="$ctrl.onNavChange($event)" tools-hide="$ctrl.hideTools" tools-width="$ctrl.toolsWidth" tools-open="$ctrl.toolsOpen" tools-change="$ctrl.onToolsChange($event)"><div id="guide-toc" dom-region="navigation"><awsdocs-toc></awsdocs-toc></div><div id="main-column" dom-region="content" tabindex="-1"><awsdocs-view class="awsdocs-view"><div id="awsdocs-content"><head><title>Amazon EC2 instance state changes - Amazon Elastic Compute Cloud</title><meta name="pdf" content="/pdfs/AWSEC2/latest/UserGuide/ec2-ug.pdf#ec2-instance-lifecycle" /><meta name="rss" content="amazon-ec2-release-notes.rss" /><meta name="forums" content="https://repost.aws/tags/TAO-wqN9fYRoyrpdULLa5y7g" /><meta name="feedback" content="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" /><meta name="feedback-yes" content="feedbackyes.html?topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" /><meta name="feedback-no" content="feedbackno.html?topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html" /><meta name="keywords" content="EC2,Amazon EC2,EC2 instance,EC2 Linux instance,EC2 Windows instance,instance,VM,virtual machine,EC2 instances overview,instance state concepts" /><script type="application/ld+json">
+{
+    "@context" : "https://schema.org",
+    "@type" : "BreadcrumbList",
+    "itemListElement" : [
+      {
+        "@type" : "ListItem",
+        "position" : 1,
+        "name" : "AWS",
+        "item" : "https://aws.amazon.com"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 2,
+        "name" : "Amazon EC2",
+        "item" : "https://docs.aws.amazon.com/ec2/index.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 3,
+        "name" : "User Guide",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 4,
+        "name" : "Amazon EC2 instances",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Instances.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 5,
+        "name" : "Amazon EC2 instance state changes",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Instances.html"
+      }
+    ]
+}
+</script></head><body><div id="main"><div style="display: none"><a href="/pdfs/AWSEC2/latest/UserGuide/ec2-ug.pdf#ec2-instance-lifecycle" target="_blank" rel="noopener noreferrer" title="Open PDF"></a></div><div id="breadcrumbs" class="breadcrumb"><a href="/index.html">Documentation</a><a href="/ec2/index.html">Amazon EC2</a><a href="concepts.html">User Guide</a></div><div id="page-toc-src"><a href="#instance-billing-by-state">Billing by instance state</a><a href="#instance-launch">Pending instances</a><a href="#instance-stop-start">Stopped instances</a><a href="#instance-hibernate">Hibernated instances</a><a href="#instance-reboot">Rebooting instances</a><a href="#instance-termination">Terminated instances</a><a href="#lifecycle-differences">Differences between instance states</a></div><div id="main-content" class="awsui-util-container"><div id="main-col-body"><awsdocs-language-banner data-service="$ctrl.pageService"></awsdocs-language-banner><h1 class="topictitle" id="ec2-instance-lifecycle">Amazon EC2 instance state changes</h1><div class="awsdocs-page-header-container"><awsdocs-page-header></awsdocs-page-header><awsdocs-filter-selector id="awsdocs-filter-selector"></awsdocs-filter-selector></div><p>An Amazon EC2 instance transitions through different states from the moment you launch it through
+		to its termination.</p><p>The following illustration represents the transitions between instance states.</p><div class="mediaobject">
+       
+      	<img src="/images/AWSEC2/latest/UserGuide/images/instance_lifecycle.png" class="aws-docs-img-whiteBg aws-docs-img-padding" alt="The instance lifecycle." style="max-width:65%" />
+       
+       
+    </div><p>You can receive notifications when your instances change states. For more information, see
+		<a href="./monitoring-instance-state-changes.html">State change events for Amazon EC2 instances</a>.</p>
+		<h2 id="instance-billing-by-state">Billing by instance state</h2>
+	<p>The following table provides a brief description of each instance state and indicates whether instance 
+		usage is billed. Some AWS resources, such as Amazon EBS
+			volumes and Elastic IP addresses, incur charges regardless of the instance's state. For
+			more information, see <a href="https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/checklistforunwantedcharges.html">Avoiding Unexpected Charges</a> in the <em>AWS Billing User Guide</em>.</p>
+	<div class="table-container"><div class="table-contents"><table id="w467aac13c29c11b5"><thead>
+				<tr>
+					<th>Instance state</th>
+					<th>Description</th>
+					<th>Instance usage billing</th>
+				</tr>
+			</thead>
+				<tr>
+					<td tabindex="-1">
+						<p><code class="code">pending</code></p>
+					</td>
+					<td tabindex="-1">
+						<p>The instance is preparing to enter the <code class="code">running</code> state. An instance enters
+							the <code class="code">pending</code> state when it is launched or when it is started
+							after being in the <code class="code">stopped</code> state.</p>
+					</td>					
+					<td tabindex="-1">
+						<p>Not billed</p>
+					</td>
+				</tr>
+				<tr>
+					<td tabindex="-1">
+						<p><code class="code">running</code></p>
+					</td>
+					<td tabindex="-1">
+						<p>The instance is running and ready for use.</p>
+					</td>
+					<td tabindex="-1">
+						<p>Billed</p>
+					</td>
+				</tr> 
+				<tr>
+					<td tabindex="-1">
+						<p><code class="code">stopping</code></p>
+					</td>
+					<td tabindex="-1">
+						<p>The instance is preparing to be stopped.</p>
+					</td>
+					<td tabindex="-1">
+						<p>Not billed</p>
+						<div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>If you hibernate an instance, you're billed while the instance is in the
+									<code class="code">stopping</code> state.</p></div></div>
+					</td>
+				</tr> 
+				<tr>
+					<td tabindex="-1">
+						<p><code class="code">stopped</code></p>
+					</td>
+					<td tabindex="-1">
+						<p>The instance is shut down and cannot be used. The instance can be started at any
+							time.</p>
+					</td>					
+					<td tabindex="-1">
+						<p>Not billed</p>
+					</td>
+				</tr> 
+				<tr>
+					<td tabindex="-1">
+						<p><code class="code">shutting-down</code></p>
+					</td>
+					<td tabindex="-1">
+						<p>The instance is preparing to be terminated.</p>
+					</td>					
+					<td tabindex="-1">
+						<p>Not billed</p>
+					</td>
+				</tr> 
+				<tr>
+					<td tabindex="-1">
+						<p><code class="code">terminated</code></p>
+					</td>
+					<td tabindex="-1">
+						<p>The instance has been permanently deleted and cannot be started.</p>
+					</td>				
+					<td tabindex="-1">
+						<p>Not billed</p>
+						<div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>Reserved Instances that applied to terminated instances are billed until the end of
+								their term according to their payment option. For more information,
+								see <a href="./ec2-reserved-instances.html">Reserved Instances for Amazon EC2 overview</a></p></div></div>
+					</td>
+				</tr> 
+			</table></div></div>
+	 
+		<h2 id="instance-launch">Pending instances</h2>
+		
+		<p>When you launch an instance, it enters the <code class="code">pending</code> state. 			
+		    The instance type that you specified at launch determines the hardware of the host computer for your instance.
+		    The Amazon Machine Image (AMI) you specified at launch is used to boot the instance.
+		    After the instance is ready for you, it enters the <code class="code">running</code> state.
+		    You can connect to your running instance and use it the way that you'd use a computer sitting in front of you.</p>
+		<p>As soon as your instance transitions to the <code class="code">running</code> state, you're billed for
+			each second, with a one-minute minimum, that you keep the instance running, even if the
+			instance remains idle and you don't connect to it.</p>
+	 
+		<h2 id="instance-stop-start">Stopped instances</h2>
+		
+		<p>If your instance fails a status check or is not running your applications as expected, 
+			and if the root volume of your instance is an Amazon EBS volume, you can stop and start your instance
+			to try to fix the problem.</p>
+		<p>When you stop your instance, it enters the <code class="code">stopping</code> state, and then the
+				<code class="code">stopped</code> state. You are not charged for usage or data transfer fees for
+			your instance when it is <code class="code">stopped</code>. Charges are incurred for the storage of
+			any Amazon EBS volumes. While your instance is in the <code class="code">stopped</code> state, you can
+			modify certain attributes of the instance, including the instance type.</p>
+		<p>When you start your instance, it enters the <code class="code">pending</code> state, and the instance is
+			moved to a new host computer (though in some cases, it remains on the current host).
+			When you stop and start your instance, you lose any data on the instance store volumes
+			attached to the previous host computer.</p>
+		<p>Your instance retains its private IPv4 address, which means that an Elastic IP address
+			associated with the private IPv4 address or network interface remains associated with
+			your instance. If your instance has an IPv6 address, it retains the IPv6 address.</p>
+		<p>Each time you transition an instance from <code class="code">stopped</code> to <code class="code">running</code>, you
+			are charged per second when the instance is running, with a minimum of one minute per
+			instance start.</p>
+		<p>For more details about stopping and starting an instance, see <a href="./Stop_Start.html">Stop and start Amazon EC2 instances</a>.</p>
+	 
+		<h2 id="instance-hibernate">Hibernated instances</h2>
+		<p>When you hibernate an instance, the operating system is signaled to perform hibernation
+			(suspend-to-disk), which saves the contents from the instance memory (RAM) to your Amazon EBS
+			root volume. The instance's Amazon EBS root volume and any attached Amazon EBS data
+			volumes are persisted. When you start your instance, the Amazon EBS root volume is restored to its previous
+			state and the RAM contents are reloaded. Previously attached data volumes are reattached
+			and the instance retains its instance ID.</p>
+		<p>When you hibernate your instance, it enters the <code class="code">stopping</code> state, and then the
+				<code class="code">stopped</code> state. You are not charged for 
+			usage for a hibernated instance when it is in the <code class="code">stopped</code> state, but you are
+			charged while it is in the <code class="code">stopping</code> state, unlike when you <a href="#instance-stop-start">stop an instance</a> without hibernating it. You
+			are not charged for data transfer fees, but you are charged for the storage for any
+			Amazon EBS volumes, including storage for the RAM data.</p>
+		<p>When you start your hibernated instance, it enters the <code class="code">pending</code> state, and the instance is moved to a new host computer (though in some cases, it remains on the current host).</p>
+		<p>Your instance retains its private IPv4 address, which means that an Elastic IP address
+			associated with the private IPv4 address or network interface is still associated with
+			your instance. If your instance has an IPv6 address, it retains its IPv6 address.</p>
+		<p>For more information, see <a href="./Hibernate.html">Hibernate your Amazon EC2 instance</a>.</p>
+	 
+		<h2 id="instance-reboot">Rebooting instances</h2>
+		<p>You can reboot your instance using the Amazon EC2 console, a command line tool, and the Amazon EC2
+			API. We recommend that you use Amazon EC2 to reboot your instance instead of running the
+			operating system reboot command from your instance.</p>
+		<p>Rebooting an instance is equivalent to rebooting an operating system. The instance remains
+			on the same host computer and maintains its public DNS name, private IP address, and any
+			data on its instance store volumes. It typically takes a few minutes for the reboot to
+			complete, but the time it takes to reboot depends on the instance configuration.</p>
+		<p>Rebooting an instance doesn't start a new instance billing period; per second billing continues without a
+				further one-minute minimum charge.</p>
+		<p>For more information, see <a href="./ec2-instance-reboot.html">Reboot your Amazon EC2 instance</a>.</p>
+	 
+		<h2 id="instance-termination">Terminated instances</h2>
+		<p>When you've decided that you no longer need an instance, you can terminate it. As soon as the 
+			status of an instance changes to <code class="code">shutting-down</code> or <code class="code">terminated</code>, 
+			you stop incurring charges for that instance.</p>
+		<p>If you enable termination protection, you can't terminate the instance using the console,
+			CLI, or API.</p>
+		<p>After you terminate an instance, it remains visible in the console for a short while, and
+			then the entry is automatically deleted. You can also describe a terminated instance
+			using the CLI and API. Resources (such as tags) are gradually disassociated from the
+			terminated instance, therefore may no longer be visible on the terminated instance after
+			a short while. You can't connect to or recover a terminated instance. </p>
+		<p>Each Amazon EBS-backed instance supports the <code class="code">InstanceInitiatedShutdownBehavior</code>
+			attribute, which controls whether the instance stops or terminates when you initiate
+			shutdown from within the instance itself (for example, by using the
+					<b>shutdown</b> command on Linux). The default behavior is
+			to stop the instance. You can modify the setting of this attribute while the instance is
+			running or stopped.</p>
+		<p>Each Amazon EBS volume supports the <code class="code">DeleteOnTermination</code> attribute, which controls
+			whether the volume is deleted or preserved when you terminate the instance it is
+			attached to. The default is to delete the root volume and preserve any other EBS
+			volumes.</p>
+		<p>For more information, see <a href="./terminating-instances.html">Terminate Amazon EC2 instances</a>.</p>
+	 
+    	<h2 id="lifecycle-differences">Differences between instance states</h2>
+    	
+    	<p>The following table summarizes the key differences between rebooting, stopping,
+			hibernating, and terminating your instance.</p>
+    	<div class="table-container"><div class="table-contents disable-scroll"><table id="w467aac13c29c23b5"><thead>
+					<tr>
+						<th>Characteristic</th>
+						<th>Reboot</th>
+						<th>Stop/start (Amazon EBS-backed instances only)</th>
+						<th>Hibernate (Amazon EBS-backed instances only)</th>
+						<th>Terminate</th>
+					</tr>
+				</thead>
+					<tr>
+						<td tabindex="-1">
+							<p>Host computer</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance stays on the same host computer.</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance is moved to a new host computer (though in some cases, it remains on the current host).</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance is moved to a new host computer (though in some cases, it remains on the current host).</p>
+						</td>
+						<td tabindex="-1">
+							<p>None</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>Private IPv4 address</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its private IPv4 address.</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its private IPv4 address.</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its private IPv4 address.</p>
+						</td>
+						<td tabindex="-1">
+							<p>None</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>Public IPv4 address</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its public IPv4 address.</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance gets a new public IPv4 address, unless it has a
+								secondary network interface or a secondary private IPv4 address that
+								is associated with an Elastic IP address.</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance gets a new public IPv4 address, unless it has a
+								secondary network interface or a secondary private IPv4 address that
+								is associated with an Elastic IP address.</p>
+						</td>
+						<td tabindex="-1">
+							<p>None</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>Elastic IP address (IPv4)</p>
+						</td>
+						<td tabindex="-1">
+							<p>The Elastic IP address remains associated with the instance</p>
+						</td>
+						<td tabindex="-1">
+							<p>The Elastic IP address remains associated with the instance</p>
+						</td>
+						<td tabindex="-1">
+							<p>The Elastic IP address remains associated with the instance</p>
+						</td>
+						<td tabindex="-1">
+							<p>The Elastic IP address is disassociated from the instance</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>IPv6 address</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its IPv6 address</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its IPv6 address</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance keeps its IPv6 address</p>
+						</td>
+						<td tabindex="-1">
+							<p>None</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>Instance store volumes</p>
+						</td>
+						<td tabindex="-1">
+							<p>The data is preserved</p>
+						</td>
+						<td tabindex="-1">
+							<p>The data is erased</p>
+						</td>
+						<td tabindex="-1">
+							<p>The data is erased</p>
+						</td>
+						<td tabindex="-1">
+							<p>The data is erased</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>Root volume</p>
+						</td>
+						<td tabindex="-1">
+							<p>The volume is preserved</p>
+						</td>
+						<td tabindex="-1">
+							<p>The volume is preserved</p>
+						</td>
+						<td tabindex="-1">
+							<p>The volume is preserved</p>
+						</td>
+						<td tabindex="-1">
+							<p>The volume is deleted by default</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>RAM (contents of memory)</p>
+						</td>
+						<td tabindex="-1">
+							<p>The RAM is erased</p>
+						</td>
+						<td tabindex="-1">
+							<p>The RAM is erased</p>
+						</td>
+						<td tabindex="-1">
+							<p>The RAM is saved to a file on the root volume</p>
+						</td>
+						<td tabindex="-1">
+							<p>The RAM is erased</p>
+						</td>
+					</tr>
+					<tr>
+						<td tabindex="-1">
+							<p>Billing</p>
+						</td>
+						<td tabindex="-1">
+							<p>The instance billing hour doesn't change</p>
+						</td>
+						<td tabindex="-1">
+							<p>You stop incurring charges for an instance as soon as its state changes to
+									<code class="code">stopping</code>. Each time an instance transitions from
+									<code class="code">stopped</code> to <code class="code">running</code>, we start a new
+								instance billing period, billing a minimum of one minute every time
+									you start your instance.</p>
+						</td>
+						<td tabindex="-1">
+							<p>You incur charges while the instance is in the <code class="code">stopping</code> state, but stop
+								incurring charges when the instance is in the <code class="code">stopped</code>
+								state. Each time an instance transitions from <code class="code">stopped</code>
+								to <code class="code">running</code>, we start a new instance billing period, billing a
+									minimum of one minute every time you start your
+									instance.</p>
+						</td>
+						<td tabindex="-1">
+							<p>You stop incurring charges for an instance as soon as its state
+								changes to <code class="code">shutting-down</code></p>
+						</td>
+					</tr>
+				</table></div></div>
+    	
+    	<p>Operating system shutdown commands always terminate an instance with an instance store
+			root volume. You can control whether operating system shutdown commands stop or
+			terminate an instance with an EBS root volume. For more information, see <a href="./Using_ChangingInstanceInitiatedShutdownBehavior.html">Change instance initiated shutdown behavior</a>.</p>
+    <awsdocs-copyright class="copyright-print"></awsdocs-copyright><awsdocs-thumb-feedback right-edge="{{$ctrl.thumbFeedbackRightEdge}}"></awsdocs-thumb-feedback></div><noscript><div><div><div><div id="js_error_message"><p><img src="https://d1ge0kk1l5kms0.cloudfront.net/images/G/01/webservices/console/warning.png" alt="Warning" /> <strong>Javascript is disabled or is unavailable in your browser.</strong></p><p>To use the Amazon Web Services Documentation, Javascript must be enabled. Please refer to your browser's Help pages for instructions.</p></div></div></div></div></noscript><div id="main-col-footer" class="awsui-util-font-size-0"><div id="doc-conventions"><a target="_top" href="/general/latest/gr/docconventions.html">Document Conventions</a></div><div class="prev-next"><div id="previous" class="prev-link" accesskey="p" href="./eice-quotas.html">Quotas</div><div id="next" class="next-link" accesskey="n" href="./Stop_Start.html">Stop and start</div></div></div><awsdocs-page-utilities></awsdocs-page-utilities></div><div id="quick-feedback-yes" style="display: none;"><div class="title">Did this page help you? - Yes</div><div class="content"><p>Thanks for letting us know we're doing a good job!</p><p>If you've got a moment, please tell us what we did right so we can do more of it.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html"></awsui-button></p></div></div><div id="quick-feedback-no" style="display: none;"><div class="title">Did this page help you? - No</div><div class="content"><p>Thanks for letting us know this page needs work. We're sorry we let you down.</p><p>If you've got a moment, please tell us how we can make the documentation better.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html"></awsui-button></p></div></div></div></body></div></awsdocs-view><div class="page-loading-indicator" id="page-loading-indicator"><awsui-spinner size="large"></awsui-spinner></div></div><div id="tools-panel" dom-region="tools"><awsdocs-tools-panel id="awsdocs-tools-panel"></awsdocs-tools-panel></div></awsui-app-layout><awsdocs-cookie-banner class="doc-cookie-banner"></awsdocs-cookie-banner></div></body></html>

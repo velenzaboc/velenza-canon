@@ -272,6 +272,12 @@ func validateExternalReferenceEdgeDescriptor(desc EdgeLabelDescriptor, contract 
 // external-reference topology contract.
 func validateExternalReferenceEdgeIsolation(labels []EdgeLabelDescriptor) error {
 	for _, desc := range labels {
+		if contract, apiLabel := apiRelationshipEdgeContracts[desc.Name()]; apiLabel {
+			if err := validateAPIRelationshipEdgeDescriptor(desc, contract); err != nil {
+				return err
+			}
+			continue
+		}
 		if contract, externalLabel := externalReferenceEdgeContracts[desc.Name()]; externalLabel {
 			if err := validateExternalReferenceEdgeDescriptor(desc, contract); err != nil {
 				return err

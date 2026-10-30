@@ -136,6 +136,14 @@ func ResolveEdgeEndpointsInBatch(
 			violations = append(violations, endpointClassViolation(orgID, runID, snapshotID, pe, src, tgt, pe.Label.Name()))
 			continue
 		}
+		if err := validateAPIRelationshipEndpoints(pe.Label, src, tgt); err != nil {
+			violations = append(violations, endpointClassViolation(orgID, runID, snapshotID, pe, src, tgt, pe.Label.Name()))
+			continue
+		}
+		if _, apiRelationship := apiRelationshipEdgeContracts[pe.Label.Name()]; apiRelationship && (src.OrganizationID != orgID || tgt.OrganizationID != orgID || src.GraphSnapshotID != snapshotID || tgt.GraphSnapshotID != snapshotID) {
+			violations = append(violations, endpointClassViolation(orgID, runID, snapshotID, pe, src, tgt, pe.Label.Name()))
+			continue
+		}
 		if pe.HasMirror {
 			// The mirror runs the SAME gate with the endpoints swapped. A
 			// label pair whose inverse forbids the reverse class pair would

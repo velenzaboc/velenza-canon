@@ -1,0 +1,269 @@
+{
+  "targets": [
+    {
+      "provider_id": "gcp",
+      "service_id": "storage",
+      "api_surface_id": "storage",
+      "operation_id": "storage.buckets.list",
+      "source_object_type": "Bucket",
+      "record_class_symbol": "storage_container",
+      "record_class_contract_ref": "",
+      "source_schema_version": "v1",
+      "source_mapping_version": "candidate-1",
+      "stable_identity_source_fields": [
+        "name"
+      ],
+      "stable_identity_evidence": [
+        {
+          "source_field_id": "name",
+          "semantic_role": "scoped_native_lookup_key",
+          "locator": {
+            "evidence_id": "model",
+            "json_pointer": "/schemas/Bucket/properties/name",
+            "start_byte": 29872,
+            "end_byte": 30038
+          }
+        }
+      ],
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "storage.buckets.list",
+        "object_schema_id": "Bucket",
+        "neutral": {},
+        "fields": [
+          {
+            "source_pointer": "/acl",
+            "source_field_id": "acl",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/autoclass",
+            "source_field_id": "autoclass",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/billing",
+            "source_field_id": "billing",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/cors",
+            "source_field_id": "cors",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/customPlacementConfig",
+            "source_field_id": "customPlacementConfig",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/defaultEventBasedHold",
+            "source_field_id": "defaultEventBasedHold",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/defaultObjectAcl",
+            "source_field_id": "defaultObjectAcl",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/encryption",
+            "source_field_id": "encryption",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/etag",
+            "source_field_id": "etag",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/generation",
+            "source_field_id": "generation",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/hardDeleteTime",
+            "source_field_id": "hardDeleteTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/hierarchicalNamespace",
+            "source_field_id": "hierarchicalNamespace",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/iamConfiguration",
+            "source_field_id": "iamConfiguration",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/id",
+            "source_field_id": "id",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/ipFilter",
+            "source_field_id": "ipFilter",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/kind",
+            "source_field_id": "kind",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/labels",
+            "source_field_id": "labels",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/lifecycle",
+            "source_field_id": "lifecycle",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/location",
+            "source_field_id": "location",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/locationType",
+            "source_field_id": "locationType",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/logging",
+            "source_field_id": "logging",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/metageneration",
+            "source_field_id": "metageneration",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/name",
+            "source_field_id": "name",
+            "disposition": "maps_exact_source_fact",
+            "target_field": "display_name",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/objectRetention",
+            "source_field_id": "objectRetention",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/owner",
+            "source_field_id": "owner",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/projectNumber",
+            "source_field_id": "projectNumber",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/retentionPolicy",
+            "source_field_id": "retentionPolicy",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/rpo",
+            "source_field_id": "rpo",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPZI",
+            "source_field_id": "satisfiesPZI",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/satisfiesPZS",
+            "source_field_id": "satisfiesPZS",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/selfLink",
+            "source_field_id": "selfLink",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/softDeletePolicy",
+            "source_field_id": "softDeletePolicy",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/softDeleteTime",
+            "source_field_id": "softDeleteTime",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/storageClass",
+            "source_field_id": "storageClass",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/timeCreated",
+            "source_field_id": "timeCreated",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/updated",
+            "source_field_id": "updated",
+            "disposition": "source_private_only",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/versioning",
+            "source_field_id": "versioning",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          },
+          {
+            "source_pointer": "/website",
+            "source_field_id": "website",
+            "disposition": "unsupported",
+            "explicit_null_disposition": "source_private_only"
+          }
+        ]
+      }
+    }
+  ]
+}

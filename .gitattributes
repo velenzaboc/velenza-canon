@@ -37,3 +37,6 @@
 # every platform. The renderer owns their line endings, not git.
 bootstrap/*.generated.sql -text
 bootstrap/*.render-receipt.json -text
+
+# Cloud API evidence and fixtures carry exact-byte hashes in their manifests.
+testdata/cloudapi/** -text

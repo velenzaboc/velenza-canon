@@ -1,0 +1,167 @@
+{
+  "schema": "velenza.cloud_api_resource_association_evidence/3",
+  "status": "asserted_candidate_unqualified",
+  "purpose": "Offline assertion inputs grounded in retained official model bytes. They support parser checks only; none is a qualified mapping, admitted evidence, or semantic authority.",
+  "rules": [
+    {
+      "id": "aws.s3.list_buckets.general_purpose_candidate",
+      "provider": "aws",
+      "api": "s3",
+      "operation": "ListBuckets",
+      "assertion": "A listed bucket name together with an authorized source binding can be passed to OHM as a candidate identity. The parser must not require BucketArn and must not use CreationDate to establish immutable incarnation or infer recreation.",
+      "retained_model": "official/aws/s3-2006-03-01.json",
+      "retained_model_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "json_pointers": [
+        "/shapes/com.amazonaws.s3#ListBuckets",
+        "/shapes/com.amazonaws.s3#ListBucketsOutput/members/Buckets",
+        "/shapes/com.amazonaws.s3#Bucket/members/Name",
+        "/shapes/com.amazonaws.s3#Bucket/members/CreationDate",
+        "/shapes/com.amazonaws.s3#Bucket/members/BucketRegion",
+        "/shapes/com.amazonaws.s3#Bucket/members/BucketArn"
+      ],
+      "qualification_boundary": "ListBuckets is documented in the retained model as unsupported for directory buckets. The typed members establish only that these fields exist in the model; they do not qualify an ARN, creation timestamp, name, ownership, or a source instance as identity proof.",
+      "contextual_sources_not_offline_assertion_inputs": [
+        "https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html",
+        "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Bucket.html"
+      ]
+    },
+    {
+      "id": "aws.ec2.instance_to_volume_candidate",
+      "provider": "aws",
+      "api": "ec2",
+      "operation": "DescribeInstances",
+      "assertion": "An Instance BlockDeviceMappings member can expose Ebs.VolumeId, which is a candidate forward attachment reference.",
+      "retained_model": "official/aws/ec2-2016-11-15.json",
+      "retained_model_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "json_pointers": [
+        "/shapes/com.amazonaws.ec2#DescribeInstances",
+        "/shapes/com.amazonaws.ec2#Instance/members/InstanceId",
+        "/shapes/com.amazonaws.ec2#Instance/members/BlockDeviceMappings",
+        "/shapes/com.amazonaws.ec2#InstanceBlockDeviceMapping/members/Ebs",
+        "/shapes/com.amazonaws.ec2#EbsInstanceBlockDevice/members/VolumeId"
+      ],
+      "qualification_boundary": "Matching identifiers are a parser-level candidate relationship only; OHM must separately qualify source binding, scope, time/currentness and any semantic edge."
+    },
+    {
+      "id": "aws.ec2.volume_to_instance_candidate",
+      "provider": "aws",
+      "api": "ec2",
+      "operation": "DescribeVolumes",
+      "assertion": "A Volume Attachments member can expose VolumeAttachment.InstanceId and VolumeId, which are candidate reverse attachment references.",
+      "retained_model": "official/aws/ec2-2016-11-15.json",
+      "retained_model_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "json_pointers": [
+        "/shapes/com.amazonaws.ec2#DescribeVolumes",
+        "/shapes/com.amazonaws.ec2#Volume/members/VolumeId",
+        "/shapes/com.amazonaws.ec2#Volume/members/Attachments",
+        "/shapes/com.amazonaws.ec2#VolumeAttachment/members/VolumeId",
+        "/shapes/com.amazonaws.ec2#VolumeAttachment/members/InstanceId",
+        "/shapes/com.amazonaws.ec2#VolumeAttachment/members/State"
+      ],
+      "qualification_boundary": "The model establishes field structure, not attachment truth at an authoritative instant or a qualified semantic edge."
+    },
+    {
+      "id": "gcp.storage.bucket_project_candidate",
+      "provider": "gcp",
+      "api": "storage.v1",
+      "operation": "storage.buckets.list",
+      "assertion": "The list operation requires a project parameter and Bucket includes id and projectNumber; these can form candidate source and scope inputs.",
+      "retained_model": "official/gcp/storage-v1.discovery.json",
+      "retained_model_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "json_pointers": [
+        "/resources/buckets/methods/list",
+        "/resources/buckets/methods/list/parameters/project",
+        "/schemas/Bucket/properties/id",
+        "/schemas/Bucket/properties/projectNumber",
+        "/schemas/Bucket/properties/selfLink"
+      ],
+      "qualification_boundary": "Discovery fields do not themselves authorize project access or prove source-instance binding, currentness, or resource identity qualification."
+    },
+    {
+      "id": "gcp.compute.instance_to_disk_candidate",
+      "provider": "gcp",
+      "api": "compute.v1",
+      "operation": "compute.instances.aggregatedList",
+      "assertion": "An aggregated instance response can contain disks whose source is a candidate disk reference.",
+      "retained_model": "official/gcp/compute-v1.discovery.json",
+      "retained_model_sha256": "e3059e418cdd44f3ef343aa62fa4105759e450366dbe567bb827f7bf310678d7",
+      "json_pointers": [
+        "/resources/instances/methods/aggregatedList",
+        "/schemas/Instance/properties/id",
+        "/schemas/Instance/properties/disks",
+        "/schemas/Instance/properties/disks/items/$ref",
+        "/schemas/AttachedDisk/properties/source"
+      ],
+      "qualification_boundary": "The URI-like source value is a candidate reference; no cross-resource edge becomes authoritative without OHM qualification."
+    },
+    {
+      "id": "gcp.compute.disk_to_instance_candidate",
+      "provider": "gcp",
+      "api": "compute.v1",
+      "operation": "compute.disks.aggregatedList",
+      "assertion": "An aggregated disk response can contain users, whose string values are candidate attached-resource references.",
+      "retained_model": "official/gcp/compute-v1.discovery.json",
+      "retained_model_sha256": "e3059e418cdd44f3ef343aa62fa4105759e450366dbe567bb827f7bf310678d7",
+      "json_pointers": [
+        "/resources/disks/methods/aggregatedList",
+        "/schemas/Disk/properties/id",
+        "/schemas/Disk/properties/users",
+        "/schemas/Disk/properties/users/items"
+      ],
+      "qualification_boundary": "The returned users list does not by itself establish freshness, scope authorization, or an authoritative attachment edge."
+    }
+  ],
+  "catalog_bindings": {
+    "status": "asserted_candidate_unqualified",
+    "purpose": "Explicit offline candidate resource declarations for Smithy structures without native Smithy resource shapes. These declarations are model-structure-backed only and never qualify identity, ownership, currentness, or semantic relationships.",
+    "resource_declarations": [
+      {
+        "resource_id": "com.amazonaws.s3#Bucket",
+        "structure_shape_id": "com.amazonaws.s3#Bucket",
+        "role": "asserted_candidate_unqualified",
+        "structure_locator": {
+          "evidence_id": "model",
+          "json_pointer": "/shapes/com.amazonaws.s3#Bucket",
+          "start_byte": 1186453,
+          "end_byte": 1188128
+        }
+      },
+      {
+        "resource_id": "com.amazonaws.ec2#Instance",
+        "structure_shape_id": "com.amazonaws.ec2#Instance",
+        "role": "asserted_candidate_unqualified",
+        "structure_locator": {
+          "evidence_id": "model",
+          "json_pointer": "/shapes/com.amazonaws.ec2#Instance",
+          "start_byte": 3855151,
+          "end_byte": 3879746
+        }
+      },
+      {
+        "resource_id": "com.amazonaws.ec2#Volume",
+        "structure_shape_id": "com.amazonaws.ec2#Volume",
+        "role": "asserted_candidate_unqualified",
+        "structure_locator": {
+          "evidence_id": "model",
+          "json_pointer": "/shapes/com.amazonaws.ec2#Volume",
+          "start_byte": 6644219,
+          "end_byte": 6652582
+        }
+      }
+    ],
+    "resource_operation_assertions": [
+      {
+        "resource_id": "com.amazonaws.s3#Bucket",
+        "operation_id": "com.amazonaws.s3#ListBuckets"
+      },
+      {
+        "resource_id": "com.amazonaws.ec2#Instance",
+        "operation_id": "com.amazonaws.ec2#DescribeInstances"
+      },
+      {
+        "resource_id": "com.amazonaws.ec2#Volume",
+        "operation_id": "com.amazonaws.ec2#DescribeVolumes"
+      }
+    ]
+  }
+}

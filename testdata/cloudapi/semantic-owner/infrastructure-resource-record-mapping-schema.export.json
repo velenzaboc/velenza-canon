@@ -1,0 +1,892 @@
+{
+  "export_kind": "infrastructure_resource_record_mapping_schema_export",
+  "export_version": 1,
+  "source_owner": {
+    "doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
+    "version": 1,
+    "canonical_owner_sha256": "c0d09326726ba3cb6ff2f8b3b404da6c8d3402973e9ef7194891ed67325c7e71",
+    "canonical_owner_commit": "df557a32c8539234a7c58f083412557d97bfa7d5",
+    "machine_schema_json_pointer": "/sections/s3_semantic_schema_and_relationships/type_and_presence_closure/machine_readable_target_schema",
+    "machine_schema_fragment_sha256": "c37e212cb47077d61fb7915a899a35b02f1681925ca7c3021f2fe9f6967d6700",
+    "export_not_full_owner_bytes": true
+  },
+  "machine_readable_target_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$vocabulary": {
+      "https://json-schema.org/draft/2020-12/vocab/core": true,
+      "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+      "https://json-schema.org/draft/2020-12/vocab/validation": true,
+      "https://json-schema.org/draft/2020-12/vocab/format-assertion": true
+    },
+    "stable_schema_symbol": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema",
+    "required_validator_profile": {
+      "profile_id": "infrastructure_resource_record_candidate_json_schema_validator_profile",
+      "profile_version": 1,
+      "owner_doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
+      "owner_version": 1,
+      "owner_symbol": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.required_validator_profile",
+      "required_dialect": "https://json-schema.org/draft/2020-12/schema",
+      "required_vocabularies": [
+        "https://json-schema.org/draft/2020-12/vocab/core",
+        "https://json-schema.org/draft/2020-12/vocab/applicator",
+        "https://json-schema.org/draft/2020-12/vocab/validation",
+        "https://json-schema.org/draft/2020-12/vocab/format-assertion"
+      ],
+      "asserted_formats": [
+        "date-time"
+      ],
+      "required_assertion_keywords": [
+        "type",
+        "minLength",
+        "maxLength",
+        "pattern",
+        "enum",
+        "const",
+        "required",
+        "additionalProperties",
+        "format"
+      ],
+      "unknown_assertion_rule": "an unsupported required vocabulary, assertion keyword or asserted format is a validation-profile mismatch and refuses the candidate; it is never ignored or treated as annotation",
+      "refusal_rule": "a compiler, mapper, candidate verifier or admission-preparation path that cannot resolve this exact owner coordinate and implement every required vocabulary and asserted format refuses the candidate before semantic publication; a generic best-effort JSON Schema mode is not conforming"
+    },
+    "required_validator_profile_sha256": "a617d002646423193fddc732431de5be627b4dc82d007208d758612865b5aead",
+    "required_validator_profile_hash_rule": "SHA-256 of RFC 8785 canonical UTF-8 serialization of required_validator_profile only; this deliberately excludes the containing owner document and this hash member",
+    "schema_contract": "this is the closed candidate-output wire schema for source-package and mapping conformance. It is not physical DDL, a runtime admission artifact or an OHM source-evidence schema. A semantic_record_instance_identity is the opaque source-neutral OHM identity, never a source coordinate. A validator that does not implement every required vocabulary, including format assertion, must fail closed and may not validate or emit a candidate. The capacity maximum is expressed only through portable pattern and maxLength constraints.",
+    "$defs": {
+      "semantic_record_instance_identity": {
+        "type": "string",
+        "minLength": 1,
+        "description": "opaque source-neutral semantic record identity"
+      },
+      "unavailable_metadata": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "absent",
+              "not_observed",
+              "unsupported",
+              "unknown",
+              "inaccessible",
+              "redacted"
+            ]
+          }
+        }
+      },
+      "unavailable_label": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "unknown",
+              "inaccessible",
+              "redacted"
+            ]
+          }
+        }
+      },
+      "unavailable_capacity": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "enum": [
+              "not_observed",
+              "unsupported",
+              "unknown",
+              "inaccessible",
+              "redacted"
+            ]
+          }
+        }
+      },
+      "explicit_null_relationship_or_time": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "const": "null"
+          }
+        }
+      },
+      "record_reference": {
+        "type": "object",
+        "required": [
+          "state",
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "const": "present"
+          },
+          "value": {
+            "$ref": "#/$defs/semantic_record_instance_identity"
+          }
+        }
+      },
+      "optional_reference": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/record_reference"
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          },
+          {
+            "$ref": "#/$defs/explicit_null_relationship_or_time"
+          }
+        ]
+      },
+      "label": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_label"
+          }
+        ]
+      },
+      "rfc3339_time": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          },
+          {
+            "$ref": "#/$defs/explicit_null_relationship_or_time"
+          }
+        ]
+      },
+      "capacity_bytes": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value",
+              "unit"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "type": "string",
+                "maxLength": 20,
+                "pattern": "^(?:[1-9][0-9]{0,18}|1(?:[0-7][0-9]{18}|8(?:[0-3][0-9]{17}|4(?:[0-3][0-9]{16}|4(?:[0-5][0-9]{15}|6(?:[0-6][0-9]{14}|7(?:[0-3][0-9]{13}|4(?:[0-3][0-9]{12}|40(?:[0-6][0-9]{10}|7(?:[0-2][0-9]{9}|3(?:[0-6][0-9]{8}|70(?:[0-8][0-9]{6}|9(?:[0-4][0-9]{5}|5(?:[0-4][0-9]{4}|5(?:[0-0][0-9]{3}|1(?:[0-5][0-9]{2}|6(?:[0-0][0-9]{1}|1(?:[0-4]|5))))))))))))))))))$"
+              },
+              "unit": {
+                "const": "bytes"
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_capacity"
+          }
+        ]
+      },
+      "metadata_enum_present": {
+        "type": "object",
+        "required": [
+          "state",
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "const": "present"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "metadata_enum": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/metadata_enum_present"
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "required_metadata_enum": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/metadata_enum_present"
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "scope_lifecycle": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "active",
+                  "inactive",
+                  "deleted"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "container_lifecycle": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "active",
+                  "deleting",
+                  "deleted"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "instance_lifecycle": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "provisioning",
+                  "running",
+                  "stopped",
+                  "suspended",
+                  "terminating",
+                  "terminated"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "volume_lifecycle": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "creating",
+                  "available",
+                  "in_use",
+                  "modifying",
+                  "deleting",
+                  "deleted"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "zonal_or_regional_location": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "regional",
+                  "zonal"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "platform_family": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "general_purpose",
+                  "linux_like",
+                  "windows_like",
+                  "appliance_like"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "storage_class": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "solid_state",
+                  "hard_disk",
+                  "balanced"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
+      "machine_class": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "general_purpose",
+                  "compute_optimized",
+                  "memory_optimized",
+                  "storage_optimized",
+                  "accelerator_optimized"
+                ]
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      }
+    },
+    "oneOf": [
+      {
+        "$ref": "#/record_class_definitions/infrastructure_scope"
+      },
+      {
+        "$ref": "#/record_class_definitions/storage_container"
+      },
+      {
+        "$ref": "#/record_class_definitions/compute_instance"
+      },
+      {
+        "$ref": "#/record_class_definitions/compute_volume"
+      }
+    ],
+    "record_class_definitions": {
+      "infrastructure_scope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "record_class",
+          "semantic_record_instance_identity",
+          "display_name",
+          "scope_kind",
+          "lifecycle_state",
+          "observation_state",
+          "parent_scope_reference"
+        ],
+        "properties": {
+          "record_class": {
+            "const": "infrastructure_scope"
+          },
+          "semantic_record_instance_identity": {
+            "$ref": "#/$defs/semantic_record_instance_identity"
+          },
+          "display_name": {
+            "$ref": "#/$defs/label"
+          },
+          "scope_kind": {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "enum": [
+                  "organization",
+                  "administrative_container",
+                  "account_or_project"
+                ]
+              }
+            }
+          },
+          "lifecycle_state": {
+            "$ref": "#/$defs/scope_lifecycle"
+          },
+          "observation_state": {
+            "enum": [
+              "observed",
+              "incomplete",
+              "inaccessible",
+              "redacted",
+              "unsupported"
+            ]
+          },
+          "parent_scope_reference": {
+            "$ref": "#/$defs/optional_reference"
+          }
+        }
+      },
+      "storage_container": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "record_class",
+          "semantic_record_instance_identity",
+          "display_name",
+          "scope_reference",
+          "location_class",
+          "lifecycle_state",
+          "observation_state",
+          "versioning_state",
+          "encryption_configuration_observation",
+          "public_access_configuration_observation",
+          "retention_state"
+        ],
+        "properties": {
+          "record_class": {
+            "const": "storage_container"
+          },
+          "semantic_record_instance_identity": {
+            "$ref": "#/$defs/semantic_record_instance_identity"
+          },
+          "display_name": {
+            "$ref": "#/$defs/label"
+          },
+          "scope_reference": {
+            "$ref": "#/$defs/record_reference"
+          },
+          "location_class": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "global",
+                      "regional",
+                      "zonal",
+                      "multi_region"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "lifecycle_state": {
+            "$ref": "#/$defs/container_lifecycle"
+          },
+          "observation_state": {
+            "enum": [
+              "observed",
+              "incomplete",
+              "inaccessible",
+              "redacted",
+              "unsupported"
+            ]
+          },
+          "versioning_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "enabled",
+                      "disabled"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "encryption_configuration_observation": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "configured",
+                      "not_configured"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "public_access_configuration_observation": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "configured",
+                      "not_configured"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "retention_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "configured",
+                      "not_configured"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          }
+        }
+      },
+      "compute_instance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "record_class",
+          "semantic_record_instance_identity",
+          "display_name",
+          "scope_reference",
+          "location_class",
+          "lifecycle_state",
+          "observation_state",
+          "machine_class",
+          "platform_family",
+          "reported_creation_time"
+        ],
+        "properties": {
+          "record_class": {
+            "const": "compute_instance"
+          },
+          "semantic_record_instance_identity": {
+            "$ref": "#/$defs/semantic_record_instance_identity"
+          },
+          "display_name": {
+            "$ref": "#/$defs/label"
+          },
+          "scope_reference": {
+            "$ref": "#/$defs/record_reference"
+          },
+          "location_class": {
+            "$ref": "#/$defs/zonal_or_regional_location"
+          },
+          "lifecycle_state": {
+            "$ref": "#/$defs/instance_lifecycle"
+          },
+          "observation_state": {
+            "enum": [
+              "observed",
+              "incomplete",
+              "inaccessible",
+              "redacted",
+              "unsupported"
+            ]
+          },
+          "machine_class": {
+            "$ref": "#/$defs/machine_class"
+          },
+          "platform_family": {
+            "$ref": "#/$defs/platform_family"
+          },
+          "reported_creation_time": {
+            "$ref": "#/$defs/rfc3339_time"
+          }
+        }
+      },
+      "compute_volume": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "record_class",
+          "semantic_record_instance_identity",
+          "display_name",
+          "scope_reference",
+          "location_class",
+          "lifecycle_state",
+          "observation_state",
+          "capacity_bytes",
+          "storage_class",
+          "encryption_configuration_observation",
+          "attached_compute_instance_reference"
+        ],
+        "properties": {
+          "record_class": {
+            "const": "compute_volume"
+          },
+          "semantic_record_instance_identity": {
+            "$ref": "#/$defs/semantic_record_instance_identity"
+          },
+          "display_name": {
+            "$ref": "#/$defs/label"
+          },
+          "scope_reference": {
+            "$ref": "#/$defs/record_reference"
+          },
+          "location_class": {
+            "$ref": "#/$defs/zonal_or_regional_location"
+          },
+          "lifecycle_state": {
+            "$ref": "#/$defs/volume_lifecycle"
+          },
+          "observation_state": {
+            "enum": [
+              "observed",
+              "incomplete",
+              "inaccessible",
+              "redacted",
+              "unsupported"
+            ]
+          },
+          "capacity_bytes": {
+            "$ref": "#/$defs/capacity_bytes"
+          },
+          "storage_class": {
+            "$ref": "#/$defs/storage_class"
+          },
+          "encryption_configuration_observation": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "configured",
+                      "not_configured"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "attached_compute_instance_reference": {
+            "$ref": "#/$defs/optional_reference"
+          }
+        }
+      }
+    },
+    "definition_resolution_rule": "the four record_class_definitions members are stable JSON Pointer targets in this draft 2020-12 schema and are intentionally separate so the semantic class registry and schema symbols remain one-to-one. A source package must validate one candidate against the matching class definition and must reject a candidate that matches no class definition."
+  },
+  "mapping_requirements": {
+    "validator_profile_binding": {
+      "owner_doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
+      "owner_version": 1,
+      "owner_symbol": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.required_validator_profile",
+      "profile_sha256": "a617d002646423193fddc732431de5be627b4dc82d007208d758612865b5aead",
+      "binding_rule": "every candidate-generation, verification and admission-preparation path pins this exact profile coordinate and profile_sha256; external candidate input separately pins the complete owner bytes/hash. It refuses before semantic publication when its selected validator cannot implement the profile's dialect, required vocabularies, asserted formats and assertion keywords, or tolerates an unsupported assertion keyword. A generic or unknown-keyword-tolerant JSON Schema mode is not an acceptance path."
+    }
+  }
+}

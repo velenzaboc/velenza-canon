@@ -1,0 +1,53 @@
+{
+  "schema": "velenza.cloud_api_fixture_evidence/1",
+  "status": "ordinary_testdata_unqualified_unsealed",
+  "purpose": "deterministic offline parser and generator inputs for four provider metadata inventory slices",
+  "identity_rule": "api and model versions are evidence and profile lineage only. A stable source identity binds provider-native immutable resource identifier plus authorized realm/account or project and source-instance binding. No fixture creates a source instance or semantic record.",
+  "consumers": {
+    "contract_checks": "consume official source bytes, association_evidence and synthetic fixture bytes; verify hashes, parseability, operation symbol presence, pagination, partial/refusal handling and identifier extraction",
+    "extension_contract": "consume only the manifest-selected operation and profile-lineage facts to generate a candidate; it must not read a customer grant, execute transport, materialize OHM, or treat this testdata as admitted evidence"
+  },
+  "official_models": [
+    {"provider":"aws","service":"s3","api_lineage":"2006-03-01","path":"official/aws/s3-2006-03-01.json","sha256":"73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68","upstream":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json","repository_commit":"d6bbb4d64e2c82927834dfa9791bebc0000f70c0","fetched_at":"2026-10-29"},
+    {"provider":"aws","service":"ec2","api_lineage":"2016-11-15","path":"official/aws/ec2-2016-11-15.json","sha256":"2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e","upstream":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json","repository_commit":"d6bbb4d64e2c82927834dfa9791bebc0000f70c0","fetched_at":"2026-10-29"},
+    {"provider":"gcp","service":"storage","api_lineage":"v1 revision observed 20261020","path":"official/gcp/storage-v1.discovery.json","sha256":"91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff","upstream":"https://storage.googleapis.com/$discovery/rest?version=v1","fetched_at":"2026-10-29","integrity_note":"A prior public capture with the same revision label had different bytes. The cause is not established; retained bytes and sha256, not the revision label, bind this evidence."},
+    {"provider":"gcp","service":"compute","api_lineage":"v1 revision observed 20261016","path":"official/gcp/compute-v1.discovery.json","sha256":"e3059e418cdd44f3ef343aa62fa4105759e450366dbe567bb827f7bf310678d7","upstream":"https://www.googleapis.com/discovery/v1/apis/compute/v1/rest","fetched_at":"2026-10-29","integrity_note":"A prior public capture with the same revision label had different bytes. The cause is not established; retained bytes and sha256, not the revision label, bind this evidence."}
+  ],
+  "association_evidence":"association-evidence.json",
+  "lifecycle_evidence":"lifecycle-evidence.json",
+  "unit_evidence":"unit-evidence.json",
+  "fixtures": [
+    {"registry_id":"aws.s3.list_buckets.page_one","operation":"s3.ListBuckets","path":"fixtures/aws/list-buckets-page-1.xml","case":"page_one_arn_absent","sha256":"b9acbb88bb6346552105ae3851d258d9a0af7e66339ff84e9604e0b1eba96309"},
+    {"registry_id":"aws.s3.list_buckets.page_two","operation":"s3.ListBuckets","path":"fixtures/aws/list-buckets-page-2.xml","case":"page_two_arn_absent","sha256":"aad40a82c1225af015d9a3112552e4933dadd700ead37730a51be41ff551e8b8"},
+    {"registry_id":"aws.s3.list_buckets.mutable_creation_date_refusal","operation":"s3.ListBuckets","path":"fixtures/aws/list-buckets-mutable-creation-date.xml","case":"same_candidate_name_changed_creation_date_must_refuse_recreation_inference","sha256":"2dc34c98d2943604ec9fa050c015954ef84b7335f52d63e15075937b94c15fb8"},
+    {"registry_id":"aws.s3.head_bucket.region_metadata","operation":"s3.HeadBucket","path":"fixtures/aws/head-bucket.http","case":"region_metadata_without_arn_assumption","sha256":"2d85081fd6589b5e7a987f439b36865b5b3b5ecc08e6827157bc42756532c806"},
+    {"registry_id":"aws.ec2.describe_instances.attachments","operation":"ec2.DescribeInstances","path":"fixtures/aws/describe-instances-page-1.xml","case":"instance_volume_attachment_page","sha256":"c018454b3ccf8b66a0c1446454fc00eadf9789a20b614d7920fd8dcdb6817ce6"},
+    {"registry_id":"aws.ec2.describe_instances.terminated_permanent_candidate","operation":"ec2.DescribeInstances","path":"fixtures/aws/describe-instances-terminated.xml","case":"aws_terminated_must_not_equal_gcp_terminated_or_auto_delete","sha256":"9b0b30194d7246209158a8cb1bf2dff3b53e0f5cfe41dd49518c2b7205ef41f1"},
+    {"registry_id":"aws.ec2.describe_volumes.attachments","operation":"ec2.DescribeVolumes","path":"fixtures/aws/describe-volumes-page-1.xml","case":"volume_attachment_page","sha256":"8a34c7bb0762f324fe56a9187c835238b0a8073fb074183ad61579e4760a4e4b"},
+    {"registry_id":"gcp.storage.buckets.list.page_one","operation":"storage.buckets.list","path":"fixtures/gcp/storage-buckets-list-page-1.json","case":"page_one","sha256":"1f2fa835a1b985a34ded2995857d7be8f3c5237a2285dbec133ba6b797c7088c"},
+    {"registry_id":"gcp.storage.buckets.get.soft_delete","operation":"storage.buckets.get","path":"fixtures/gcp/storage-bucket-get.json","case":"detail_soft_delete_metadata","sha256":"8ae5704a8d0ed2dfd80c78f68935a46b7f49927a7d1c2ed2083b8ac66795824a"},
+    {"registry_id":"gcp.compute.instances.aggregated.partial","operation":"compute.instances.aggregatedList","path":"fixtures/gcp/compute-instances-aggregated.json","case":"partial_scope_and_attachment","sha256":"d30298e0b65b84e567935bb3c78adab7c1149812bbe58b82961671eadf4ebaac"},
+    {"registry_id":"gcp.compute.instances.aggregated.terminated_restartable_candidate","operation":"compute.instances.aggregatedList","path":"fixtures/gcp/compute-instances-terminated.json","case":"gcp_terminated_must_not_equal_aws_terminated_or_auto_delete","sha256":"f9cb09bf2a7844ae9333a99325b5b8d77980c000a2068fdc5a302b870434ed83"},
+    {"registry_id":"gcp.compute.disks.aggregated.partial","operation":"compute.disks.aggregatedList","path":"fixtures/gcp/compute-disks-aggregated.json","case":"partial_scope_and_reverse_attachment","sha256":"4091457ce0b0a56442aaa4ebb80737ac48670b9df23a534343a7eefe532c6cdd"},
+    {"registry_id":"gcp.generic.revoked_scope","operation":"gcp.generic","path":"fixtures/gcp/revoked-scope-403.json","case":"refusal","sha256":"3a61a08ecbca77c84a24283fcdc30ebfcb506a8e24ba0d0071ee769db082ca27"}
+  ],
+  "lifecycle_cases": [
+    {"registry_id":"aws.ec2.running","fixture_registry_id":"aws.ec2.describe_instances.attachments","state_locator":"/DescribeInstancesResponse/reservationSet/item/instancesSet/item/instanceState/name","observed_value":"running","disposition":"active_candidate_only"},
+    {"registry_id":"aws.ec2.terminated","fixture_registry_id":"aws.ec2.describe_instances.terminated_permanent_candidate","state_locator":"/DescribeInstancesResponse/reservationSet/item/instancesSet/item/instanceState/name","observed_value":"terminated","evidence_id":"aws.ec2.terminated_permanent","disposition":"permanent_termination_candidate_not_auto_delete"},
+    {"registry_id":"gcp.compute.running","fixture_registry_id":"gcp.compute.instances.aggregated.partial","state_locator":"/items/zones~1us-central1-a/instances/0/status","observed_value":"RUNNING","disposition":"active_candidate_only"},
+    {"registry_id":"gcp.compute.terminated","fixture_registry_id":"gcp.compute.instances.aggregated.terminated_restartable_candidate","state_locator":"/items/zones~1us-central1-a/instances/0/status","observed_value":"TERMINATED","evidence_id":"gcp.compute.terminated_restartable","disposition":"restartable_candidate_not_auto_delete"}
+  ],
+  "semantic_mapping_schema_export": {
+    "path": "semantic-owner/infrastructure-resource-record-mapping-schema.export.json",
+    "export_sha256": "d568e24bd90b1f3460baadc722d38bcc99648a7f24866b3ca843884a3a43595c",
+    "source_owner_doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
+    "source_owner_version": 1,
+    "source_owner_sha256": "c0d09326726ba3cb6ff2f8b3b404da6c8d3402973e9ef7194891ed67325c7e71",
+    "source_owner_commit": "df557a32c8539234a7c58f083412557d97bfa7d5",
+    "machine_schema_json_pointer": "/sections/s3_semantic_schema_and_relationships/type_and_presence_closure/machine_readable_target_schema",
+    "machine_schema_fragment_sha256": "c37e212cb47077d61fb7915a899a35b02f1681925ca7c3021f2fe9f6967d6700",
+    "validator_profile_sha256": "a617d002646423193fddc732431de5be627b4dc82d007208d758612865b5aead",
+    "purpose": "Source-neutral minimal export for offline tests. It is not the full owner bytes, a second owner, or runtime authority."
+  },
+  "notices": "source-notices.md"
+}

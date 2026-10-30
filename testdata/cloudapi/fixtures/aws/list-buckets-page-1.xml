@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Buckets><Bucket><BucketRegion>us-east-1</BucketRegion><CreationDate>2026-01-02T03:04:05.000Z</CreationDate><Name>fixture-log-bucket</Name></Bucket></Buckets><Owner><ID>111122223333</ID></Owner><ContinuationToken>fixture-page-2</ContinuationToken></ListAllMyBucketsResult>

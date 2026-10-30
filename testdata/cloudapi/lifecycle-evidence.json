@@ -1,0 +1,29 @@
+{
+  "schema": "velenza.cloud_api_lifecycle_evidence/1",
+  "status": "asserted_candidate_unqualified",
+  "purpose": "Pinned primary-source observations for offline lifecycle parser tests. Provider state strings are not a source-neutral lifecycle enum and do not infer deletion without the owning semantic rule and qualified evidence.",
+  "observations": [
+    {
+      "id": "gcp.compute.terminated_restartable",
+      "provider": "gcp",
+      "source_path": "official/lifecycle/gcp-compute-stop-start-instance.html",
+      "source_sha256": "d00c426c3f0c8b2d57d40ea205c1e4921f2f20bc15ebff0941cb189f1825a69a",
+      "source_url": "https://docs.cloud.google.com/compute/docs/instances/stop-start-instance",
+      "fetched_at": "2026-10-29",
+      "locator": {"encoding":"utf-8","start_byte":327084,"end_byte_exclusive":327263,"slice_sha256":"8da16a65353fa4c867f194efb7646fefdc83be82a02bedabbac18f127a0ef7ed"},
+      "observation": "The retained primary page says that after state TERMINATED following a stop operation, the instance can be restarted or permanently deleted.",
+      "offline_rule": "TERMINATED is restartable-candidate state for this Compute Engine case; do not map it to deletion or to AWS terminated."
+    },
+    {
+      "id": "aws.ec2.terminated_permanent",
+      "provider": "aws",
+      "source_path": "official/lifecycle/aws-ec2-instance-lifecycle.html",
+      "source_sha256": "7634d0c3a7336702c4143f09e042d416f4b72da601185558db15561671983e08",
+      "source_url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html",
+      "fetched_at": "2026-10-29",
+      "locator": {"encoding":"utf-8","start_byte":12378,"end_byte_exclusive":12449,"slice_sha256":"4e6e99da894aa3e19ea0a34937b1ecc1608b9ca01a8f63f37d19456b35523aa7"},
+      "observation": "The retained primary page describes EC2 terminated as permanently deleted and not startable.",
+      "offline_rule": "EC2 terminated is permanent-termination-candidate state for this case; it is not equivalent to GCP TERMINATED and still does not itself authorize a semantic deletion record."
+    }
+  ]
+}

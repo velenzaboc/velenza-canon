@@ -41,6 +41,9 @@ func CloudIdentityMemberEvidenceLocator(catalog CloudCatalog, objectID, fieldID 
 // deliberately has no incarnation-proof authority. Later qualification and
 // the OHM owner must establish identity and any incarnation separately.
 func ValidateCloudSourceIdentityContract(target CloudSourceObjectTarget, catalog CloudCatalog) error {
+	if target.RequestIdentity != nil {
+		return validateCloudRequestIdentityContract(target, catalog)
+	}
 	if target.MappingContract == nil || target.SourceObjectType != target.MappingContract.ObjectSchemaID {
 		return fmt.Errorf("identity object must equal the mapping's selected object schema")
 	}

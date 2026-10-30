@@ -495,8 +495,15 @@ func removeSourcePackageSemanticOutput(manifest *documentationFactorySourcePacka
 
 func newSourcePackageCompilerTestFixture(t *testing.T, provider string) sourcePackageCompilerTestFixture {
 	t.Helper()
+	return newSourcePackageCompilerTestFixtureFromBase(t, provider, newTestFixture(t))
+}
+
+func newSourcePackageCompilerTestFixtureFromBase(t *testing.T, provider string, base *testFixture) sourcePackageCompilerTestFixture {
+	t.Helper()
 	root := t.TempDir()
-	base := newTestFixture(t)
+	if base == nil {
+		t.Fatal("source-package compiler fixture base is nil")
+	}
 	lineage := newRealVerifyFactoryLineage(t, base)
 	if len(lineage.requests) != 4 || len(lineage.inputs) != 4 {
 		t.Fatalf("factory lineage has %d requests/%d inputs", len(lineage.requests), len(lineage.inputs))
@@ -592,6 +599,103 @@ func newSourcePackageCompilerTestFixture(t *testing.T, provider string) sourcePa
 		coordinate := sourcePackageCoordinateFromIdentity(dependency)
 		planValue.GraphCompile.DependencyArtifacts = append(planValue.GraphCompile.DependencyArtifacts, coordinate)
 		planValue.PreflightDependencies = append(planValue.PreflightDependencies, coordinate)
+	}
+	// The graph request names only the semantic role artifacts. The real
+	// verifier additionally consumes their exact JSON Schemas, the
+	// plan-bound validation profile and schema, and any other retained
+	// dependency-closure members. Keep the original verifier roster intact in
+	// the generated package's preflight inputs; resolving by bytes prevents a
+	// same-shaped replacement from silently satisfying the fixture.
+	closureCoordinatesByDigest := make(map[string]sourcePackageCoordinate)
+	semanticProfilePath := base.dependencyByRole["dependency_semantic_validation_profile"]
+	semanticProfileRaw, err := os.ReadFile(semanticProfilePath)
+	if err != nil {
+		t.Fatalf("read retained dependency semantic validation profile: %v", err)
+	}
+	for lineNumber, line := range bytes.Split(semanticProfileRaw, []byte{'\n'}) {
+		line = bytes.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+		var row map[string]interface{}
+		if err := strictUnmarshal(line, &row); err != nil {
+			t.Fatalf("decode retained dependency semantic validation profile row %d: %v", lineNumber+1, err)
+		}
+		if rowKind, _ := row["row_kind"].(string); rowKind != "artifact_schema_binding" {
+			continue
+		}
+		binding, err := decodeDependencySemanticProfileBinding(row)
+		if err != nil {
+			t.Fatalf("decode retained dependency semantic validation profile binding row %d: %v", lineNumber+1, err)
+		}
+		for digest, coordinate := range map[string]sourcePackageCoordinate{
+			binding.ArtifactRawSHA256: {Role: binding.Role, ID: binding.ArtifactID, Version: binding.ArtifactVersion},
+			binding.SchemaRawSHA256:   {Role: binding.SchemaRole, ID: binding.SchemaID, Version: binding.SchemaVersion},
+		} {
+			if prior, duplicate := closureCoordinatesByDigest[digest]; duplicate && prior != coordinate {
+				t.Fatalf("retained dependency closure digest %s aliases %s and %s", digest, sourcePackageCoordinateLabel(prior), sourcePackageCoordinateLabel(coordinate))
+			}
+			closureCoordinatesByDigest[digest] = coordinate
+		}
+	}
+	materialCoordinateByDigest := make(map[string]sourcePackageCoordinate, len(materials))
+	for coordinate, material := range materials {
+		digest := sha256Hex(material.Raw)
+		if prior, duplicate := materialCoordinateByDigest[digest]; duplicate && prior != coordinate {
+			continue
+		}
+		materialCoordinateByDigest[digest] = coordinate
+	}
+	for _, dependencyPath := range base.options.DependencyArtifactPath {
+		dependencyRaw, err := os.ReadFile(dependencyPath)
+		if err != nil {
+			t.Fatalf("read retained verifier dependency %q: %v", dependencyPath, err)
+		}
+		digest := sha256Hex(dependencyRaw)
+		if _, present := materialCoordinateByDigest[digest]; present {
+			continue
+		}
+		coordinate, requiredByProfile := closureCoordinatesByDigest[digest]
+		if !requiredByProfile {
+			coordinate = sourcePackageCoordinate{Role: "dependency_closure_material", ID: "sha256-" + digest, Version: "1"}
+		}
+		materials[coordinate] = StageMaterial{Role: coordinate.Role, ID: coordinate.ID, Version: coordinate.Version, Raw: bytes.Clone(dependencyRaw)}
+		materialCoordinateByDigest[digest] = coordinate
+	}
+
+	coordinatesByDigest := make(map[string][]sourcePackageCoordinate, len(materials))
+	for coordinate, material := range materials {
+		digest := sha256Hex(material.Raw)
+		coordinatesByDigest[digest] = append(coordinatesByDigest[digest], coordinate)
+	}
+	for digest := range coordinatesByDigest {
+		sort.Slice(coordinatesByDigest[digest], func(i, j int) bool {
+			return sourcePackageCoordinateKey(coordinatesByDigest[digest][i]) < sourcePackageCoordinateKey(coordinatesByDigest[digest][j])
+		})
+	}
+	preflightCoordinates := make(map[sourcePackageCoordinate]struct{}, len(planValue.PreflightDependencies))
+	for _, coordinate := range planValue.PreflightDependencies {
+		preflightCoordinates[coordinate] = struct{}{}
+	}
+	for _, dependencyPath := range base.options.DependencyArtifactPath {
+		dependencyRaw, err := os.ReadFile(dependencyPath)
+		if err != nil {
+			t.Fatalf("read retained verifier dependency %q: %v", dependencyPath, err)
+		}
+		candidates := coordinatesByDigest[sha256Hex(dependencyRaw)]
+		if len(candidates) == 0 {
+			t.Fatalf("retained verifier dependency %q is absent from generated source-package closure", dependencyPath)
+		}
+		for _, coordinate := range candidates {
+			if !bytes.Equal(materials[coordinate].Raw, dependencyRaw) {
+				continue
+			}
+			if _, alreadyPresent := preflightCoordinates[coordinate]; alreadyPresent {
+				continue
+			}
+			planValue.PreflightDependencies = append(planValue.PreflightDependencies, coordinate)
+			preflightCoordinates[coordinate] = struct{}{}
+		}
 	}
 
 	selected := selectSourcePackageGeneratedCoordinates(t, provider, semantic, graph)

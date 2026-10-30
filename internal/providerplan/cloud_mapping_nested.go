@@ -30,13 +30,7 @@ func validateCloudNestedDecompositions(catalog CloudCatalog, contract CloudMappi
 		if _, duplicate := parents[decomposition.ParentPointer]; duplicate {
 			return nil, fmt.Errorf("duplicate nested parent %q", decomposition.ParentPointer)
 		}
-		var leaves map[string]cloudResolvedField
-		var err error
-		if parent.ShapeID == "" && parent.ValueType == "opaque_list" {
-			leaves, err = cloudInlineDiscoveryListLeaf(parent)
-		} else {
-			leaves, err = cloudNestedLeaves(catalog, parent.ShapeID, decomposition.ParentPointer, parent.WirePointer, parent.Cardinality, 0, map[string]bool{})
-		}
+		leaves, err := cloudDecompositionLeaves(catalog, parent)
 		if err != nil {
 			return nil, err
 		}
@@ -141,6 +135,23 @@ func cloudNestedLeaves(catalog CloudCatalog, shapeID, prefix, wirePrefix, cardin
 	if err != nil {
 		return nil, err
 	}
+	if catalog.Format == CloudCatalogFormatGoogleDiscoveryREST {
+		return cloudDiscoveryNestedLeaves(catalog, shape.RawJSON, prefix, wirePrefix, cardinality, depth, seen)
+	}
+	var declaredType string
+	_ = json.Unmarshal(object["type"], &declaredType)
+	if declaredType != "structure" && declaredType != "list" && declaredType != "map" {
+		typ, card, err := cloudShapeType(shape)
+		if err != nil {
+			return nil, err
+		}
+		if cardinality == "many" {
+			card = "many"
+		}
+		name := prefix[strings.LastIndex(prefix, "/")+1:]
+		name = strings.ReplaceAll(strings.ReplaceAll(name, "~1", "/"), "~0", "~")
+		return map[string]cloudResolvedField{prefix: {ID: name, Pointer: prefix, WirePointer: wirePrefix, ValueType: typ, Cardinality: card, ShapeID: shapeID, KnownEnumValues: cloudSmithyEnumValues(shape.RawJSON)}}, nil
+	}
 	if memberRaw, ok := object["member"]; ok {
 		var member struct {
 			Target string                     `json:"target"`
@@ -187,8 +198,25 @@ func cloudNestedLeaves(catalog CloudCatalog, shapeID, prefix, wirePrefix, cardin
 			pointer := prefix + "/" + cloudCatalogEscapePointer(name)
 			wireName := cloudSmithyWireMemberName(name, member.Traits)
 			wirePointer := wirePrefix + "/" + cloudCatalogEscapePointer(wireName)
+			if cardinality == "many" {
+				card = "many"
+			}
 			if typ == "opaque_complex" || typ == "opaque_list" {
-				nested, e := cloudNestedLeaves(catalog, member.Target, pointer, wirePointer, card, depth+1, seen)
+				var nested map[string]cloudResolvedField
+				var e error
+				if _, flattened := member.Traits["smithy.api#xmlFlattened"]; flattened && typ == "opaque_list" {
+					var list struct {
+						Member struct {
+							Target string `json:"target"`
+						} `json:"member"`
+					}
+					if json.Unmarshal(target.RawJSON, &list) != nil || list.Member.Target == "" {
+						return nil, fmt.Errorf("flattened list lacks retained member")
+					}
+					nested, e = cloudNestedLeaves(catalog, list.Member.Target, pointer+"/*", wirePointer, "many", depth+1, seen)
+				} else {
+					nested, e = cloudNestedLeaves(catalog, member.Target, pointer, wirePointer, card, depth+1, seen)
+				}
 				if e != nil {
 					return nil, e
 				}

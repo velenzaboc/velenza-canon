@@ -136,19 +136,96 @@ func TestCloudCaseGCPComputeOfflineAcceptance(t *testing.T) {
 		t.Fatalf("TERMINATED must remain restartable stopped, never deleted: %#v err=%v", terminatedResult, err)
 	}
 
-	// Empty list and a >1 users array are both fail-closed: neither authorizes
-	// deletion, and a volume with ambiguous attachment is not projected.
+	// Empty list is partial-safe and never authorizes deletion. The expanded
+	// owner collection preserves a genuine multi-attachment only when every
+	// private native URL has an explicit scoped opaque binding.
 	empty := []byte(`{"kind":"compute#diskAggregatedList","items":{"zones/us-central1-a":{"disks":[]},"zones/us-central1-b":{"warning":{"code":"UNREACHABLE"}}}}`)
 	if result, emptyErr := ProjectCloudNeutralResponse(diskRecipe, empty); emptyErr != nil || len(result.Records) != 0 || result.DeletionAuthorized {
 		t.Fatalf("empty partial aggregated response=%#v err=%v", result, emptyErr)
 	}
-	multiple := bytes.Replace(diskFixture, []byte(`"users":["https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/fixture-instance"]`), []byte(`"users":["one","two"]`), 1)
-	if _, multipleErr := ProjectCloudNeutralResponse(diskRecipe, multiple); multipleErr == nil {
-		t.Fatal("multiple disk attachments were accepted")
+	zeroUsers := bytes.Replace(diskFixture, []byte(`"users":["https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/fixture-instance"]`), []byte(`"users":[]`), 1)
+	zeroResult, zeroErr := ProjectCloudNeutralResponse(diskRecipe, zeroUsers)
+	if zeroErr != nil || len(zeroResult.Records) != 1 || !bytes.Contains(zeroResult.Records[0], []byte(`"value":[]`)) || zeroResult.DeletionAuthorized {
+		t.Fatalf("zero disk attachments were not preserved as observed empty collection: %#v err=%v", zeroResult, zeroErr)
+	}
+	multiple := bytes.Replace(diskFixture, []byte(`"users":["https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/fixture-instance"]`), []byte(`"users":["https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/one","https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/two"]`), 1)
+	multipleRecipe := diskRecipe
+	multipleRecipe.Bindings = append(multipleRecipe.Bindings,
+		CloudNeutralScopedBinding{ScopeReference: "opaque-gcp-scope-us-central1-a", ScopedNativeKey: "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/one", OpaqueNeutralID: "opaque-instance-one"},
+		CloudNeutralScopedBinding{ScopeReference: "opaque-gcp-scope-us-central1-a", ScopedNativeKey: "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/two", OpaqueNeutralID: "opaque-instance-two"},
+	)
+	multipleResult, multipleErr := ProjectCloudNeutralResponse(multipleRecipe, multiple)
+	if multipleErr != nil || len(multipleResult.Records) != 1 || !bytes.Contains(multipleResult.Records[0], []byte(`"opaque-instance-one"`)) || !bytes.Contains(multipleResult.Records[0], []byte(`"opaque-instance-two"`)) {
+		t.Fatalf("bound multiple disk attachments were not projected as a collection: %#v err=%v", multipleResult, multipleErr)
 	}
 	unresolved := bytes.Replace(diskFixture, []byte("fixture-instance"), []byte("unbound-instance"), 1)
 	if _, unresolvedErr := ProjectCloudNeutralResponse(diskRecipe, unresolved); unresolvedErr == nil {
 		t.Fatal("unresolved disk attachment was accepted")
+	}
+
+	// Expanded fixtures exercise only source-neutral facts with direct owner
+	// meaning: descriptions, report timestamps, complete lifecycle enum values,
+	// capacity and scoped relationships. Provider URLs, machine SKUs and KMS
+	// key material remain private even when present in the wire response.
+	expandedInstance, err := os.ReadFile("../../testdata/cloudapi/fixtures/gcp/compute-instances-expanded-aggregated.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expandedDisk, err := os.ReadFile("../../testdata/cloudapi/fixtures/gcp/compute-disks-expanded-aggregated.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	expandedInstanceRecipe := gcpComputeCaseRecipe(computeCatalog["Instance"], instance, "opaque-gcp-scope-us-central1-a", CloudSyntheticCoveragePartial, "", []CloudNeutralScopedBinding{{ScopeReference: "opaque-gcp-scope-us-central1-a", ScopedNativeKey: "1101", OpaqueNeutralID: "opaque-instance-1101"}})
+	expandedDiskRecipe := gcpComputeCaseRecipe(computeCatalog["Disk"], disk, "opaque-gcp-scope-us-central1-a", CloudSyntheticCoveragePartial, "", []CloudNeutralScopedBinding{
+		{ScopeReference: "opaque-gcp-scope-us-central1-a", ScopedNativeKey: "2101", OpaqueNeutralID: "opaque-disk-2101"},
+		{ScopeReference: "opaque-gcp-scope-us-central1-a", ScopedNativeKey: "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/fixture-expanded-instance", OpaqueNeutralID: "opaque-instance-1101"},
+	})
+	expandedInstanceResult, err := ProjectCloudNeutralResponse(expandedInstanceRecipe, expandedInstance)
+	if err != nil || len(expandedInstanceResult.Records) != 1 {
+		t.Fatalf("expanded instance projection=%#v err=%v", expandedInstanceResult, err)
+	}
+	expandedDiskResult, err := ProjectCloudNeutralResponse(expandedDiskRecipe, expandedDisk)
+	if err != nil || len(expandedDiskResult.Records) != 1 {
+		t.Fatalf("expanded disk projection=%#v err=%v", expandedDiskResult, err)
+	}
+	instanceRecord := expandedInstanceResult.Records[0]
+	diskRecord := expandedDiskResult.Records[0]
+	for _, record := range [][]byte{instanceRecord, diskRecord} {
+		if err := ValidateCloudNeutralRecordValue(gcpComputeCaseNeutral(record, instance, disk), record); err != nil {
+			t.Fatalf("expanded owner-valid record: %v: %s", err, record)
+		}
+		if bytes.Contains(record, []byte("https://compute.googleapis.com")) || bytes.Contains(record, []byte("fixture-kms")) || bytes.Contains(record, []byte("n2-standard-4")) {
+			t.Fatalf("expanded projection leaked provider-private URL/SKU/key reference: %s", record)
+		}
+	}
+	for _, want := range []string{`"offline expanded Compute Engine instance"`, `"2026-10-30T12:34:56.789Z"`, `"stopping"`} {
+		if !bytes.Contains(instanceRecord, []byte(want)) {
+			t.Fatalf("expanded instance omitted %s: %s", want, instanceRecord)
+		}
+	}
+	for _, want := range []string{`"offline expanded persistent disk"`, `"2026-10-30T12:00:00Z"`, `"68719476736"`, `"opaque-instance-1101"`} {
+		if !bytes.Contains(diskRecord, []byte(want)) {
+			t.Fatalf("expanded disk omitted %s: %s", want, diskRecord)
+		}
+	}
+	badTimestamp := bytes.Replace(expandedInstance, []byte(`"2026-10-30T12:34:56.789Z"`), []byte(`"not-rfc3339"`), 1)
+	if _, timestampErr := ProjectCloudNeutralResponse(expandedInstanceRecipe, badTimestamp); timestampErr == nil {
+		t.Fatal("malformed RFC3339 source timestamp was accepted")
+	}
+	for source, neutral := range map[string]string{
+		"PENDING": "provisioning", "PENDING_STOP": "stopping", "PROVISIONING": "provisioning", "REPAIRING": "repairing",
+		"RUNNING": "running", "STAGING": "provisioning", "STOPPED": "stopped", "STOPPING": "stopping",
+		"SUSPENDED": "suspended", "SUSPENDING": "suspending", "TERMINATED": "stopped",
+	} {
+		variant := bytes.Replace(expandedInstance, []byte(`"status": "STOPPING"`), []byte(`"status": "`+source+`"`), 1)
+		result, lifecycleErr := ProjectCloudNeutralResponse(expandedInstanceRecipe, variant)
+		if lifecycleErr != nil || len(result.Records) != 1 || !bytes.Contains(result.Records[0], []byte(`"`+neutral+`"`)) {
+			t.Fatalf("lifecycle %s -> %s rejected: %#v err=%v", source, neutral, result, lifecycleErr)
+		}
+	}
+	deprovisioning := bytes.Replace(expandedInstance, []byte(`"status": "STOPPING"`), []byte(`"status": "DEPROVISIONING"`), 1)
+	if _, lifecycleErr := ProjectCloudNeutralResponse(expandedInstanceRecipe, deprovisioning); lifecycleErr == nil {
+		t.Fatal("DEPROVISIONING was projected without a primary lifecycle meaning")
 	}
 }
 
@@ -156,6 +233,8 @@ func gcpComputeCaseRecipe(catalog CloudCatalog, target CloudSourceObjectTarget, 
 	template := cloudInstanceTemplate()
 	if target.SourceObjectType == "Disk" {
 		template = cloudVolumeTemplate()
+		delete(template, "attached_compute_instance_reference")
+		template["attached_compute_instance_references"] = cloudUnknown()
 	}
 	return CloudNeutralProjectionRecipe{
 		Catalog: catalog, Target: &target, Contract: *target.MappingContract,

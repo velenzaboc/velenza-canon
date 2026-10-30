@@ -36,24 +36,27 @@ func TestCloudInputComposesTheFourServiceCases(t *testing.T) {
 // This is deliberately a real-input integration guard. Small synthetic shape
 // tests cannot establish that every field in the selected provider objects is
 // representable (including enum, map, list and structured fields).
-func TestCloudSixSelectedObjectsCloseAgainstRetainedModels(t *testing.T) {
+func TestCloudSelectedOperationsCloseAgainstRetainedModels(t *testing.T) {
 	request, err := LoadCloudSourceCandidateInput("../../testdata/cloudapi/candidate-input.json", NewCloudCatalogParser())
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := map[string]string{
-		"aws/s3/com.amazonaws.s3#Bucket":     "storage_container",
-		"aws/ec2/com.amazonaws.ec2#Instance": "compute_instance",
-		"aws/ec2/com.amazonaws.ec2#Volume":   "compute_volume",
-		"gcp/storage/Bucket":                 "storage_container",
-		"gcp/compute/Instance":               "compute_instance",
-		"gcp/compute/Disk":                   "compute_volume",
+		"aws/s3/com.amazonaws.s3#ListBuckets":          "storage_container",
+		"aws/s3/com.amazonaws.s3#GetBucketVersioning":  "storage_container",
+		"aws/s3/com.amazonaws.s3#GetBucketEncryption":  "storage_container",
+		"aws/s3/com.amazonaws.s3#GetPublicAccessBlock": "storage_container",
+		"aws/ec2/com.amazonaws.ec2#DescribeInstances":  "compute_instance",
+		"aws/ec2/com.amazonaws.ec2#DescribeVolumes":    "compute_volume",
+		"gcp/storage/storage.buckets.list":             "storage_container",
+		"gcp/compute/compute.instances.aggregatedList": "compute_instance",
+		"gcp/compute/compute.disks.aggregatedList":     "compute_volume",
 	}
 	if len(request.Catalogs) != 4 || len(request.Targets) != len(want) {
-		t.Fatalf("need four complete pinned models and six targets, got %d/%d", len(request.Catalogs), len(request.Targets))
+		t.Fatalf("need four complete pinned models and nine operation targets, got %d/%d", len(request.Catalogs), len(request.Targets))
 	}
 	for _, target := range request.Targets {
-		key := target.ProviderID + "/" + target.ServiceID + "/" + target.SourceObjectType
+		key := target.ProviderID + "/" + target.ServiceID + "/" + target.OperationID
 		class, found := want[key]
 		if !found || class != target.RecordClassSymbol {
 			t.Fatalf("unexpected or repeated selected object %s -> %s", key, target.RecordClassSymbol)
@@ -63,12 +66,15 @@ func TestCloudSixSelectedObjectsCloseAgainstRetainedModels(t *testing.T) {
 		if !found || target.MappingContract == nil {
 			t.Fatalf("selected object %s has no catalog/contract", key)
 		}
-		fields, err := cloudCatalogObjectFields(catalog, target.SourceObjectType)
+		fields, err := cloudCatalogObjectFields(catalog, target.MappingContract.ObjectSchemaID)
 		if err != nil || len(fields) == 0 {
 			t.Fatalf("actual source object %s cannot derive its complete field roster: %v", key, err)
 		}
 		if err := ValidateCloudMappingContract(catalog, *target.MappingContract); err != nil {
 			t.Fatalf("actual selected model contract %s: %v", key, err)
+		}
+		if err := ValidateCloudSourceIdentityContract(target, catalog); err != nil {
+			t.Fatalf("identity closure %s: %v", key, err)
 		}
 		// This test proves complete checked disposition, not that unsupported
 		// fields have become mapped capabilities. Record outcomes have their

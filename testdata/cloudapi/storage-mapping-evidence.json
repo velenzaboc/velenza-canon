@@ -1,0 +1,51 @@
+{
+  "schema": "velenza.cloud_api_storage_mapping_evidence/1",
+  "status": "asserted_candidate_unqualified",
+  "purpose": "Exact slices from retained primary provider API models used by bounded storage mapping cases. These observations authorize neither acquisition nor a security/compliance conclusion.",
+  "observations": [
+    {
+      "id": "gcp.storage.bucket.time_created",
+      "provider": "gcp",
+      "source_url": "https://storage.googleapis.com/$discovery/rest?version=v1",
+      "source_path": "official/gcp/storage-v1.discovery.json",
+      "source_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "start_byte": 34596,
+      "end_byte": 34728,
+      "slice_sha256": "137a4bb92c415b5cb3a12194479adcede349b680bd2365796058962d67b7fa38",
+      "observation": "Bucket.timeCreated is documented as the bucket creation time in RFC 3339 format. It is a report-only timestamp, not identity or incarnation evidence."
+    },
+    {
+      "id": "gcp.storage.bucket.versioning_enabled",
+      "provider": "gcp",
+      "source_url": "https://storage.googleapis.com/$discovery/rest?version=v1",
+      "source_path": "official/gcp/storage-v1.discovery.json",
+      "source_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "start_byte": 35219,
+      "end_byte": 35480,
+      "slice_sha256": "9606661d6f88eb97b7b924bb0d03adefbb946d64ff7bf5721f92b42f1d89d7f2",
+      "observation": "Bucket.versioning.enabled documents whether bucket versioning is fully enabled; it is a configuration observation only."
+    },
+    {
+      "id": "gcp.storage.bucket.public_access_prevention",
+      "provider": "gcp",
+      "source_url": "https://storage.googleapis.com/$discovery/rest?version=v1",
+      "source_path": "official/gcp/storage-v1.discovery.json",
+      "source_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "start_byte": 19310,
+      "end_byte": 19474,
+      "slice_sha256": "e8614a5f137e578046dc365dde1898455ce47aef88298674aaa0c1a20c10b743",
+      "observation": "Bucket.iamConfiguration.publicAccessPrevention has inherited/enforced source values. It cannot establish effective public accessibility because inherited organization policy is outside the bucket response."
+    },
+    {
+      "id": "aws.s3.bucket_versioning_status",
+      "provider": "aws",
+      "source_url": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json",
+      "source_path": "official/aws/s3-2006-03-01.json",
+      "source_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "start_byte": 1200578,
+      "end_byte": 1200939,
+      "slice_sha256": "6dd187a34ea87753295035e9280e93ab58bb6604fd2ff4a2dd25af70976df834",
+      "observation": "GetBucketVersioning has the documented BucketVersioningStatus enum values Enabled and Suspended. This is a configuration observation only."
+    }
+  ]
+}

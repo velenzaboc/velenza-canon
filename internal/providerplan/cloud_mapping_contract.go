@@ -43,12 +43,12 @@ type CloudNeutralRecordSchema struct {
 }
 
 const cloudInfrastructureRecordOwnerID = "1729172e-44a9-48bb-b833-9591cd105516"
-const cloudInfrastructureRecordOwnerVersion = 1
-const cloudInfrastructureRecordOwnerSHA256 = "c0d09326726ba3cb6ff2f8b3b404da6c8d3402973e9ef7194891ed67325c7e71"
-const cloudInfrastructureSchemaExportSHA256 = "d568e24bd90b1f3460baadc722d38bcc99648a7f24866b3ca843884a3a43595c"
-const cloudInfrastructureSchemaFragmentSHA256 = "c37e212cb47077d61fb7915a899a35b02f1681925ca7c3021f2fe9f6967d6700"
+const cloudInfrastructureRecordOwnerVersion = 2
+const cloudInfrastructureRecordOwnerSHA256 = "8522cfbab364950c782cb4565b3d34f5dc8a0bc44c73afc1d2c9722cd753a4c5"
+const cloudInfrastructureSchemaExportSHA256 = "4817cf1fdeb60f8ebf292c28d119bde065a85d7c864d7a85af87009b75620135"
+const cloudInfrastructureSchemaFragmentSHA256 = "19646e19bf0bf947a2ce059060b64ee263ac507fe62afc17345aea8fbec4bab2"
 const cloudInfrastructureValidatorProfileSymbol = "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.required_validator_profile"
-const cloudInfrastructureValidatorProfileSHA256 = "a617d002646423193fddc732431de5be627b4dc82d007208d758612865b5aead"
+const cloudInfrastructureValidatorProfileSHA256 = "7b92a5c6321ed25917c495857a3d3eeabf366611f112179c99bdbba39297ac4c"
 
 // LoadCloudNeutralRecordSchema extracts a class definition from the exact
 // machine-readable schema published by the Infrastructure Resource Record
@@ -200,7 +200,7 @@ func validateCloudNeutralValidatorProfile(schema, binding map[string]json.RawMes
 	if err := requireCloudProfileSet(profile, "asserted_formats", []string{"date-time"}); err != nil {
 		return err
 	}
-	if err := requireCloudProfileSet(profile, "required_assertion_keywords", []string{"type", "minLength", "maxLength", "pattern", "enum", "const", "required", "additionalProperties", "format"}); err != nil {
+	if err := requireCloudProfileSet(profile, "required_assertion_keywords", []string{"type", "minLength", "maxLength", "pattern", "enum", "const", "required", "additionalProperties", "format", "items", "minItems", "maxItems", "uniqueItems"}); err != nil {
 		return err
 	}
 	var declaredHash string
@@ -290,7 +290,7 @@ func validateCloudJSONSchema(raw json.RawMessage, definitions map[string]json.Ra
 	if err != nil {
 		return err
 	}
-	allowed := map[string]bool{"$ref": true, "oneOf": true, "type": true, "properties": true, "required": true, "additionalProperties": true, "enum": true, "const": true, "minLength": true, "maxLength": true, "pattern": true, "format": true, "description": true}
+	allowed := map[string]bool{"$ref": true, "oneOf": true, "type": true, "properties": true, "required": true, "additionalProperties": true, "enum": true, "const": true, "minLength": true, "maxLength": true, "pattern": true, "format": true, "description": true, "items": true, "minItems": true, "maxItems": true, "uniqueItems": true}
 	for key := range schema {
 		if !allowed[key] {
 			return fmt.Errorf("unsupported schema assertion keyword %q", key)
@@ -344,6 +344,10 @@ func validateCloudJSONSchema(raw json.RawMessage, definitions map[string]json.Ra
 			if _, ok := value.(string); !ok {
 				return fmt.Errorf("want string")
 			}
+		case "array":
+			if _, ok := value.([]any); !ok {
+				return fmt.Errorf("want array")
+			}
 		default:
 			return fmt.Errorf("unsupported schema type %q", typ)
 		}
@@ -371,6 +375,11 @@ func validateCloudJSONSchema(raw json.RawMessage, definitions map[string]json.Ra
 	}
 	if stringValue, ok := value.(string); ok {
 		if err := validateCloudStringAssertions(schema, stringValue); err != nil {
+			return err
+		}
+	}
+	if array, ok := value.([]any); ok {
+		if err := validateCloudArrayAssertions(schema, definitions, array); err != nil {
 			return err
 		}
 	}
@@ -450,9 +459,21 @@ func validateCloudStringAssertions(schema map[string]json.RawMessage, value stri
 		if name != "date-time" {
 			return fmt.Errorf("unsupported asserted format %q", name)
 		}
-		if _, err := time.Parse(time.RFC3339, value); err != nil || !strings.HasSuffix(value, "Z") {
-			return fmt.Errorf("date-time must be canonical UTC RFC3339")
+		if err := validateCloudUTCInstant(value); err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+var cloudUTCInstantPattern = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z$`)
+
+func validateCloudUTCInstant(value string) error {
+	if !cloudUTCInstantPattern.MatchString(value) {
+		return fmt.Errorf("date-time must use the exact UTC RFC3339 grammar")
+	}
+	if _, err := time.Parse(time.RFC3339, value); err != nil {
+		return fmt.Errorf("date-time is not a valid calendar instant")
 	}
 	return nil
 }
@@ -521,6 +542,11 @@ const (
 	CloudMappingProjectionGiBToBytes                       CloudMappingProjection = "binary_gib_to_bytes"
 	CloudMappingProjectionCheckedPositiveIntegerGiBToBytes CloudMappingProjection = "checked_positive_integer_gib_to_bytes"
 	CloudMappingProjectionBoundedZeroOrOneRelationship     CloudMappingProjection = "bounded_zero_or_one_relationship_reference"
+	CloudMappingProjectionExactRFC3339                     CloudMappingProjection = "exact_rfc3339"
+	CloudMappingProjectionEvidenceClosedScalar             CloudMappingProjection = "evidence_closed_scalar"
+	CloudMappingProjectionBoundedOneEvidenceScalar         CloudMappingProjection = "bounded_one_evidence_closed_scalar"
+	CloudMappingProjectionManyRelationship                 CloudMappingProjection = "many_relationship_references"
+	CloudMappingProjectionPresentPrivateLeaf               CloudMappingProjection = "present_private_leaf_to_neutral_scalar"
 )
 
 type CloudExplicitNullDisposition string
@@ -532,17 +558,36 @@ const (
 	CloudExplicitNullToPrivate     CloudExplicitNullDisposition = "source_private_only"
 )
 
+type CloudExplicitAbsentDisposition string
+
+const (
+	CloudAbsentRefuse    CloudExplicitAbsentDisposition = "refuse"
+	CloudAbsentToAbsent  CloudExplicitAbsentDisposition = "map_to_absent"
+	CloudAbsentToUnknown CloudExplicitAbsentDisposition = "map_to_unknown"
+)
+
+// CloudEvidenceValueRecipe is a closed evidence-bound scalar translation;
+// it deliberately cannot evaluate expressions or coerce source types.
+type CloudEvidenceValueRecipe struct {
+	EvidenceRefs            []string          `json:"evidence_refs"`
+	SourceToNeutral         map[string]string `json:"source_to_neutral"`
+	UnknownValuePolicy      string            `json:"unknown_value_policy"`
+	UnsupportedSourceValues []string          `json:"unsupported_source_values,omitempty"`
+}
+
 type CloudMappingContractField struct {
-	SourcePointer           string                       `json:"source_pointer"`
-	WirePointer             string                       `json:"wire_pointer,omitempty"`
-	SourceFieldID           string                       `json:"source_field_id"`
-	Disposition             CloudSourceFieldDisposition  `json:"disposition"`
-	TargetField             string                       `json:"target_field,omitempty"`
-	Projection              CloudMappingProjection       `json:"projection,omitempty"`
-	SourceUnit              string                       `json:"source_unit,omitempty"`
-	UnitEvidenceRef         string                       `json:"unit_evidence_ref,omitempty"`
-	ExplicitNullDisposition CloudExplicitNullDisposition `json:"explicit_null_disposition"`
-	LifecycleRecipe         *CloudLifecycleEnumRecipe    `json:"lifecycle_recipe,omitempty"`
+	SourcePointer             string                         `json:"source_pointer"`
+	WirePointer               string                         `json:"wire_pointer,omitempty"`
+	SourceFieldID             string                         `json:"source_field_id"`
+	Disposition               CloudSourceFieldDisposition    `json:"disposition"`
+	TargetField               string                         `json:"target_field,omitempty"`
+	Projection                CloudMappingProjection         `json:"projection,omitempty"`
+	SourceUnit                string                         `json:"source_unit,omitempty"`
+	UnitEvidenceRef           string                         `json:"unit_evidence_ref,omitempty"`
+	ExplicitNullDisposition   CloudExplicitNullDisposition   `json:"explicit_null_disposition"`
+	ExplicitAbsentDisposition CloudExplicitAbsentDisposition `json:"explicit_absent_disposition"`
+	LifecycleRecipe           *CloudLifecycleEnumRecipe      `json:"lifecycle_recipe,omitempty"`
+	ValueRecipe               *CloudEvidenceValueRecipe      `json:"value_recipe,omitempty"`
 }
 
 // CloudLifecycleEnumRecipe is data carried by the same mapping contract the
@@ -659,6 +704,18 @@ func ValidateCloudMappingContract(catalog CloudCatalog, contract CloudMappingCon
 			return fmt.Errorf("selected source field %q lacks a disposition", pointer)
 		}
 	}
+	// Every target fact has one writer within an observation. Merging several
+	// source facts requires an owned composition rule, never iteration order.
+	writers := map[string]string{}
+	for _, field := range cloudNeutralProjectionFields(contract) {
+		if field.TargetField == "" {
+			continue
+		}
+		if old, duplicate := writers[field.TargetField]; duplicate {
+			return fmt.Errorf("neutral field %q has competing source writers %q and %q", field.TargetField, old, field.SourcePointer)
+		}
+		writers[field.TargetField] = field.SourcePointer
+	}
 	return nil
 }
 
@@ -675,6 +732,13 @@ func validateCloudMappingEvidenceReferences(contract CloudMappingContract) error
 				for _, ref := range f.LifecycleRecipe.EvidenceRefs {
 					if _, ok := ids[ref]; !ok {
 						return fmt.Errorf("lifecycle evidence ref %q is unbound", ref)
+					}
+				}
+			}
+			if f.ValueRecipe != nil {
+				for _, ref := range f.ValueRecipe.EvidenceRefs {
+					if _, ok := ids[ref]; !ok {
+						return fmt.Errorf("value evidence ref %q is unbound", ref)
 					}
 				}
 			}
@@ -1061,6 +1125,14 @@ func inferCloudNeutralWireType(raw json.RawMessage, definitions map[string]json.
 			valueType = "string"
 		}
 	}
+	if valueType == "array" {
+		item, err := rawObject(valueObject["items"])
+		var ref string
+		if err == nil && json.Unmarshal(item["$ref"], &ref) == nil && ref == "#/$defs/semantic_record_instance_identity" {
+			return CloudNeutralFieldSchema{ValueType: "semantic_reference", Cardinality: "many"}, nil
+		}
+		return CloudNeutralFieldSchema{}, fmt.Errorf("target array requires an exact semantic identity item schema")
+	}
 	if valueType != "string" {
 		return CloudNeutralFieldSchema{}, fmt.Errorf("unsupported target value type %q", valueType)
 	}
@@ -1120,7 +1192,7 @@ func cloudHasPresenceState(target CloudNeutralFieldSchema, state string) bool {
 func validateCloudMappingField(mapping CloudMappingContractField, source cloudResolvedField, neutral map[string]CloudNeutralFieldSchema) error {
 	switch mapping.Disposition {
 	case CloudSourceNotObserved, CloudSourceUnsupported, CloudSourceUnknown, CloudSourcePrivateOnly:
-		if mapping.TargetField != "" || mapping.Projection != "" || mapping.SourceUnit != "" {
+		if mapping.TargetField != "" || mapping.Projection != "" || mapping.SourceUnit != "" || mapping.ValueRecipe != nil || mapping.LifecycleRecipe != nil || mapping.ExplicitAbsentDisposition != "" {
 			return fmt.Errorf("%s mapping for %q cannot carry a target, projection or unit", mapping.Disposition, source.ID)
 		}
 		return nil
@@ -1132,6 +1204,15 @@ func validateCloudMappingField(mapping CloudMappingContractField, source cloudRe
 	target, ok := neutral[mapping.TargetField]
 	if !ok {
 		return fmt.Errorf("source field %q targets unknown neutral field %q", source.ID, mapping.TargetField)
+	}
+	if err := validateCloudAbsentDisposition(mapping, target); err != nil {
+		return err
+	}
+	if mapping.Disposition != CloudSourceMapsExactLifecycleFact && mapping.LifecycleRecipe != nil {
+		return fmt.Errorf("lifecycle recipe cannot be attached to another disposition")
+	}
+	if mapping.ValueRecipe != nil && mapping.Projection != CloudMappingProjectionEvidenceClosedScalar && mapping.Projection != CloudMappingProjectionBoundedOneEvidenceScalar && mapping.Projection != CloudMappingProjectionPresentPrivateLeaf {
+		return fmt.Errorf("value recipe cannot be detached from its evidence-bound projection")
 	}
 	if target.ID == "lifecycle_state" && mapping.Disposition != CloudSourceMapsExactLifecycleFact {
 		return fmt.Errorf("lifecycle_state requires lifecycle enum recipe disposition")
@@ -1174,8 +1255,20 @@ func validateCloudMappingField(mapping CloudMappingContractField, source cloudRe
 			return fmt.Errorf("checked_positive_integer_gib_to_bytes mapping %q is incompatible", source.ID)
 		}
 	case CloudMappingProjectionBoundedZeroOrOneRelationship:
-		if mapping.Disposition != CloudSourceMapsExactRelationshipFact || source.Cardinality != "many" || target.ValueType != "semantic_reference" || target.Cardinality != "one" {
+		if mapping.Disposition != CloudSourceMapsExactRelationshipFact || source.ValueType != "string" || source.Cardinality != "many" || target.ValueType != "semantic_reference" || target.Cardinality != "one" {
 			return fmt.Errorf("bounded_zero_or_one_relationship_reference mapping %q is incompatible", source.ID)
+		}
+	case CloudMappingProjectionManyRelationship:
+		if mapping.Disposition != CloudSourceMapsExactRelationshipFact || source.ValueType != "string" || source.Cardinality != "many" || target.ValueType != "semantic_reference" || target.Cardinality != "many" {
+			return fmt.Errorf("many relationship mapping %q is incompatible", source.ID)
+		}
+	case CloudMappingProjectionExactRFC3339:
+		if mapping.Disposition != CloudSourceMapsExactSourceFact || source.ValueType != "string" || source.Cardinality != "one" || target.ValueType != "string" || target.Cardinality != "one" || len(target.AllowedValues) != 0 || target.Unit != "" {
+			return fmt.Errorf("exact timestamp mapping %q changes type or cardinality", source.ID)
+		}
+	case CloudMappingProjectionEvidenceClosedScalar, CloudMappingProjectionBoundedOneEvidenceScalar, CloudMappingProjectionPresentPrivateLeaf:
+		if err := validateCloudEvidenceValueRecipe(mapping, source, target); err != nil {
+			return err
 		}
 	default:
 		return fmt.Errorf("source field %q uses unknown projection %q", source.ID, mapping.Projection)
@@ -1368,7 +1461,7 @@ func cloudDiscoveryObjectFields(properties json.RawMessage) (map[string]cloudRes
 		}
 		valueType, cardinality := "", ""
 		var err error
-		if property.Ref != "" || len(property.AdditionalProperties) != 0 {
+		if property.Ref != "" || len(property.AdditionalProperties) != 0 || property.Type == "object" {
 			// Preserve the direct field in the closure so it must be explicitly
 			// private/unsupported; a future bounded nested projection may add it.
 			valueType, cardinality = "opaque_complex", "one"
@@ -1421,7 +1514,7 @@ func cloudDiscoveryType(kind, format string, items json.RawMessage) (string, str
 
 func cloudScalarType(kind string) (string, string, error) {
 	switch kind {
-	case "string", "string:", "timestamp", "timestamp:", "enum", "enum:":
+	case "string", "string:", "string:date-time", "timestamp", "timestamp:", "enum", "enum:":
 		return "string", "one", nil
 	case "integer:uint64":
 		return "unsigned_integer", "one", nil

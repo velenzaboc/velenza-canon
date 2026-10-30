@@ -3,11 +3,11 @@
   "export_version": 1,
   "source_owner": {
     "doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
-    "version": 1,
-    "canonical_owner_sha256": "c0d09326726ba3cb6ff2f8b3b404da6c8d3402973e9ef7194891ed67325c7e71",
-    "canonical_owner_commit": "df557a32c8539234a7c58f083412557d97bfa7d5",
+    "version": 2,
+    "canonical_owner_sha256": "8522cfbab364950c782cb4565b3d34f5dc8a0bc44c73afc1d2c9722cd753a4c5",
+    "canonical_owner_commit": "991e83e0e8df299a769c061ad5fc48e65c0db2a5",
     "machine_schema_json_pointer": "/sections/s3_semantic_schema_and_relationships/type_and_presence_closure/machine_readable_target_schema",
-    "machine_schema_fragment_sha256": "c37e212cb47077d61fb7915a899a35b02f1681925ca7c3021f2fe9f6967d6700",
+    "machine_schema_fragment_sha256": "19646e19bf0bf947a2ce059060b64ee263ac507fe62afc17345aea8fbec4bab2",
     "export_not_full_owner_bytes": true
   },
   "machine_readable_target_schema": {
@@ -21,9 +21,9 @@
     "stable_schema_symbol": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema",
     "required_validator_profile": {
       "profile_id": "infrastructure_resource_record_candidate_json_schema_validator_profile",
-      "profile_version": 1,
+      "profile_version": 2,
       "owner_doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
-      "owner_version": 1,
+      "owner_version": 2,
       "owner_symbol": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.required_validator_profile",
       "required_dialect": "https://json-schema.org/draft/2020-12/schema",
       "required_vocabularies": [
@@ -44,12 +44,16 @@
         "const",
         "required",
         "additionalProperties",
-        "format"
+        "format",
+        "items",
+        "minItems",
+        "maxItems",
+        "uniqueItems"
       ],
       "unknown_assertion_rule": "an unsupported required vocabulary, assertion keyword or asserted format is a validation-profile mismatch and refuses the candidate; it is never ignored or treated as annotation",
       "refusal_rule": "a compiler, mapper, candidate verifier or admission-preparation path that cannot resolve this exact owner coordinate and implement every required vocabulary and asserted format refuses the candidate before semantic publication; a generic best-effort JSON Schema mode is not conforming"
     },
-    "required_validator_profile_sha256": "a617d002646423193fddc732431de5be627b4dc82d007208d758612865b5aead",
+    "required_validator_profile_sha256": "7b92a5c6321ed25917c495857a3d3eeabf366611f112179c99bdbba39297ac4c",
     "required_validator_profile_hash_rule": "SHA-256 of RFC 8785 canonical UTF-8 serialization of required_validator_profile only; this deliberately excludes the containing owner document and this hash member",
     "schema_contract": "this is the closed candidate-output wire schema for source-package and mapping conformance. It is not physical DDL, a runtime admission artifact or an OHM source-evidence schema. A semantic_record_instance_identity is the opaque source-neutral OHM identity, never a source coordinate. A validator that does not implement every required vocabulary, including format assertion, must fail closed and may not validate or emit a candidate. The capacity maximum is expressed only through portable pattern and maxLength constraints.",
     "$defs": {
@@ -176,6 +180,30 @@
           }
         ]
       },
+      "description": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "type": "string",
+                "maxLength": 16384
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
+      },
       "rfc3339_time": {
         "oneOf": [
           {
@@ -247,6 +275,35 @@
             "type": "string"
           }
         }
+      },
+      "attachment_reference_collection": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "state",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "const": "present"
+              },
+              "value": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/semantic_record_instance_identity"
+                },
+                "minItems": 0,
+                "maxItems": 1024,
+                "uniqueItems": true
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/unavailable_metadata"
+          }
+        ]
       },
       "metadata_enum": {
         "oneOf": [
@@ -339,8 +396,11 @@
                 "enum": [
                   "provisioning",
                   "running",
+                  "stopping",
                   "stopped",
+                  "suspending",
                   "suspended",
+                  "repairing",
                   "terminating",
                   "terminated"
                 ]
@@ -581,7 +641,15 @@
           "versioning_state",
           "encryption_configuration_observation",
           "public_access_configuration_observation",
-          "retention_state"
+          "retention_state",
+          "reported_creation_time",
+          "customer_managed_key_configuration_observation",
+          "public_access_prevention_state",
+          "public_acl_block_state",
+          "public_policy_block_state",
+          "public_acl_ignore_state",
+          "public_policy_restriction_state",
+          "retention_lock_state"
         ],
         "properties": {
           "record_class": {
@@ -652,7 +720,8 @@
                   "value": {
                     "enum": [
                       "enabled",
-                      "disabled"
+                      "disabled",
+                      "suspended"
                     ]
                   }
                 }
@@ -739,6 +808,191 @@
                 "$ref": "#/$defs/unavailable_metadata"
               }
             ]
+          },
+          "reported_creation_time": {
+            "$ref": "#/$defs/rfc3339_time"
+          },
+          "customer_managed_key_configuration_observation": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "configured",
+                      "not_configured"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "public_access_prevention_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "enforced",
+                      "inherited"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "public_acl_block_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "enabled",
+                      "disabled"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "public_policy_block_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "enabled",
+                      "disabled"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "public_acl_ignore_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "enabled",
+                      "disabled"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "public_policy_restriction_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "enabled",
+                      "disabled"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
+          },
+          "retention_lock_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "state",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "state": {
+                    "const": "present"
+                  },
+                  "value": {
+                    "enum": [
+                      "locked",
+                      "unlocked"
+                    ]
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/unavailable_metadata"
+              }
+            ]
           }
         }
       },
@@ -749,6 +1003,7 @@
           "record_class",
           "semantic_record_instance_identity",
           "display_name",
+          "description",
           "scope_reference",
           "location_class",
           "lifecycle_state",
@@ -766,6 +1021,9 @@
           },
           "display_name": {
             "$ref": "#/$defs/label"
+          },
+          "description": {
+            "$ref": "#/$defs/description"
           },
           "scope_reference": {
             "$ref": "#/$defs/record_reference"
@@ -803,6 +1061,7 @@
           "record_class",
           "semantic_record_instance_identity",
           "display_name",
+          "description",
           "scope_reference",
           "location_class",
           "lifecycle_state",
@@ -810,7 +1069,8 @@
           "capacity_bytes",
           "storage_class",
           "encryption_configuration_observation",
-          "attached_compute_instance_reference"
+          "reported_creation_time",
+          "attached_compute_instance_references"
         ],
         "properties": {
           "record_class": {
@@ -821,6 +1081,9 @@
           },
           "display_name": {
             "$ref": "#/$defs/label"
+          },
+          "description": {
+            "$ref": "#/$defs/description"
           },
           "scope_reference": {
             "$ref": "#/$defs/record_reference"
@@ -872,8 +1135,11 @@
               }
             ]
           },
-          "attached_compute_instance_reference": {
-            "$ref": "#/$defs/optional_reference"
+          "reported_creation_time": {
+            "$ref": "#/$defs/rfc3339_time"
+          },
+          "attached_compute_instance_references": {
+            "$ref": "#/$defs/attachment_reference_collection"
           }
         }
       }
@@ -883,9 +1149,9 @@
   "mapping_requirements": {
     "validator_profile_binding": {
       "owner_doc_id": "1729172e-44a9-48bb-b833-9591cd105516",
-      "owner_version": 1,
+      "owner_version": 2,
       "owner_symbol": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.required_validator_profile",
-      "profile_sha256": "a617d002646423193fddc732431de5be627b4dc82d007208d758612865b5aead",
+      "profile_sha256": "7b92a5c6321ed25917c495857a3d3eeabf366611f112179c99bdbba39297ac4c",
       "binding_rule": "every candidate-generation, verification and admission-preparation path pins this exact profile coordinate and profile_sha256; external candidate input separately pins the complete owner bytes/hash. It refuses before semantic publication when its selected validator cannot implement the profile's dialect, required vocabularies, asserted formats and assertion keywords, or tolerates an unsupported assertion keyword. A generic or unknown-keyword-tolerant JSON Schema mode is not an acceptance path."
     }
   }

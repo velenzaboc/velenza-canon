@@ -75,12 +75,6 @@
             "explicit_null_disposition": "source_private_only"
           },
           {
-            "source_pointer": "/encryption",
-            "source_field_id": "encryption",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
-          },
-          {
             "source_pointer": "/etag",
             "source_field_id": "etag",
             "disposition": "source_private_only",
@@ -101,12 +95,6 @@
           {
             "source_pointer": "/hierarchicalNamespace",
             "source_field_id": "hierarchicalNamespace",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
-          },
-          {
-            "source_pointer": "/iamConfiguration",
-            "source_field_id": "iamConfiguration",
             "disposition": "unsupported",
             "explicit_null_disposition": "source_private_only"
           },
@@ -191,12 +179,6 @@
             "explicit_null_disposition": "source_private_only"
           },
           {
-            "source_pointer": "/retentionPolicy",
-            "source_field_id": "retentionPolicy",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
-          },
-          {
             "source_pointer": "/rpo",
             "source_field_id": "rpo",
             "disposition": "unsupported",
@@ -235,14 +217,17 @@
           {
             "source_pointer": "/storageClass",
             "source_field_id": "storageClass",
-            "disposition": "unsupported",
+            "disposition": "source_private_only",
             "explicit_null_disposition": "source_private_only"
           },
           {
             "source_pointer": "/timeCreated",
             "source_field_id": "timeCreated",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "reported_creation_time",
+            "projection": "exact_rfc3339",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_absent"
           },
           {
             "source_pointer": "/updated",
@@ -251,17 +236,58 @@
             "explicit_null_disposition": "source_private_only"
           },
           {
-            "source_pointer": "/versioning",
-            "source_field_id": "versioning",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
-          },
-          {
             "source_pointer": "/website",
             "source_field_id": "website",
             "disposition": "unsupported",
             "explicit_null_disposition": "source_private_only"
           }
+        ],
+        "nested": [
+          {
+            "parent_pointer": "/versioning",
+            "wire_codec_profile": "discovery_json",
+            "fields": [
+              {"source_pointer":"/versioning/enabled","wire_pointer":"/versioning/enabled","source_field_id":"enabled","disposition":"maps_exact_source_fact","target_field":"versioning_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["gcp.storage.versioning"],"source_to_neutral":{"true":"enabled","false":"disabled"},"unknown_value_policy":"refuse"}}
+            ]
+          },
+          {
+            "parent_pointer": "/retentionPolicy",
+            "wire_codec_profile": "discovery_json",
+            "fields": [
+              {"source_pointer":"/retentionPolicy/effectiveTime","wire_pointer":"/retentionPolicy/effectiveTime","source_field_id":"effectiveTime","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/retentionPolicy/isLocked","wire_pointer":"/retentionPolicy/isLocked","source_field_id":"isLocked","disposition":"maps_exact_source_fact","target_field":"retention_lock_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["gcp.storage.encryption-retention"],"source_to_neutral":{"true":"locked","false":"unlocked"},"unknown_value_policy":"refuse"}},
+              {"source_pointer":"/retentionPolicy/retentionPeriod","wire_pointer":"/retentionPolicy/retentionPeriod","source_field_id":"retentionPeriod","disposition":"source_private_only","explicit_null_disposition":"source_private_only"}
+            ]
+          },
+          {
+            "parent_pointer": "/encryption",
+            "wire_codec_profile": "discovery_json",
+            "fields": [
+              {"source_pointer":"/encryption/defaultKmsKeyName","wire_pointer":"/encryption/defaultKmsKeyName","source_field_id":"defaultKmsKeyName","disposition":"maps_exact_source_fact","target_field":"customer_managed_key_configuration_observation","projection":"present_private_leaf_to_neutral_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["gcp.storage.encryption-retention"],"source_to_neutral":{"present":"configured"},"unknown_value_policy":"refuse"}},
+              {"source_pointer":"/encryption/customerManagedEncryptionEnforcementConfig/effectiveTime","wire_pointer":"/encryption/customerManagedEncryptionEnforcementConfig/effectiveTime","source_field_id":"effectiveTime","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/encryption/customerManagedEncryptionEnforcementConfig/restrictionMode","wire_pointer":"/encryption/customerManagedEncryptionEnforcementConfig/restrictionMode","source_field_id":"restrictionMode","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/encryption/customerSuppliedEncryptionEnforcementConfig/effectiveTime","wire_pointer":"/encryption/customerSuppliedEncryptionEnforcementConfig/effectiveTime","source_field_id":"effectiveTime","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/encryption/customerSuppliedEncryptionEnforcementConfig/restrictionMode","wire_pointer":"/encryption/customerSuppliedEncryptionEnforcementConfig/restrictionMode","source_field_id":"restrictionMode","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/encryption/googleManagedEncryptionEnforcementConfig/effectiveTime","wire_pointer":"/encryption/googleManagedEncryptionEnforcementConfig/effectiveTime","source_field_id":"effectiveTime","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/encryption/googleManagedEncryptionEnforcementConfig/restrictionMode","wire_pointer":"/encryption/googleManagedEncryptionEnforcementConfig/restrictionMode","source_field_id":"restrictionMode","disposition":"unsupported","explicit_null_disposition":"source_private_only"}
+            ]
+          },
+          {
+            "parent_pointer": "/iamConfiguration",
+            "wire_codec_profile": "discovery_json",
+            "fields": [
+              {"source_pointer":"/iamConfiguration/bucketPolicyOnly/enabled","wire_pointer":"/iamConfiguration/bucketPolicyOnly/enabled","source_field_id":"enabled","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/iamConfiguration/bucketPolicyOnly/lockedTime","wire_pointer":"/iamConfiguration/bucketPolicyOnly/lockedTime","source_field_id":"lockedTime","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/iamConfiguration/publicAccessPrevention","wire_pointer":"/iamConfiguration/publicAccessPrevention","source_field_id":"publicAccessPrevention","disposition":"maps_exact_source_fact","target_field":"public_access_prevention_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["gcp.storage.public-access"],"source_to_neutral":{"enforced":"enforced","inherited":"inherited"},"unknown_value_policy":"refuse"}},
+              {"source_pointer":"/iamConfiguration/uniformBucketLevelAccess/enabled","wire_pointer":"/iamConfiguration/uniformBucketLevelAccess/enabled","source_field_id":"enabled","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+              {"source_pointer":"/iamConfiguration/uniformBucketLevelAccess/lockedTime","wire_pointer":"/iamConfiguration/uniformBucketLevelAccess/lockedTime","source_field_id":"lockedTime","disposition":"unsupported","explicit_null_disposition":"source_private_only"}
+            ]
+          }
+        ],
+        "evidence_bindings": [
+          {"id":"gcp.storage.versioning","source_uri":"https://storage.googleapis.com/$discovery/rest?version=v1","source_path":"official/gcp/storage-v1.discovery.json","expected_sha256":"91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff","start_byte":35219,"end_byte":35480,"slice_sha256":"9606661d6f88eb97b7b924bb0d03adefbb946d64ff7bf5721f92b42f1d89d7f2"},
+          {"id":"gcp.storage.encryption-retention","source_uri":"https://storage.googleapis.com/$discovery/rest?version=v1","source_path":"official/gcp/storage-v1.discovery.json","expected_sha256":"91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff","start_byte":13257,"end_byte":17059,"slice_sha256":"899366ffa3d4a2256c3a394e43796cc3b5d5f08622668b4f89bbecefc553a989"},
+          {"id":"gcp.storage.public-access","source_uri":"https://storage.googleapis.com/$discovery/rest?version=v1","source_path":"official/gcp/storage-v1.discovery.json","expected_sha256":"91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff","start_byte":19310,"end_byte":19474,"slice_sha256":"e8614a5f137e578046dc365dde1898455ce47aef88298674aaa0c1a20c10b743"}
         ]
       }
     }

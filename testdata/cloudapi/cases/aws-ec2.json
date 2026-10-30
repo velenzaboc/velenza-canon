@@ -431,7 +431,7 @@
                     "running": "running",
                     "shutting-down": "terminating",
                     "stopped": "stopped",
-                    "stopping": "stopped",
+                    "stopping": "stopping",
                     "terminated": "terminated"
                   },
                   "unknown_value_policy": "refuse"
@@ -507,14 +507,21 @@
           {
             "source_pointer": "/CreateTime",
             "source_field_id": "CreateTime",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "reported_creation_time",
+            "projection": "exact_rfc3339",
+            "explicit_null_disposition": "map_to_unknown",
+            "explicit_absent_disposition": "map_to_unknown"
           },
           {
             "source_pointer": "/Encrypted",
             "source_field_id": "Encrypted",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "encryption_configuration_observation",
+            "projection": "evidence_closed_scalar",
+            "explicit_null_disposition": "map_to_unknown",
+            "explicit_absent_disposition": "map_to_unknown",
+            "value_recipe": {"evidence_refs":["aws.ec2.volume.encrypted"],"source_to_neutral":{"true":"configured","false":"not_configured"},"unknown_value_policy":"refuse"}
           },
           {
             "source_pointer": "/FastRestored",
@@ -589,8 +596,12 @@
           {
             "source_pointer": "/State",
             "source_field_id": "State",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_lifecycle_fact",
+            "target_field": "lifecycle_state",
+            "projection": "exact",
+            "explicit_null_disposition": "map_to_unknown",
+            "explicit_absent_disposition": "map_to_unknown",
+            "lifecycle_recipe":{"evidence_refs":["aws.ec2.volume.state"],"source_to_neutral":{"creating":"creating","available":"available","in-use":"in_use","deleting":"deleting","deleted":"deleted"},"unsupported_source_values":["error"],"unknown_value_policy":"refuse"}
           },
           {
             "source_pointer": "/Tags",
@@ -676,9 +687,10 @@
                 "wire_pointer": "/attachmentSet/item/instanceId",
                 "source_field_id": "InstanceId",
                 "disposition": "maps_exact_relationship_fact",
-                "target_field": "attached_compute_instance_reference",
-                "projection": "bounded_zero_or_one_relationship_reference",
-                "explicit_null_disposition": "source_private_only"
+                "target_field": "attached_compute_instance_references",
+                "projection": "many_relationship_references",
+                "explicit_null_disposition": "source_private_only",
+                "explicit_absent_disposition": "map_to_unknown"
               },
               {
                 "source_pointer": "/Attachments/*/InstanceOwningService",
@@ -713,6 +725,33 @@
             "start_byte": 6649979,
             "end_byte": 6650018,
             "slice_sha256": "ba418eae0a5ca34cd15899ea61a0f08b51e1a9832c41ef3600a3295a393d85f4"
+          },
+          {
+            "id": "aws.ec2.volume.created",
+            "source_uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Volume.html",
+            "source_path": "official/aws/ec2-volume.html",
+            "expected_sha256": "bd3e3357c5fe0868d30e9a47253c701e92705aba6ae8e7a947baf246bc8727c4",
+            "start_byte": 10002,
+            "end_byte": 10052,
+            "slice_sha256": "640820de6290f4c0799e31781d023b1df8fa7493a63cd9ac23e8ecc0580a7dc3"
+          },
+          {
+            "id": "aws.ec2.volume.encrypted",
+            "source_uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Volume.html",
+            "source_path": "official/aws/ec2-volume.html",
+            "expected_sha256": "bd3e3357c5fe0868d30e9a47253c701e92705aba6ae8e7a947baf246bc8727c4",
+            "start_byte": 10322,
+            "end_byte": 10364,
+            "slice_sha256": "9acc700388a2ad394044d7013652bf11b417780d4c2dea2015cded69c8babf63"
+          },
+          {
+            "id": "aws.ec2.volume.state",
+            "source_uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Volume.html",
+            "source_path": "official/aws/ec2-volume.html",
+            "expected_sha256": "bd3e3357c5fe0868d30e9a47253c701e92705aba6ae8e7a947baf246bc8727c4",
+            "start_byte": 15258,
+            "end_byte": 15275,
+            "slice_sha256": "92303b5e085c0f5c53acaabb581041c8e5746521304bc0c9ffc3120361efb21f"
           }
         ]
       }

@@ -35,7 +35,7 @@ func TestValidateCloudNeutralRecordValueAndFormatAssertions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	valid := []byte(`{"record_class":"compute_volume","semantic_record_instance_identity":"opaque","display_name":{"state":"present","value":"volume"},"scope_reference":{"state":"present","value":"scope"},"location_class":{"state":"present","value":"zonal"},"lifecycle_state":{"state":"present","value":"available"},"observation_state":"observed","capacity_bytes":{"state":"present","value":"18446744073709551615","unit":"bytes"},"storage_class":{"state":"present","value":"solid_state"},"encryption_configuration_observation":{"state":"present","value":"configured"},"attached_compute_instance_reference":{"state":"null"}}`)
+	valid := []byte(`{"record_class":"compute_volume","semantic_record_instance_identity":"opaque","display_name":{"state":"present","value":"volume"},"scope_reference":{"state":"present","value":"scope"},"location_class":{"state":"present","value":"zonal"},"lifecycle_state":{"state":"present","value":"available"},"observation_state":"observed","capacity_bytes":{"state":"present","value":"18446744073709551615","unit":"bytes"},"storage_class":{"state":"present","value":"solid_state"},"encryption_configuration_observation":{"state":"present","value":"configured"},"description":{"state":"absent"},"reported_creation_time":{"state":"unknown"},"attached_compute_instance_references":{"state":"present","value":[]}}`)
 	if err := ValidateCloudNeutralRecordValue(schema, valid); err != nil {
 		t.Fatalf("valid actual compute volume refused: %v", err)
 	}

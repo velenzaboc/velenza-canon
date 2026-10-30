@@ -1913,12 +1913,10 @@ func scanCanonicalEvidenceHexAndReversibleBatches(items []evidenceClosureItem, o
 			if itemLabel, found, err := scanCanonicalEvidencePattern(items, order, digest, "decoded hexadecimal carrier body", bodies[digest].Bytes, false, false, canonicalEvidenceCarrierHex, budget); err != nil || found {
 				return itemLabel, digest, "decoded hexadecimal carrier body", found, err
 			}
-			match, err := scanCanonicalEvidenceReversibleBatch(items, order, []canonicalEvidenceBatchTarget{{digest: digest, target: bodies[digest].Bytes, priority: start}}, budget)
-			if err != nil {
+			if itemLabel, found, err := scanCanonicalEvidenceSingleReversible(items, order, bodies[digest].Bytes, budget); err != nil {
 				return "", "", "", false, err
-			}
-			if match.found && (!bestReversible.found || match.target.priority < bestReversible.target.priority) {
-				bestReversible = match
+			} else if found {
+				bestReversible = canonicalEvidenceBatchMatch{itemLabel: itemLabel, target: canonicalEvidenceBatchTarget{digest: digest, priority: start}, found: true}
 			}
 			start++
 			continue
@@ -1946,6 +1944,46 @@ func scanCanonicalEvidenceHexAndReversibleBatches(items []evidenceClosureItem, o
 		return bestReversible.itemLabel, bestReversible.target.digest, "decoded reversible numeric or boolean carrier body", true, nil
 	}
 	return "", "", "", false, nil
+}
+
+func scanCanonicalEvidenceSingleReversible(items []evidenceClosureItem, order jsonCarrierTraversal, target []byte, budget *canonicalEvidenceClosureWorkBudget) (string, bool, error) {
+	auxiliary, ok := canonicalEvidenceMatcherAuxiliaryBytes(int64(len(target)), false)
+	if !ok || auxiliary > canonicalEvidenceClosureMaxMatcherAuxiliaryBytes-maxEvidenceCarrierBytesPerFile {
+		return "", false, fmt.Errorf("single reversible matcher and concurrent carrier decode exceed fixed auxiliary limit %d", canonicalEvidenceClosureMaxMatcherAuxiliaryBytes)
+	}
+
+	if err := budget.consume(int64(len(target))); err != nil {
+		return "", false, err
+	}
+	m, err := newStreamingExactMatcher(target, false)
+	if err != nil {
+		return "", false, err
+	}
+	for _, item := range items {
+		found := false
+		err := scanEvidenceClosureItemWithOrderBudget(item, order, budget, func(c orderedJSONCarrier) error {
+			for _, a := range c.decodedAlternatives {
+				if err := budget.consume(int64(len(a))); err != nil {
+					return err
+				}
+				if _, ok := m.advanceFrom(0, a); ok {
+					found = true
+					return errCanonicalEvidenceClosureFound
+				}
+			}
+			return nil
+		})
+		if errors.Is(err, errCanonicalEvidenceClosureFound) {
+			return item.label, true, nil
+		}
+		if err != nil {
+			return "", false, err
+		}
+		if found {
+			return item.label, true, nil
+		}
+	}
+	return "", false, nil
 }
 
 type canonicalEvidenceBatchNode struct {

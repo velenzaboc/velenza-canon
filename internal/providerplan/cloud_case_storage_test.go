@@ -47,6 +47,9 @@ func TestCloudCaseGCPStorageOfflineAcceptance(t *testing.T) {
 	// neutral-owner load. Do not make a second, reduced neutral catalog.
 	target.MappingContract.Neutral = request.Targets[storageIndex].MappingContract.Neutral
 	target.RecordClassContractRef = target.MappingContract.Neutral.OwnerRef
+	if err := LoadCloudMappingEvidence("../../testdata/cloudapi", target.MappingContract); err != nil {
+		t.Fatalf("load retained GCS storage mapping evidence: %v", err)
+	}
 	catalog, found := findCloudCandidateCatalog(request.Catalogs, target)
 	if !found {
 		t.Fatal("retained GCS catalog not found")
@@ -68,8 +71,8 @@ func TestCloudCaseGCPStorageOfflineAcceptance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(target.MappingContract.Fields) != len(actual) {
-		t.Fatalf("case Bucket roster=%d, retained Discovery roster=%d", len(target.MappingContract.Fields), len(actual))
+	if len(target.MappingContract.Fields)+len(target.MappingContract.Nested) != len(actual) {
+		t.Fatalf("case Bucket direct/nested roster=%d/%d, retained Discovery roster=%d", len(target.MappingContract.Fields), len(target.MappingContract.Nested), len(actual))
 	}
 	seen := map[string]bool{}
 	for _, field := range target.MappingContract.Fields {
@@ -77,6 +80,12 @@ func TestCloudCaseGCPStorageOfflineAcceptance(t *testing.T) {
 			t.Fatalf("case includes non-Bucket field %q", field.SourcePointer)
 		}
 		seen[field.SourcePointer] = true
+	}
+	for _, nested := range target.MappingContract.Nested {
+		if _, ok := actual[nested.ParentPointer]; !ok {
+			t.Fatalf("case decomposes non-Bucket parent %q", nested.ParentPointer)
+		}
+		seen[nested.ParentPointer] = true
 	}
 	if len(seen) != len(actual) {
 		t.Fatalf("case roster has duplicate or missing direct Bucket fields")
@@ -86,8 +95,8 @@ func TestCloudCaseGCPStorageOfflineAcceptance(t *testing.T) {
 	}
 
 	assertStorageMapping(t, target, "name", "display_name")
-	assertStorageUnsupported(t, target, "storageClass")
-	assertStorageUnsupported(t, target, "timeCreated")
+	assertStorageMapping(t, target, "timeCreated", "reported_creation_time")
+	assertStoragePrivate(t, target, "storageClass")
 	for _, private := range []string{"id", "selfLink", "projectNumber", "etag", "generation", "metageneration", "updated"} {
 		for _, field := range target.MappingContract.Fields {
 			if field.SourceFieldID == private && field.Disposition != CloudSourcePrivateOnly {
@@ -110,7 +119,7 @@ func TestCloudCaseGCPStorageOfflineAcceptance(t *testing.T) {
 	if page.Coverage != CloudSyntheticCoveragePartial || page.Continuation != "fixture-storage-page-2" || page.DeletionAuthorized || len(page.Records) != 1 {
 		t.Fatalf("partial continuation must remain non-destructive: %#v", page)
 	}
-	assertStorageRecord(t, page.Records[0], "fixture-log-bucket", "opaque-storage-log-01")
+	assertStorageRecord(t, page.Records[0], "fixture-log-bucket", "opaque-storage-log-01", "2026-01-02T03:04:05.000Z")
 	if bytes.Contains(page.Records[0], []byte("provider-private-id")) || bytes.Contains(page.Records[0], []byte("123456789012")) || bytes.Contains(page.Records[0], []byte("googleapis.com")) {
 		t.Fatalf("private GCS provider data leaked into neutral record: %s", page.Records[0])
 	}
@@ -124,7 +133,34 @@ func TestCloudCaseGCPStorageOfflineAcceptance(t *testing.T) {
 	if err != nil || len(got.Records) != 1 || got.DeletionAuthorized {
 		t.Fatalf("complete get projection=%#v err=%v", got, err)
 	}
-	assertStorageRecord(t, got.Records[0], "fixture-archive-bucket", "opaque-storage-archive-02")
+	assertStorageRecord(t, got.Records[0], "fixture-archive-bucket", "opaque-storage-archive-02", "2026-01-02T03:04:05.000Z")
+
+	configuredRaw, err := os.ReadFile("../../testdata/cloudapi/fixtures/gcp/storage-bucket-configured.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	configured := storageRecipe(catalog, target, "/", "fixture-project-scope", CloudSyntheticCoverageComplete, "observed", "", []CloudNeutralScopedBinding{{ScopeReference: "fixture-project-scope", ScopedNativeKey: "fixture-configured-bucket", OpaqueNeutralID: "opaque-storage-configured-03"}})
+	configuredResult, err := ProjectCloudNeutralResponse(configured, configuredRaw)
+	if err != nil || len(configuredResult.Records) != 1 || configuredResult.DeletionAuthorized {
+		t.Fatalf("configured bucket projection=%#v err=%v", configuredResult, err)
+	}
+	assertStorageRecord(t, configuredResult.Records[0], "fixture-configured-bucket", "opaque-storage-configured-03", "2026-01-02T03:04:05.000Z")
+	assertStoragePresent(t, configuredResult.Records[0], "versioning_state", "enabled")
+	assertStoragePresent(t, configuredResult.Records[0], "retention_lock_state", "unlocked")
+	assertStoragePresent(t, configuredResult.Records[0], "customer_managed_key_configuration_observation", "configured")
+	assertStoragePresent(t, configuredResult.Records[0], "public_access_prevention_state", "enforced")
+	if bytes.Contains(configuredResult.Records[0], []byte("private-key")) || bytes.Contains(configuredResult.Records[0], []byte("COLDLINE")) {
+		t.Fatalf("private key or unowned storage tier leaked into neutral record: %s", configuredResult.Records[0])
+	}
+	unknownTierRaw, err := os.ReadFile("../../testdata/cloudapi/fixtures/gcp/storage-bucket-unknown-tier.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	unknownTier := storageRecipe(catalog, target, "/", "fixture-project-scope", CloudSyntheticCoverageComplete, "observed", "", []CloudNeutralScopedBinding{{ScopeReference: "fixture-project-scope", ScopedNativeKey: "fixture-unknown-tier", OpaqueNeutralID: "opaque-storage-unknown-tier-04"}})
+	unknownTierResult, err := ProjectCloudNeutralResponse(unknownTier, unknownTierRaw)
+	if err != nil || len(unknownTierResult.Records) != 1 || bytes.Contains(unknownTierResult.Records[0], []byte("FUTURE_TIER")) {
+		t.Fatalf("private unowned storage tier was projected or refused unrelated record: %#v err=%v", unknownTierResult, err)
+	}
 
 	missing := list
 	missing.Bindings = nil
@@ -157,7 +193,7 @@ func assertStorageMapping(t *testing.T, target CloudSourceObjectTarget, source, 
 	t.Helper()
 	for _, field := range target.MappingContract.Fields {
 		if field.SourceFieldID == source {
-			if field.Disposition != CloudSourceMapsExactSourceFact || field.TargetField != destination || field.Projection != CloudMappingProjectionExact {
+			if field.Disposition != CloudSourceMapsExactSourceFact || field.TargetField != destination || (field.Projection != CloudMappingProjectionExact && field.Projection != CloudMappingProjectionExactRFC3339) {
 				t.Fatalf("%s must map exactly to %s: %#v", source, destination, field)
 			}
 			return
@@ -179,26 +215,47 @@ func assertStorageUnsupported(t *testing.T, target CloudSourceObjectTarget, sour
 	t.Fatalf("missing mapping for %s", source)
 }
 
+func assertStoragePrivate(t *testing.T, target CloudSourceObjectTarget, source string) {
+	t.Helper()
+	for _, field := range target.MappingContract.Fields {
+		if field.SourceFieldID == source {
+			if field.Disposition != CloudSourcePrivateOnly {
+				t.Fatalf("%s must remain private until exact source-neutral semantics are owned: %#v", source, field)
+			}
+			return
+		}
+	}
+	t.Fatalf("missing mapping for %s", source)
+}
+
 func storageRecipe(catalog CloudCatalog, target CloudSourceObjectTarget, object, scope string, coverage CloudSyntheticCoverage, observation, continuation string, bindings []CloudNeutralScopedBinding) CloudNeutralProjectionRecipe {
 	return CloudNeutralProjectionRecipe{Catalog: catalog, Target: &target, Contract: *target.MappingContract, ObjectPointer: object, IdentitySourcePointer: "/name", IdentitySourceFieldID: "name", ScopeReference: scope, ObservationState: observation, Coverage: coverage, ContinuationPointer: continuation, RecordTemplate: storageTemplate(), Bindings: bindings}
 }
 
 func storageTemplate() map[string]any {
 	return map[string]any{
-		"record_class":                            "storage_container",
-		"display_name":                            cloudUnknown(),
-		"scope_reference":                         cloudUnknown(),
-		"location_class":                          cloudUnknown(),
-		"lifecycle_state":                         cloudUnknown(),
-		"observation_state":                       "observed",
-		"versioning_state":                        cloudUnknown(),
-		"encryption_configuration_observation":    cloudUnknown(),
-		"public_access_configuration_observation": cloudUnknown(),
-		"retention_state":                         cloudUnknown(),
+		"record_class":                                   "storage_container",
+		"display_name":                                   cloudUnknown(),
+		"scope_reference":                                cloudUnknown(),
+		"location_class":                                 cloudUnknown(),
+		"lifecycle_state":                                cloudUnknown(),
+		"observation_state":                              "observed",
+		"versioning_state":                               cloudUnknown(),
+		"encryption_configuration_observation":           cloudUnknown(),
+		"public_access_configuration_observation":        cloudUnknown(),
+		"retention_state":                                cloudUnknown(),
+		"reported_creation_time":                         map[string]any{"state": "not_observed"},
+		"retention_lock_state":                           map[string]any{"state": "not_observed"},
+		"customer_managed_key_configuration_observation": cloudUnknown(),
+		"public_access_prevention_state":                 map[string]any{"state": "not_observed"},
+		"public_acl_block_state":                         map[string]any{"state": "not_observed"},
+		"public_policy_block_state":                      map[string]any{"state": "not_observed"},
+		"public_acl_ignore_state":                        map[string]any{"state": "not_observed"},
+		"public_policy_restriction_state":                map[string]any{"state": "not_observed"},
 	}
 }
 
-func assertStorageRecord(t *testing.T, raw []byte, name, identity string) {
+func assertStorageRecord(t *testing.T, raw []byte, name, identity, created string) {
 	t.Helper()
 	var record map[string]any
 	if err := json.Unmarshal(raw, &record); err != nil {
@@ -207,10 +264,22 @@ func assertStorageRecord(t *testing.T, raw []byte, name, identity string) {
 	if record["semantic_record_instance_identity"] != identity {
 		t.Fatalf("identity=%v want opaque %q", record["semantic_record_instance_identity"], identity)
 	}
-	for field, want := range map[string]string{"display_name": name} {
+	for field, want := range map[string]string{"display_name": name, "reported_creation_time": created} {
 		envelope, ok := record[field].(map[string]any)
 		if !ok || envelope["state"] != "present" || envelope["value"] != want {
 			t.Fatalf("%s=%#v want present %q", field, record[field], want)
 		}
+	}
+}
+
+func assertStoragePresent(t *testing.T, raw []byte, field, want string) {
+	t.Helper()
+	var record map[string]any
+	if err := json.Unmarshal(raw, &record); err != nil {
+		t.Fatal(err)
+	}
+	envelope, ok := record[field].(map[string]any)
+	if !ok || envelope["state"] != "present" || envelope["value"] != want {
+		t.Fatalf("%s=%#v want present %q", field, record[field], want)
 	}
 }

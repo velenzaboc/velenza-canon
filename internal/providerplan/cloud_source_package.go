@@ -68,6 +68,7 @@ type CloudSourceObjectTarget struct {
 	SourceMappingVersion       string                        `json:"source_mapping_version"`
 	StableIdentitySourceFields []string                      `json:"stable_identity_source_fields"`
 	StableIdentityEvidence     []CloudSourceIdentityEvidence `json:"stable_identity_evidence"`
+	RequestIdentity            *CloudRequestIdentityContract `json:"request_identity,omitempty"`
 	IncarnationEvidenceFields  []string                      `json:"incarnation_evidence_fields,omitempty"`
 	SourceFields               []string                      `json:"source_fields"`
 	FieldMappings              []CloudSourceFieldMapping     `json:"field_mappings"`
@@ -188,7 +189,7 @@ func LoadCloudSourceCandidateInput(path string, parser CloudCatalogParser) (Clou
 		if evidenceErr := LoadCloudMappingEvidence(base, targets[i].MappingContract); evidenceErr != nil {
 			return CloudSourceCandidateRequest{}, fmt.Errorf("targets[%d] mapping evidence: %w", i, evidenceErr)
 		}
-		if len(targets[i].MappingContract.Fields) == 0 {
+		if len(targets[i].MappingContract.Fields) == 0 && len(targets[i].MappingContract.Nested) == 0 {
 			catalog, found := findCloudCandidateCatalog(catalogs, targets[i])
 			if !found {
 				return CloudSourceCandidateRequest{}, fmt.Errorf("targets[%d]: no matching pinned catalog", i)
@@ -412,6 +413,9 @@ func validateCloudSourceObjectTarget(target CloudSourceObjectTarget, catalog Clo
 	if target.MappingContract.Neutral.ClassSymbol != target.RecordClassSymbol || target.MappingContract.Neutral.OwnerRef != target.RecordClassContractRef {
 		return fmt.Errorf("target record class does not equal pinned mapping contract neutral class")
 	}
+	if target.RequestIdentity != nil {
+		return ValidateCloudSourceIdentityContract(target, catalog)
+	}
 	if !strictUniqueNonemptyCloudStrings(target.StableIdentitySourceFields) {
 		return fmt.Errorf("stable identity field roster must be nonempty unique set")
 	}
@@ -552,6 +556,9 @@ func makeCloudAPIGraphCandidate(catalogs []CloudCatalog, targets []CloudSourceOb
 				selectedOperations[target.OperationID] = true
 				if target.MappingContract != nil {
 					selectedSchemas[target.MappingContract.ObjectSchemaID] = true
+				}
+				if target.RequestIdentity != nil {
+					selectedSchemas[target.RequestIdentity.RequestSchemaID] = true
 				}
 			}
 		}

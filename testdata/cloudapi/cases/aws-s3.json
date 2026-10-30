@@ -54,8 +54,11 @@
           {
             "source_pointer": "/CreationDate",
             "source_field_id": "CreationDate",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "reported_creation_time",
+            "projection": "exact_rfc3339",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_absent"
           },
           {
             "source_pointer": "/Name",
@@ -67,6 +70,62 @@
           }
         ]
       }
+    },
+    {
+      "provider_id": "aws",
+      "service_id": "s3",
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#GetBucketVersioning",
+      "source_object_type": "com.amazonaws.s3#Bucket",
+      "record_class_symbol": "storage_container",
+      "record_class_contract_ref": "",
+      "source_schema_version": "2006-03-01",
+      "source_mapping_version": "bounded-s3-versioning-1",
+      "stable_identity_source_fields": [],
+      "stable_identity_evidence": [],
+      "request_identity": {
+        "resource_id": "com.amazonaws.s3#Bucket",
+        "request_schema_id": "com.amazonaws.s3#GetBucketVersioningRequest",
+        "source_field_id": "Bucket",
+        "source_pointer": "/Bucket",
+        "locator": {"evidence_id":"model","json_pointer":"/shapes/com.amazonaws.s3#GetBucketVersioningRequest/members/Bucket","start_byte":1877105,"end_byte":1877486}
+      },
+      "source_fields": null,
+      "field_mappings": null,
+      "mapping_contract": {
+        "operation_id": "com.amazonaws.s3#GetBucketVersioning",
+        "object_schema_id": "com.amazonaws.s3#GetBucketVersioningOutput",
+        "neutral": {"owner_ref":"","owner_sha256":"","class_symbol":"","validator_profile_ref":"","validator_profile_sha256":"","fields":null},
+        "fields": [
+          {"source_pointer":"/MFADelete","source_field_id":"MFADelete","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+          {"source_pointer":"/Status","source_field_id":"Status","disposition":"maps_exact_source_fact","target_field":"versioning_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["aws.s3.versioning-status"],"source_to_neutral":{"Enabled":"enabled","Suspended":"suspended"},"unknown_value_policy":"refuse"}}
+        ],
+        "evidence_bindings": [
+          {"id":"aws.s3.versioning-status","source_uri":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json","source_path":"official/aws/s3-2006-03-01.json","expected_sha256":"73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68","start_byte":1200578,"end_byte":1200939,"slice_sha256":"6dd187a34ea87753295035e9280e93ab58bb6604fd2ff4a2dd25af70976df834"}
+        ]
+      }
+    },
+    {
+      "provider_id":"aws","service_id":"s3","api_surface_id":"s3","operation_id":"com.amazonaws.s3#GetBucketEncryption","source_object_type":"com.amazonaws.s3#Bucket","record_class_symbol":"storage_container","record_class_contract_ref":"","source_schema_version":"2006-03-01","source_mapping_version":"bounded-s3-encryption-1","stable_identity_source_fields":[],"stable_identity_evidence":[],
+      "request_identity":{"resource_id":"com.amazonaws.s3#Bucket","request_schema_id":"com.amazonaws.s3#GetBucketEncryptionRequest","source_field_id":"Bucket","source_pointer":"/Bucket","locator":{"evidence_id":"model","json_pointer":"/shapes/com.amazonaws.s3#GetBucketEncryptionRequest/members/Bucket","start_byte":1779678,"end_byte":1780932}},
+      "source_fields":null,"field_mappings":null,
+      "mapping_contract":{"operation_id":"com.amazonaws.s3#GetBucketEncryption","object_schema_id":"com.amazonaws.s3#GetBucketEncryptionOutput","neutral":{"owner_ref":"","owner_sha256":"","class_symbol":"","validator_profile_ref":"","validator_profile_sha256":"","fields":null},"fields":[],"nested":[{"parent_pointer":"/ServerSideEncryptionConfiguration","wire_codec_profile":"smithy_rest_xml","fields":[
+        {"source_pointer":"/ServerSideEncryptionConfiguration/Rules/*/ApplyServerSideEncryptionByDefault/KMSMasterKeyID","wire_pointer":"/ServerSideEncryptionConfiguration/Rule/ApplyServerSideEncryptionByDefault/KMSMasterKeyID","source_field_id":"KMSMasterKeyID","disposition":"source_private_only","explicit_null_disposition":"source_private_only"},
+        {"source_pointer":"/ServerSideEncryptionConfiguration/Rules/*/ApplyServerSideEncryptionByDefault/SSEAlgorithm","wire_pointer":"/ServerSideEncryptionConfiguration/Rule/ApplyServerSideEncryptionByDefault/SSEAlgorithm","source_field_id":"SSEAlgorithm","disposition":"maps_exact_source_fact","target_field":"encryption_configuration_observation","projection":"bounded_one_evidence_closed_scalar","explicit_null_disposition":"source_private_only","value_recipe":{"evidence_refs":["aws.s3.sse-algorithm"],"source_to_neutral":{"AES256":"configured","aws:fsx":"configured","aws:backup":"configured","aws:kms":"configured","aws:kms:dsse":"configured"},"unknown_value_policy":"refuse"}},
+        {"source_pointer":"/ServerSideEncryptionConfiguration/Rules/*/BlockedEncryptionTypes/EncryptionType/*","wire_pointer":"/ServerSideEncryptionConfiguration/Rule/BlockedEncryptionTypes/EncryptionType","source_field_id":"*","disposition":"unsupported","explicit_null_disposition":"source_private_only"},
+        {"source_pointer":"/ServerSideEncryptionConfiguration/Rules/*/BucketKeyEnabled","wire_pointer":"/ServerSideEncryptionConfiguration/Rule/BucketKeyEnabled","source_field_id":"BucketKeyEnabled","disposition":"unsupported","explicit_null_disposition":"source_private_only"}
+      ]}],"evidence_bindings":[{"id":"aws.s3.sse-algorithm","source_uri":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json","source_path":"official/aws/s3-2006-03-01.json","expected_sha256":"73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68","start_byte":2815543,"end_byte":2816367,"slice_sha256":"88f90a6f7f3057b2e3c440f4a78210d25580f4d973d5a783b10f331b553ed8d9"}]}
+    },
+    {
+      "provider_id":"aws","service_id":"s3","api_surface_id":"s3","operation_id":"com.amazonaws.s3#GetPublicAccessBlock","source_object_type":"com.amazonaws.s3#Bucket","record_class_symbol":"storage_container","record_class_contract_ref":"","source_schema_version":"2006-03-01","source_mapping_version":"bounded-s3-public-block-1","stable_identity_source_fields":[],"stable_identity_evidence":[],
+      "request_identity":{"resource_id":"com.amazonaws.s3#Bucket","request_schema_id":"com.amazonaws.s3#GetPublicAccessBlockRequest","source_field_id":"Bucket","source_pointer":"/Bucket","locator":{"evidence_id":"model","json_pointer":"/shapes/com.amazonaws.s3#GetPublicAccessBlockRequest/members/Bucket","start_byte":2016438,"end_byte":2016863}},
+      "source_fields":null,"field_mappings":null,
+      "mapping_contract":{"operation_id":"com.amazonaws.s3#GetPublicAccessBlock","object_schema_id":"com.amazonaws.s3#GetPublicAccessBlockOutput","neutral":{"owner_ref":"","owner_sha256":"","class_symbol":"","validator_profile_ref":"","validator_profile_sha256":"","fields":null},"fields":[],"nested":[{"parent_pointer":"/PublicAccessBlockConfiguration","wire_codec_profile":"smithy_rest_xml","fields":[
+        {"source_pointer":"/PublicAccessBlockConfiguration/BlockPublicAcls","wire_pointer":"/PublicAccessBlockConfiguration/BlockPublicAcls","source_field_id":"BlockPublicAcls","disposition":"maps_exact_source_fact","target_field":"public_acl_block_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["aws.s3.public-block"],"source_to_neutral":{"true":"enabled","false":"disabled"},"unknown_value_policy":"refuse"}},
+        {"source_pointer":"/PublicAccessBlockConfiguration/BlockPublicPolicy","wire_pointer":"/PublicAccessBlockConfiguration/BlockPublicPolicy","source_field_id":"BlockPublicPolicy","disposition":"maps_exact_source_fact","target_field":"public_policy_block_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["aws.s3.public-block"],"source_to_neutral":{"true":"enabled","false":"disabled"},"unknown_value_policy":"refuse"}},
+        {"source_pointer":"/PublicAccessBlockConfiguration/IgnorePublicAcls","wire_pointer":"/PublicAccessBlockConfiguration/IgnorePublicAcls","source_field_id":"IgnorePublicAcls","disposition":"maps_exact_source_fact","target_field":"public_acl_ignore_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["aws.s3.public-block"],"source_to_neutral":{"true":"enabled","false":"disabled"},"unknown_value_policy":"refuse"}},
+        {"source_pointer":"/PublicAccessBlockConfiguration/RestrictPublicBuckets","wire_pointer":"/PublicAccessBlockConfiguration/RestrictPublicBuckets","source_field_id":"RestrictPublicBuckets","disposition":"maps_exact_source_fact","target_field":"public_policy_restriction_state","projection":"evidence_closed_scalar","explicit_null_disposition":"source_private_only","explicit_absent_disposition":"map_to_absent","value_recipe":{"evidence_refs":["aws.s3.public-block"],"source_to_neutral":{"true":"enabled","false":"disabled"},"unknown_value_policy":"refuse"}}
+      ]}],"evidence_bindings":[{"id":"aws.s3.public-block","source_uri":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json","source_path":"official/aws/s3-2006-03-01.json","expected_sha256":"73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68","start_byte":2383166,"end_byte":2386739,"slice_sha256":"6419090cf8065ccf4bcf8b5b0c79c71526d1daebfafada773d0d8224371ebfbc"}]}
     }
   ],
   "recipes": {

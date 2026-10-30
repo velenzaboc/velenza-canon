@@ -1,0 +1,33 @@
+{
+  "kind": "compute#diskAggregatedList",
+  "items": {
+    "zones/us-central1-a": {
+      "disks": [
+        {
+          "kind": "compute#disk",
+          "id": "2101",
+          "selfLink": "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/disks/fixture-expanded-disk",
+          "name": "fixture-expanded-disk",
+          "description": "offline expanded persistent disk",
+          "creationTimestamp": "2026-10-30T12:00:00Z",
+          "zone": "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a",
+          "status": "READY",
+          "sizeGb": "64",
+          "type": "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/diskTypes/pd-balanced",
+          "diskEncryptionKey": {
+            "kmsKeyName": "projects/fixture-kms/locations/us-central1/keyRings/fixture-ring/cryptoKeys/fixture-key/cryptoKeyVersions/1"
+          },
+          "users": [
+            "https://compute.googleapis.com/compute/v1/projects/fixture-project/zones/us-central1-a/instances/fixture-expanded-instance"
+          ]
+        }
+      ]
+    },
+    "zones/us-central1-b": {
+      "warning": {
+        "code": "UNREACHABLE",
+        "message": "fixture revoked or unreachable scope"
+      }
+    }
+  }
+}

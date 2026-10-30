@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,7 +18,7 @@ import (
 // emitted as a relationship value).
 type CloudNeutralScopedBinding struct {
 	ScopeReference  string `json:"scope_reference"`
-	ScopedNativeKey string `json:"scoped_native_key"`
+	ScopedNativeKey string `json:"-"`
 	OpaqueNeutralID string `json:"opaque_neutral_id"`
 }
 type cloudNeutralBindingKey struct{ scope, native string }
@@ -34,13 +33,14 @@ type CloudNeutralProjectionRecipe struct {
 	ObjectPointer         string                      `json:"object_pointer"`
 	IdentitySourcePointer string                      `json:"identity_source_pointer"`
 	IdentitySourceFieldID string                      `json:"identity_source_field_id"`
+	RequestIdentity       *CloudNeutralRequestBinding `json:"-"`
 	ScopeReference        string                      `json:"scope_reference"`
 	ObservationState      string                      `json:"observation_state"`
 	Coverage              CloudSyntheticCoverage      `json:"coverage"`
 	ContinuationPointer   string                      `json:"continuation_pointer,omitempty"`
 	RecordTemplate        map[string]any              `json:"record_template"`
 	RelationshipKeyFields map[string]string           `json:"relationship_key_fields,omitempty"`
-	Bindings              []CloudNeutralScopedBinding `json:"bindings"`
+	Bindings              []CloudNeutralScopedBinding `json:"-"`
 }
 
 // CloudNeutralProjectionResult deliberately has no deletion operation. A
@@ -80,6 +80,9 @@ func ProjectCloudNeutralResponse(recipe CloudNeutralProjectionRecipe, raw []byte
 	}
 	objects, err := cloudNeutralObjects(selected)
 	if err != nil {
+		return CloudNeutralProjectionResult{}, err
+	}
+	if err := cloudValidateRequestObjectCount(recipe, len(objects)); err != nil {
 		return CloudNeutralProjectionResult{}, err
 	}
 	bindings, err := cloudNeutralBindingIndex(recipe.Bindings)
@@ -122,7 +125,7 @@ func cloudNeutralSelect(root any, pointer string) (any, string, error) {
 }
 
 func validateCloudNeutralProjectionRecipe(recipe CloudNeutralProjectionRecipe) error {
-	if recipe.ObjectPointer == "" || recipe.IdentitySourcePointer == "" || recipe.IdentitySourceFieldID == "" || recipe.ScopeReference == "" || recipe.RecordTemplate == nil {
+	if recipe.ObjectPointer == "" || recipe.ScopeReference == "" || recipe.RecordTemplate == nil {
 		return fmt.Errorf("object pointer, identity selector, scope reference, and record template are required")
 	}
 	switch recipe.ObservationState {
@@ -136,27 +139,8 @@ func validateCloudNeutralProjectionRecipe(recipe CloudNeutralProjectionRecipe) e
 	if err := ValidateCloudMappingContract(recipe.Catalog, recipe.Contract); err != nil {
 		return fmt.Errorf("mapping contract: %w", err)
 	}
-	identityField, found := cloudNeutralContractField(recipe.Contract, recipe.IdentitySourceFieldID)
-	if !found || identityField.SourcePointer != recipe.IdentitySourcePointer || (identityField.Disposition != CloudSourcePrivateOnly && identityField.TargetField != "display_name") {
-		return fmt.Errorf("identity selector must be a validated private field or the mapped display-name scoped key")
-	}
-	if recipe.Target == nil {
-		return fmt.Errorf("projection requires a target-bound documented identity selector")
-	}
-	if recipe.Target.MappingContract == nil || !reflect.DeepEqual(*recipe.Target.MappingContract, recipe.Contract) {
-		return fmt.Errorf("projection target does not bind this mapping contract")
-	}
-	matched := false
-	for _, id := range recipe.Target.StableIdentitySourceFields {
-		if id == recipe.IdentitySourceFieldID {
-			matched = true
-		}
-	}
-	if !matched {
-		return fmt.Errorf("identity selector is not target-documented")
-	}
-	if err := ValidateCloudSourceIdentityContract(*recipe.Target, recipe.Catalog); err != nil {
-		return fmt.Errorf("target identity evidence: %w", err)
+	if err := cloudValidateProjectionIdentity(recipe); err != nil {
+		return err
 	}
 	if recipe.Contract.Neutral.ClassSymbol == "" || recipe.RecordTemplate["record_class"] != recipe.Contract.Neutral.ClassSymbol {
 		return fmt.Errorf("record template class must equal loaded mapping-contract neutral class")
@@ -213,21 +197,13 @@ func cloudNeutralBindingIndex(bindings []CloudNeutralScopedBinding) (map[cloudNe
 }
 
 func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[string]any, bindings map[cloudNeutralBindingKey]string, xmlWire bool) ([]byte, error) {
-	direct, err := cloudCatalogObjectFields(recipe.Catalog, recipe.Contract.ObjectSchemaID)
+	direct, err := cloudProjectionResolvedFields(recipe.Catalog, recipe.Contract)
 	if err != nil {
 		return nil, err
 	}
-	identityPointer := recipe.IdentitySourcePointer
-	if xmlWire {
-		identityPointer = direct[identityPointer].WirePointer
-	}
-	identityValue, identityState, err := resolveCloudSyntheticPointer(object, identityPointer)
-	if err != nil || identityState != "present" {
-		return nil, fmt.Errorf("identity source key is %s", identityState)
-	}
-	identityKey, ok := identityValue.(string)
-	if !ok || identityKey == "" {
-		return nil, fmt.Errorf("identity source key is not a nonempty string")
+	identityKey, err := cloudNeutralResolveIdentity(recipe, object, xmlWire)
+	if err != nil {
+		return nil, err
 	}
 	identity, ok := bindings[cloudNeutralBindingKey{recipe.ScopeReference, identityKey}]
 	if !ok {
@@ -259,9 +235,9 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 				pointer = retained.WirePointer
 			}
 		}
-		value, state, fieldErr := resolveCloudNeutralProjectionPointer(object, pointer)
+		value, state, fieldErr := resolveCloudNeutralProjectionPointerMode(object, pointer, true)
 		// Only an explicitly empty XML list wrapper proves zero members.
-		if xmlWire && field.Projection == CloudMappingProjectionBoundedZeroOrOneRelationship && state != "present" {
+		if xmlWire && (field.Projection == CloudMappingProjectionBoundedZeroOrOneRelationship || field.Projection == CloudMappingProjectionManyRelationship) && state != "present" {
 			if at := strings.LastIndex(pointer, "/item/"); at >= 0 {
 				parent, parentState, parentErr := resolveCloudSyntheticPointer(object, pointer[:at])
 				if empty, ok := parent.(string); ok && empty == "" && parentErr == nil && parentState == "present" {
@@ -273,7 +249,15 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			return nil, fmt.Errorf("field %q: %w", field.SourceFieldID, fieldErr)
 		}
 		if state == "absent" {
-			return nil, fmt.Errorf("field %q is absent; recipe cannot retain a template value", field.SourceFieldID)
+			switch field.ExplicitAbsentDisposition {
+			case CloudAbsentToAbsent:
+				record[field.TargetField] = map[string]any{"state": "absent"}
+			case CloudAbsentToUnknown:
+				record[field.TargetField] = map[string]any{"state": "unknown"}
+			default:
+				return nil, fmt.Errorf("field %q is absent", field.SourceFieldID)
+			}
+			continue
 		}
 		if state == "null" {
 			if err := cloudNeutralApplyNull(record, field); err != nil {
@@ -282,6 +266,14 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			continue
 		}
 		if field.Disposition == CloudSourceMapsExactRelationshipFact {
+			if field.Projection == CloudMappingProjectionManyRelationship {
+				refs, err := cloudNeutralManyRelationships(value, recipe.ScopeReference, bindings)
+				if err != nil {
+					return nil, err
+				}
+				record[field.TargetField] = map[string]any{"state": "present", "value": refs}
+				continue
+			}
 			if field.Projection == CloudMappingProjectionBoundedZeroOrOneRelationship {
 				values, boundedErr := cloudNeutralZeroOrOneRelationship(value)
 				if boundedErr != nil {
@@ -319,6 +311,52 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			record[field.TargetField] = map[string]any{"state": "present", "value": neutral}
 			continue
 		}
+		if field.Projection == CloudMappingProjectionPresentPrivateLeaf {
+			if leaf, ok := value.(string); !ok || leaf == "" {
+				return nil, fmt.Errorf("private presence leaf is not string")
+			}
+			if field.ValueRecipe == nil || field.ValueRecipe.UnknownValuePolicy != "refuse" || len(field.ValueRecipe.SourceToNeutral) != 1 {
+				return nil, fmt.Errorf("private presence has no closed recipe")
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": field.ValueRecipe.SourceToNeutral["present"]}
+			continue
+		}
+		if field.Projection == CloudMappingProjectionEvidenceClosedScalar || field.Projection == CloudMappingProjectionBoundedOneEvidenceScalar {
+			if field.Projection == CloudMappingProjectionBoundedOneEvidenceScalar {
+				if list, ok := value.([]any); ok {
+					if len(list) != 1 {
+						return nil, fmt.Errorf("bounded scalar projection requires exactly one observed member")
+					}
+					value = list[0]
+				} else if !xmlWire {
+					return nil, fmt.Errorf("bounded scalar projection requires a collection")
+				}
+			}
+			source, err := cloudEvidenceScalarKey(value, direct[field.SourcePointer], xmlWire)
+			if err != nil {
+				return nil, err
+			}
+			if field.ValueRecipe == nil || field.ValueRecipe.UnknownValuePolicy != "refuse" {
+				return nil, fmt.Errorf("closed scalar has no recipe")
+			}
+			neutral, ok := field.ValueRecipe.SourceToNeutral[source]
+			if !ok {
+				return nil, fmt.Errorf("closed scalar value refused")
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": neutral}
+			continue
+		}
+		if field.Projection == CloudMappingProjectionExactRFC3339 {
+			s, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("timestamp is not string")
+			}
+			if e := validateCloudUTCInstant(s); e != nil {
+				return nil, fmt.Errorf("timestamp is not canonical RFC3339 UTC")
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": s}
+			continue
+		}
 		if field.Projection == CloudMappingProjectionCheckedPositiveIntegerGiBToBytes || field.Projection == CloudMappingProjectionGiBToBytes {
 			bytes, convertErr := cloudCheckedPositiveGiBToBytes(value)
 			if convertErr != nil {
@@ -348,6 +386,10 @@ func cloudNeutralProjectionFields(contract CloudMappingContract) []CloudMappingC
 }
 
 func resolveCloudNeutralProjectionPointer(root any, pointer string) (any, string, error) {
+	return resolveCloudNeutralProjectionPointerMode(root, pointer, false)
+}
+
+func resolveCloudNeutralProjectionPointerMode(root any, pointer string, strictMembers bool) (any, string, error) {
 	if pointer == "" || !strings.HasPrefix(pointer, "/") {
 		return nil, "", fmt.Errorf("invalid projection pointer")
 	}
@@ -369,6 +411,9 @@ func resolveCloudNeutralProjectionPointer(root any, pointer string) (any, string
 					return nil, "", err
 				}
 				if state == "absent" {
+					if strictMembers {
+						return nil, "", fmt.Errorf("selected collection member lacks its required mapping leaf")
+					}
 					continue
 				}
 				if state == "null" {
@@ -418,6 +463,36 @@ func resolveCloudNeutralProjectionPointer(root any, pointer string) (any, string
 		return walk(v, at+1)
 	}
 	return walk(root, 0)
+}
+
+func cloudNeutralManyRelationships(value any, scope string, bindings map[cloudNeutralBindingKey]string) ([]string, error) {
+	list, ok := value.([]any)
+	if !ok {
+		if scalar, isString := value.(string); isString && scalar != "" {
+			list = []any{scalar}
+		} else {
+			return nil, fmt.Errorf("relationship collection is malformed")
+		}
+	}
+	result := make([]string, 0, len(list))
+	seen := map[string]bool{}
+	for _, value := range list {
+		key, ok := value.(string)
+		if !ok || key == "" {
+			return nil, fmt.Errorf("relationship collection has an invalid key")
+		}
+		identity, ok := bindings[cloudNeutralBindingKey{scope, key}]
+		if !ok {
+			return nil, fmt.Errorf("relationship has no scoped fixture binding")
+		}
+		if seen[identity] {
+			return nil, fmt.Errorf("relationship collection contains duplicate resolved identities")
+		}
+		seen[identity] = true
+		result = append(result, identity)
+	}
+	sort.Strings(result)
+	return result, nil
 }
 func cloudNeutralZeroOrOneRelationship(value any) ([]string, error) {
 	if value == nil {

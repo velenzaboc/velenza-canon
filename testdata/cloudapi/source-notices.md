@@ -9,3 +9,5 @@ The synthetic fixtures are authored examples. They are not copied customer respo
 The lifecycle pages under `official/lifecycle/` are exact public primary-source captures identified and hash-bound by `lifecycle-evidence.json`. They are retained only for internal offline evidence tests; the observations remain unqualified candidates and must not be redistributed without an applicable licensing review.
 
 The unit page under `official/units/` is likewise an exact public primary-source capture identified by `unit-evidence.json`. Its GiB observation is deliberately scoped to the cited Compute Engine disk case and is not a field-name-based unit rule.
+
+The EC2 volume and Compute Engine lifecycle captures added for the version-2 mappings are exact primary-source evidence, byte-bound by their case mappings. `native-source-snapshots.json` distinguishes immutable repository copies from the original provider capture identities; a repository snapshot does not authenticate a provider capture or qualify a semantic interpretation.

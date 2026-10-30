@@ -1,0 +1,33 @@
+{
+  "schema_version": "velenza.cloud_native_test_source_snapshots.v1",
+  "authority_posture": "offline_exact_bytes_candidate_only_producer_auth_unavailable",
+  "repository_commit": "b9e66e343a5482a7925cd9bc1284d20ff46dd5a3",
+  "snapshots": [
+    {
+      "model_source_id": "aws-s3-model",
+      "original_source": {"id":"aws-s3-model","uri":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json","stable_coordinate":"aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01","format_revision":"smithy-2"},
+      "snapshot_source": {"id":"velenza-snapshot-aws-s3-model","uri":"https://raw.githubusercontent.com/velenzaboc/velenza-canon/b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/aws/s3-2006-03-01.json","stable_coordinate":"velenza-canon@b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/aws/s3-2006-03-01.json","format_revision":"repository_snapshot_exact_bytes_v1"},
+      "expected_sha256":"73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "supplemental_snapshots":[{"evidence_id":"association-evidence","original_uri":"urn:velenza:testdata:cloudapi-association-evidence","snapshot_uri":"https://raw.githubusercontent.com/velenzaboc/velenza-canon/b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/association-evidence.json","expected_sha256":"707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b"}]
+    },
+    {
+      "model_source_id": "aws-ec2-model",
+      "original_source": {"id":"aws-ec2-model","uri":"https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json","stable_coordinate":"aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15","format_revision":"smithy-2"},
+      "snapshot_source": {"id":"velenza-snapshot-aws-ec2-model","uri":"https://raw.githubusercontent.com/velenzaboc/velenza-canon/b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/aws/ec2-2016-11-15.json","stable_coordinate":"velenza-canon@b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/aws/ec2-2016-11-15.json","format_revision":"repository_snapshot_exact_bytes_v1"},
+      "expected_sha256":"2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "supplemental_snapshots":[{"evidence_id":"association-evidence","original_uri":"urn:velenza:testdata:cloudapi-association-evidence","snapshot_uri":"https://raw.githubusercontent.com/velenzaboc/velenza-canon/b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/association-evidence.json","expected_sha256":"707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b"}]
+    },
+    {
+      "model_source_id": "gcp-storage-model",
+      "original_source": {"id":"gcp-storage-model","uri":"https://storage.googleapis.com/$discovery/rest?version=v1","stable_coordinate":"gcp/storage/v1","format_revision":"discovery"},
+      "snapshot_source": {"id":"velenza-snapshot-gcp-storage-model","uri":"https://raw.githubusercontent.com/velenzaboc/velenza-canon/b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/gcp/storage-v1.discovery.json","stable_coordinate":"velenza-canon@b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/gcp/storage-v1.discovery.json","format_revision":"repository_snapshot_exact_bytes_v1"},
+      "expected_sha256":"91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff"
+    },
+    {
+      "model_source_id": "gcp-compute-model",
+      "original_source": {"id":"gcp-compute-model","uri":"https://www.googleapis.com/discovery/v1/apis/compute/v1/rest","stable_coordinate":"gcp/compute/v1","format_revision":"discovery"},
+      "snapshot_source": {"id":"velenza-snapshot-gcp-compute-model","uri":"https://raw.githubusercontent.com/velenzaboc/velenza-canon/b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/gcp/compute-v1.discovery.json","stable_coordinate":"velenza-canon@b9e66e343a5482a7925cd9bc1284d20ff46dd5a3/testdata/cloudapi/official/gcp/compute-v1.discovery.json","format_revision":"repository_snapshot_exact_bytes_v1"},
+      "expected_sha256":"e3059e418cdd44f3ef343aa62fa4105759e450366dbe567bb827f7bf310678d7"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "kind": "storage#bucket",
+  "id": "fixture-configured-bucket",
+  "selfLink": "https://www.googleapis.com/storage/v1/b/fixture-configured-bucket",
+  "name": "fixture-configured-bucket",
+  "projectNumber": "123456789012",
+  "location": "US",
+  "locationType": "multi-region",
+  "storageClass": "COLDLINE",
+  "timeCreated": "2026-01-02T03:04:05.000Z",
+  "updated": "2026-01-03T03:04:05.000Z",
+  "versioning": {"enabled": true},
+  "retentionPolicy": {"retentionPeriod": "604800", "isLocked": false, "effectiveTime": "2026-01-03T03:04:05.000Z"},
+  "encryption": {"defaultKmsKeyName": "projects/fixture/locations/us/keyRings/ring/cryptoKeys/private-key"},
+  "iamConfiguration": {"publicAccessPrevention": "enforced", "uniformBucketLevelAccess": {"enabled": true}}
+}

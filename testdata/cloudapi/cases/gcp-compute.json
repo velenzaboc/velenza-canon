@@ -66,8 +66,11 @@
           {
             "source_pointer": "/creationTimestamp",
             "source_field_id": "creationTimestamp",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "reported_creation_time",
+            "projection": "exact_rfc3339",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_absent"
           },
           {
             "source_pointer": "/deletionProtection",
@@ -78,8 +81,11 @@
           {
             "source_pointer": "/description",
             "source_field_id": "description",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "description",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_absent"
           },
           {
             "source_pointer": "/disks",
@@ -308,23 +314,25 @@
             "projection": "exact",
             "lifecycle_recipe": {
               "evidence_refs": [
+                "gcp.compute.instance.status_enum",
+                "gcp.compute.instance.lifecycle_states",
                 "gcp.compute.terminated_restartable"
               ],
               "source_to_neutral": {
+                "PENDING": "provisioning",
+                "PENDING_STOP": "stopping",
+                "PROVISIONING": "provisioning",
+                "REPAIRING": "repairing",
                 "RUNNING": "running",
+                "STAGING": "provisioning",
+                "STOPPED": "stopped",
+                "STOPPING": "stopping",
+                "SUSPENDED": "suspended",
+                "SUSPENDING": "suspending",
                 "TERMINATED": "stopped"
               },
               "unsupported_source_values": [
-                "DEPROVISIONING",
-                "PENDING",
-                "PENDING_STOP",
-                "PROVISIONING",
-                "REPAIRING",
-                "STAGING",
-                "STOPPED",
-                "STOPPING",
-                "SUSPENDED",
-                "SUSPENDING"
+                "DEPROVISIONING"
               ],
               "unknown_value_policy": "refuse"
             }
@@ -355,6 +363,24 @@
           }
         ],
         "evidence_bindings": [
+          {
+            "id": "gcp.compute.instance.status_enum",
+            "source_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+            "source_path": "official/gcp/compute-v1.discovery.json",
+            "expected_sha256": "e3059e418cdd44f3ef343aa62fa4105759e450366dbe567bb827f7bf310678d7",
+            "start_byte": 2575263,
+            "end_byte": 2576892,
+            "slice_sha256": "2198e7861df7bac9113b813e6894e15a3052e88639b17a8975bc87f195bd6da8"
+          },
+          {
+            "id": "gcp.compute.instance.lifecycle_states",
+            "source_uri": "https://docs.cloud.google.com/compute/docs/instances/instance-lifecycle",
+            "source_path": "official/lifecycle/gcp-compute-instance-lifecycle.html",
+            "expected_sha256": "d64d9c3e9aefb9c444150de687d31d01d8d278178820e8c9d6a6b10e07998274",
+            "start_byte": 329290,
+            "end_byte": 338433,
+            "slice_sha256": "5b759e176df45d3d7fdb3c4686978962ca9e71ea4d5c68d13d9278b16a8b8c40"
+          },
           {
             "id": "gcp.compute.terminated_restartable",
             "source_uri": "https://docs.cloud.google.com/compute/docs/instances/stop-start-instance",
@@ -433,14 +459,20 @@
           {
             "source_pointer": "/creationTimestamp",
             "source_field_id": "creationTimestamp",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "reported_creation_time",
+            "projection": "exact_rfc3339",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_absent"
           },
           {
             "source_pointer": "/description",
             "source_field_id": "description",
-            "disposition": "unsupported",
-            "explicit_null_disposition": "source_private_only"
+            "disposition": "maps_exact_source_fact",
+            "target_field": "description",
+            "projection": "exact",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_absent"
           },
           {
             "source_pointer": "/diskEncryptionKey",
@@ -717,9 +749,10 @@
                 "wire_pointer": "/users/*",
                 "source_field_id": "*",
                 "disposition": "maps_exact_relationship_fact",
-                "target_field": "attached_compute_instance_reference",
-                "projection": "bounded_zero_or_one_relationship_reference",
-                "explicit_null_disposition": "source_private_only"
+                "target_field": "attached_compute_instance_references",
+                "projection": "many_relationship_references",
+                "explicit_null_disposition": "source_private_only",
+                "explicit_absent_disposition": "refuse"
               }
             ]
           }

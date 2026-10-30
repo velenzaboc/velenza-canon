@@ -1,0 +1,7 @@
+{
+  "kind": "storage#bucket",
+  "id": "fixture-unknown-tier",
+  "name": "fixture-unknown-tier",
+  "storageClass": "FUTURE_TIER",
+  "timeCreated": "2026-01-02T03:04:05.000Z"
+}

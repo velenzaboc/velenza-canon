@@ -326,6 +326,7 @@ func handleOODList(ctx context.Context, env *Env, in oodListInput) (QueryResult,
 // search_payload). See buildOODListSQL for the rationale.
 var oodListLeanColumns = []string{
 	"graph_object_id", "organization_id", "graph_snapshot_id", "object_class",
+	"api_element_role", "api_element_role_locator_manifest_hash",
 	"source_authority_id", "source_artifact_class", "source_ref_kind",
 	"source_stable_reference", "version_coordinate", "section_path", "graph_address",
 	"source_content_hash", "source_content_hash_owner", "materialization_run_id",

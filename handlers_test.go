@@ -779,8 +779,8 @@ func TestCommittedExamplesPreserveOperationalRegistrySemantics(t *testing.T) {
 	}
 	bootstrap := load("spec-graph.config.bootstrap.example.json")
 	production := load("spec-graph.config.production.example.json")
-	if len(bootstrap.NodeKinds) != 29 || len(production.NodeKinds) != 29 || len(bootstrap.EdgeLabels) != 36 || len(production.EdgeLabels) != 36 {
-		t.Fatalf("registry narrowing: bootstrap=%d/%d production=%d/%d, want 29 node kinds and 36 edge labels in both", len(bootstrap.NodeKinds), len(bootstrap.EdgeLabels), len(production.NodeKinds), len(production.EdgeLabels))
+	if len(bootstrap.NodeKinds) != 29 || len(production.NodeKinds) != 29 || len(bootstrap.EdgeLabels) != 57 || len(production.EdgeLabels) != 57 {
+		t.Fatalf("registry narrowing: bootstrap=%d/%d production=%d/%d, want 29 node kinds and 57 edge labels in both", len(bootstrap.NodeKinds), len(bootstrap.EdgeLabels), len(production.NodeKinds), len(production.EdgeLabels))
 	}
 	semanticDigest := func(cfg SpecGraphConfig) string {
 		type nodeRecord struct {
@@ -835,11 +835,11 @@ func TestCommittedExamplesPreserveOperationalRegistrySemantics(t *testing.T) {
 		}
 		return fmt.Sprintf("%x", sha256.Sum256(encoded))
 	}
-	// Golden value derived from the current 29-kind/36-label operational
+	// Golden value derived from the current 29-kind/57-label operational
 	// registry plus only the required projection-role and external-coordinate
 	// policy additions. It locks every runtime-consumed endpoint, direction,
 	// reciprocal, family, and self-loop field against silent example drift.
-	const expectedOperationalRegistrySemanticDigest = "25b23f96ef3200a3ffb31371f21b72db0724a3c713aa666105f096bde4b51abb"
+	const expectedOperationalRegistrySemanticDigest = "206e9084cd9d86b2f69f70d7dc7e893fc61e9a82d2530beb62d6741320ef4219"
 	for name, cfg := range map[string]SpecGraphConfig{"bootstrap": bootstrap, "production": production} {
 		if got := semanticDigest(cfg); got != expectedOperationalRegistrySemanticDigest {
 			t.Errorf("%s operational registry semantic digest=%s, want %s", name, got, expectedOperationalRegistrySemanticDigest)

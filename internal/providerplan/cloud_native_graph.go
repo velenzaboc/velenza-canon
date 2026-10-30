@@ -116,6 +116,18 @@ type CloudNativeGraphContext struct {
 	// RelationshipLabels is the sealed applicability selection for hierarchy
 	// and catalog-envelope edges, keyed by canonical capi_rel identity.
 	RelationshipLabels map[string]string
+	Summary            *CloudNativeSummaryContext
+}
+
+// CloudNativeSummaryContext is copied from the sealed dependency artifact
+// summaries by the package author. Native catalog parsing cannot infer these
+// cross-artifact counts.
+type CloudNativeSummaryContext struct {
+	ExactSourceDocumentCount            int
+	ExactDocumentedFieldOccurrenceCount int
+	SampleJSONBlockCount                int
+	ProtocolAssertionCount              int
+	PreservedContradictionCount         int
 }
 
 // CloudNativeOfflineVerificationOptions binds a pre-sealed source-package
@@ -502,7 +514,20 @@ func BuildCloudNativeGraphCandidateJSONL(context CloudNativeGraphContext, models
 			operationCount++
 		}
 	}
+	if context.OperationCrosswalks != nil && context.Summary == nil {
+		return nil, fmt.Errorf("strict native graph requires sealed dependency summary counts")
+	}
 	summary := validationSummary{RowKind: "validation_summary", ExactSourceDocumentCount: len(models), CandidateOperationCount: operationCount, CapturedOperationKindCounts: []operationKindCount{{OperationKind: "request_response_read_operation", Count: operationCount}}, CandidateEvidenceLocatorCount: len(locators), CandidateAPISymbolCount: len(symbols), CandidateGraphGapCount: len(gaps), APIElementRolesMaterialized: cloudNativeRoleCount(symbols), OperationApplicabilityCount: operationCount, CandidateSubjectCount: len(symbols), SubjectSetRootSHA256: sets["subject"].RootSHA256, FactSetRootSHA256: sets["fact"].RootSHA256, GapSetRootSHA256: sets["gap"].RootSHA256, Result: resultCompleteWithGap}
+	if context.Summary != nil {
+		if context.Summary.ExactSourceDocumentCount < 0 || context.Summary.ExactDocumentedFieldOccurrenceCount < 0 || context.Summary.SampleJSONBlockCount < 0 || context.Summary.ProtocolAssertionCount < 0 || context.Summary.PreservedContradictionCount < 0 {
+			return nil, fmt.Errorf("native summary counts must be nonnegative")
+		}
+		summary.ExactSourceDocumentCount = context.Summary.ExactSourceDocumentCount
+		summary.ExactDocumentedFieldOccurrenceCount = context.Summary.ExactDocumentedFieldOccurrenceCount
+		summary.SampleJSONBlockCount = context.Summary.SampleJSONBlockCount
+		summary.ProtocolAssertionCount = context.Summary.ProtocolAssertionCount
+		summary.PreservedContradictionCount = context.Summary.PreservedContradictionCount
+	}
 	rows = append(rows, summary)
 	return cloudNativeJSONL(rows)
 }

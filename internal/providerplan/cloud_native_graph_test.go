@@ -199,6 +199,51 @@ func TestBuildCloudNativeGraphCandidateJSONLStrictModeUsesCanonicalCrosswalks(t 
 	}
 }
 
+func TestBuildCloudNativeGraphCandidateJSONLStrictSummaryCountsPropagateAndRefuseInvalid(t *testing.T) {
+	model := nativeGraphTestModel(t)
+	catalog, err := ParsePinnedCloudModel(model)
+	if err != nil {
+		t.Fatal(err)
+	}
+	context := nativeGraphStrictTestContext(t, model, catalog)
+	context.Summary = &CloudNativeSummaryContext{ExactSourceDocumentCount: 7, ExactDocumentedFieldOccurrenceCount: 2, SampleJSONBlockCount: 3, ProtocolAssertionCount: 4, PreservedContradictionCount: 5}
+	raw, err := BuildCloudNativeGraphCandidateJSONL(context, []PinnedCloudModel{model})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found validationSummary
+	for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte{'\n'}) {
+		var row struct {
+			RowKind string `json:"row_kind"`
+		}
+		if err := json.Unmarshal(line, &row); err != nil {
+			t.Fatal(err)
+		}
+		if row.RowKind == "validation_summary" {
+			if err := strictUnmarshal(line, &found); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	if found.ExactSourceDocumentCount != 7 || found.ExactDocumentedFieldOccurrenceCount != 2 || found.SampleJSONBlockCount != 3 || found.ProtocolAssertionCount != 4 || found.PreservedContradictionCount != 5 {
+		t.Fatalf("strict summary propagation=%#v", found)
+	}
+	missing := context
+	missing.Summary = nil
+	if _, err := BuildCloudNativeGraphCandidateJSONL(missing, []PinnedCloudModel{model}); err == nil || !strings.Contains(err.Error(), "requires sealed dependency summary") {
+		t.Fatalf("missing summary=%v", err)
+	}
+	for _, mutate := range []func(*CloudNativeSummaryContext){func(v *CloudNativeSummaryContext) { v.ExactSourceDocumentCount = -1 }, func(v *CloudNativeSummaryContext) { v.ExactDocumentedFieldOccurrenceCount = -1 }, func(v *CloudNativeSummaryContext) { v.SampleJSONBlockCount = -1 }, func(v *CloudNativeSummaryContext) { v.ProtocolAssertionCount = -1 }, func(v *CloudNativeSummaryContext) { v.PreservedContradictionCount = -1 }} {
+		bad := context
+		copy := *context.Summary
+		mutate(&copy)
+		bad.Summary = &copy
+		if _, err := BuildCloudNativeGraphCandidateJSONL(bad, []PinnedCloudModel{model}); err == nil || !strings.Contains(err.Error(), "summary counts must be nonnegative") {
+			t.Fatalf("negative summary=%v", err)
+		}
+	}
+}
+
 func nativeGraphStrictTestContext(t *testing.T, model PinnedCloudModel, catalog CloudCatalog) CloudNativeGraphContext {
 	t.Helper()
 	context := nativeGraphTestContext(t, model, catalog)
@@ -225,6 +270,7 @@ func nativeGraphStrictTestContext(t *testing.T, model PinnedCloudModel, catalog 
 	serviceID := stableID("capi_sym", lengthPrefixedIdentityKey("service", cloudNativeServiceSemanticKey(catalog.ProviderID, catalog.ServiceID)))
 	context.OperationCrosswalks = map[string]CloudNativeOperationCrosswalk{CloudNativeOperationBindingKey(model.Source.ID, operation.ID): {SourceSymbol: "fixture.operation", CanonicalSourceOperationIdentity: mustNativeTestJSON(t, identity), OperationSemanticKey: semantic, OperationSymbolID: operationID, ResourceAccesses: []CloudNativeRelationshipCrosswalk{{Label: "operation_reads_resource", SourceSymbolID: operationID, TargetSymbolID: resourceID, RelationshipID: stableID("capi_rel", lengthPrefixedIdentityKey("operation_reads_resource", operationID, resourceID))}}}}
 	context.ResourceCrosswalks = map[string]CloudNativeResourceCrosswalk{CloudNativeResourceBindingKey(model.Source.ID, catalog.Resources[0].ID): {SourceSymbol: "fixture.resource", ResourceSemanticKey: resourceSemantic, ResourceSymbolID: resourceID}}
+	context.Summary = &CloudNativeSummaryContext{}
 	context.SymbolDerivationBindings[CloudNativeSymbolBindingKey("resource", resourceSemantic)] = nativeStrictBinding(t, apiSymbol{ID: resourceID, Role: "resource", SemanticKey: resourceSemantic}, "fixture.resource", "resource", context.Manifest.EvidenceSelectionRosterSHA256)
 	context.SymbolDerivationBindings[CloudNativeSymbolBindingKey("operation", semantic)] = nativeStrictBinding(t, apiSymbol{ID: operationID, Role: "operation", SemanticKey: semantic}, "fixture.operation", "operation", context.Manifest.EvidenceSelectionRosterSHA256)
 	context.RelationshipLabels = map[string]string{}

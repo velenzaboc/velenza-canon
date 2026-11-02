@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ListBuckets - Amazon S3</title><meta name="viewport" content="width=device-width,initial-scale=1" /><meta name="assets_root" content="/assets" /><meta name="target_state" content="API_ListBuckets" /><meta name="default_state" content="API_ListBuckets" /><link rel="icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="shortcut icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="canonical" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html" /><link rel="alternate" type="text/markdown" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.md" title="Markdown version" /><meta name="description" content="Returns a list of all buckets owned by the authenticated sender of the request. To grant IAM permission to use this operation, you must add the s3:ListAllMyBuckets policy action." /><meta name="deployment_region" content="IAD" /><meta name="product" content="Amazon S3" /><meta name="guide" content="API Reference" /><meta name="abstract" content="Welcome to the Amazon S3 API Reference. This guide explains the Amazon Simple Storage Service (Amazon S3) application programming interface (API)." /><meta name="guide-locale" content="en_us" /><meta name="tocs" content="toc-contents.json" /><link rel="canonical" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AmazonS3/latest/API/API_ListBuckets.html" hreflang="id-id" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AmazonS3/latest/API/API_ListBuckets.html" hreflang="id" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AmazonS3/latest/API/API_ListBuckets.html" hreflang="de-de" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AmazonS3/latest/API/API_ListBuckets.html" hreflang="de" /><link rel="alternate" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html" hreflang="en-us" /><link rel="alternate" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html" hreflang="en" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AmazonS3/latest/API/API_ListBuckets.html" hreflang="es-es" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AmazonS3/latest/API/API_ListBuckets.html" hreflang="es" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AmazonS3/latest/API/API_ListBuckets.html" hreflang="fr-fr" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AmazonS3/latest/API/API_ListBuckets.html" hreflang="fr" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AmazonS3/latest/API/API_ListBuckets.html" hreflang="it-it" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AmazonS3/latest/API/API_ListBuckets.html" hreflang="it" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/API_ListBuckets.html" hreflang="ja-jp" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/API_ListBuckets.html" hreflang="ja" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/API/API_ListBuckets.html" hreflang="ko-kr" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/API/API_ListBuckets.html" hreflang="ko" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AmazonS3/latest/API/API_ListBuckets.html" hreflang="pt-br" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AmazonS3/latest/API/API_ListBuckets.html" hreflang="pt" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_cn/AmazonS3/latest/API/API_ListBuckets.html" hreflang="zh-cn" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/API/API_ListBuckets.html" hreflang="zh-tw" /><link rel="alternate" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html" hreflang="x-default" /><meta name="feedback-item" content="S3" /><meta name="this_doc_product" content="Amazon S3" /><meta name="this_doc_guide" content="API Reference" /><head xmlns="http://www.w3.org/1999/xhtml"> <script defer="" src="/assets/r/awsdocs-doc-page.2.0.0.js"></script><link href="/assets/r/awsdocs-doc-page.2.0.0.css" rel="stylesheet"/></head>
+<script defer="" id="awsc-panorama-bundle" type="text/javascript" src="https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js" data-config="{'appEntity':'aws-documentation','region':'us-east-1','service':'s3'}"></script><meta id="panorama-serviceSubSection" value="API Reference" /><meta id="panorama-serviceConsolePage" value="ListBuckets" /></head><body class="awsdocs awsui"><div class="awsdocs-container"><p><a href="API_ListBuckets.md">View a markdown version of this page</a></p><awsdocs-header></awsdocs-header><awsui-app-layout id="app-layout" class="awsui-util-no-gutters" ng-controller="ContentController as $ctrl" header-selector="awsdocs-header" navigation-hide="false" navigation-width="$ctrl.navWidth" navigation-open="$ctrl.navOpen" navigation-change="$ctrl.onNavChange($event)" tools-hide="$ctrl.hideTools" tools-width="$ctrl.toolsWidth" tools-open="$ctrl.toolsOpen" tools-change="$ctrl.onToolsChange($event)"><div id="guide-toc" dom-region="navigation"><awsdocs-toc></awsdocs-toc></div><div id="main-column" dom-region="content" tabindex="-1"><awsdocs-view class="awsdocs-view"><div id="awsdocs-content"><head><title>ListBuckets - Amazon S3</title><meta name="pdf" content="/pdfs/AmazonS3/latest/API/s3-api.pdf#API_ListBuckets" /><meta name="forums" content="https://repost.aws/tags/TADSTjraA0Q4-a1dxk6eUYaw" /><meta name="feedback" content="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=S3&amp;topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_ListBuckets.html" /><meta name="feedback-yes" content="feedbackyes.html?topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_ListBuckets.html" /><meta name="feedback-no" content="feedbackno.html?topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_ListBuckets.html" /><meta name="keywords" content="API,requests,ListBuckets" /><script type="application/ld+json">
+{
+    "@context" : "https://schema.org",
+    "@type" : "BreadcrumbList",
+    "itemListElement" : [
+      {
+        "@type" : "ListItem",
+        "position" : 1,
+        "name" : "AWS",
+        "item" : "https://aws.amazon.com"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 2,
+        "name" : "Amazon Simple Storage Service (S3)",
+        "item" : "https://docs.aws.amazon.com/s3/index.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 3,
+        "name" : "API Reference",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 4,
+        "name" : "Actions",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 5,
+        "name" : "Amazon S3",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations_Amazon_Simple_Storage_Service.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 6,
+        "name" : "ListBuckets",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations_Amazon_Simple_Storage_Service.html"
+      }
+    ]
+}
+</script></head><body><div id="main"><div style="display: none"><a href="/pdfs/AmazonS3/latest/API/s3-api.pdf#API_ListBuckets" target="_blank" rel="noopener noreferrer" title="Open PDF"></a></div><div id="breadcrumbs" class="breadcrumb"><a href="/index.html">Documentation</a><a href="/s3/index.html">Amazon Simple Storage Service (S3)</a><a href="Welcome.html">API Reference</a></div><div id="page-toc-src"><a href="#API_ListBuckets_RequestSyntax">Request Syntax</a><a href="#API_ListBuckets_RequestParameters">URI Request Parameters</a><a href="#API_ListBuckets_RequestBody">Request Body</a><a href="#API_ListBuckets_ResponseSyntax">Response Syntax</a><a href="#API_ListBuckets_ResponseElements">Response Elements</a><a href="#API_ListBuckets_Examples">Examples</a><a href="#API_ListBuckets_SeeAlso">See Also</a></div><div id="main-content" class="awsui-util-container"><div id="main-col-body"><awsdocs-language-banner data-service="$ctrl.pageService"></awsdocs-language-banner><h1 class="topictitle" id="API_ListBuckets">ListBuckets</h1><div class="awsdocs-page-header-container"><awsdocs-page-header></awsdocs-page-header><awsdocs-filter-selector id="awsdocs-filter-selector"></awsdocs-filter-selector></div><div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>This operation is not supported for directory buckets.</p></div></div><p>Returns a list of all buckets owned by the authenticated sender of the request. To grant IAM
+      permission to use this operation, you must add the <code class="code">s3:ListAllMyBuckets</code> policy action. </p><p>For information about Amazon S3 buckets, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-buckets-s3.html">Creating, configuring, and working with Amazon S3
+        buckets</a>.</p><div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>We strongly recommend using only paginated <code class="code">ListBuckets</code> requests. Unpaginated
+          <code class="code">ListBuckets</code> requests are only supported for AWS accounts set to the default general
+        purpose bucket quota of 10,000. If you have an approved general purpose bucket quota above 10,000, you
+        must send paginated <code class="code">ListBuckets</code> requests to list your account’s buckets. All unpaginated
+          <code class="code">ListBuckets</code> requests will be rejected for AWS accounts with a general purpose bucket
+        quota greater than 10,000. </p></div></div><div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>You must URL encode any signed header values that contain spaces. For example, if your header value is <code class="code">my  file.txt</code>, containing two spaces after <code class="code">my</code>, you must URL encode this value to <code class="code">my%20%20file.txt</code>.</p></div></div>
+      <h2 id="API_ListBuckets_RequestSyntax">Request Syntax</h2>
+      <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight">GET /?bucket-region=<code class="replaceable">BucketRegion</code>&amp;continuation-token=<code class="replaceable">ContinuationToken</code>&amp;max-buckets=<code class="replaceable">MaxBuckets</code>&amp;prefix=<code class="replaceable">Prefix</code> HTTP/1.1
+Host: s3.amazonaws.com
+</code></pre>
+    
+      <h2 id="API_ListBuckets_RequestParameters">URI Request Parameters</h2>
+      <p>The request uses the following URI parameters.</p>
+      <div class="variablelist">
+          
+          
+          
+          
+      <dl>
+            <dt id="AmazonS3-ListBuckets-request-uri-querystring-BucketRegion"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_RequestSyntax">bucket-region</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Limits the response to buckets that are located in the specified AWS Region. The AWS Region must
+      be expressed according to the AWS Region code, such as <code class="code">us-west-2</code> for the US West (Oregon)
+      Region. For a list of the valid values for all of the AWS Regions, see <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region">Regions and Endpoints</a>.</p>
+               <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>Requests made to a Regional endpoint that is different from the <code class="code">bucket-region</code>
+        parameter are not supported. For example, if you want to limit the response to your buckets in Region
+          <code class="code">us-west-2</code>, the request must be made to an endpoint in Region
+        <code class="code">us-west-2</code>.</p></div></div>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-request-uri-querystring-ContinuationToken"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_RequestSyntax">continuation-token</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>
+                  <code class="code">ContinuationToken</code> indicates to Amazon S3 that the list is being continued on this bucket
+      with a token. <code class="code">ContinuationToken</code> is obfuscated and is not a real key. You can use this
+        <code class="code">ContinuationToken</code> for pagination of the list results. </p>
+               <p>Length Constraints: Minimum length of 0. Maximum length of 1024.</p>
+               <p>Required: No.</p>
+               <div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>If you specify the <code class="code">bucket-region</code>, <code class="code">prefix</code>, or
+          <code class="code">continuation-token</code> query parameters without using <code class="code">max-buckets</code> to set the
+        maximum number of buckets returned in the response, Amazon S3 applies a default page size of 10,000 and
+        provides a continuation token if there are more buckets.</p></div></div>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-request-uri-querystring-MaxBuckets"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_RequestSyntax">max-buckets</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Maximum number of buckets to be returned in response. When the number is more than the count of
+      buckets that are owned by an AWS account, return all the buckets in response.</p>
+               <p>Valid Range: Minimum value of 1. Maximum value of 10000.</p>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-request-uri-querystring-Prefix"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_RequestSyntax">prefix</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Limits the response to bucket names that begin with the specified bucket name prefix.</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_ListBuckets_RequestBody">Request Body</h2>
+      <p>The request does not have a request body.</p>
+    
+      <h2 id="API_ListBuckets_ResponseSyntax">Response Syntax</h2>
+      <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight">HTTP/1.1 200
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;<a href="#AmazonS3-ListBuckets-response-ListBucketsOutput">ListAllMyBucketsResult</a>&gt;
+   &lt;<a href="#AmazonS3-ListBuckets-response-Buckets">Buckets</a>&gt;
+      &lt;Bucket&gt;
+         &lt;<a href="./API_Bucket.html#AmazonS3-Type-Bucket-BucketArn">BucketArn</a>&gt;<b><em>string</em></b>&lt;/<a href="./API_Bucket.html#AmazonS3-Type-Bucket-BucketArn">BucketArn</a>&gt;
+         &lt;<a href="./API_Bucket.html#AmazonS3-Type-Bucket-BucketRegion">BucketRegion</a>&gt;<b><em>string</em></b>&lt;/<a href="./API_Bucket.html#AmazonS3-Type-Bucket-BucketRegion">BucketRegion</a>&gt;
+         &lt;<a href="./API_Bucket.html#AmazonS3-Type-Bucket-CreationDate">CreationDate</a>&gt;<b><em>timestamp</em></b>&lt;/<a href="./API_Bucket.html#AmazonS3-Type-Bucket-CreationDate">CreationDate</a>&gt;
+         &lt;<a href="./API_Bucket.html#AmazonS3-Type-Bucket-Name">Name</a>&gt;<b><em>string</em></b>&lt;/<a href="./API_Bucket.html#AmazonS3-Type-Bucket-Name">Name</a>&gt;
+      &lt;/Bucket&gt;
+   &lt;/<a href="#AmazonS3-ListBuckets-response-Buckets">Buckets</a>&gt;
+   &lt;<a href="#AmazonS3-ListBuckets-response-Owner">Owner</a>&gt;
+      &lt;<a href="./API_Owner.html#AmazonS3-Type-Owner-DisplayName">DisplayName</a>&gt;<b><em>string</em></b>&lt;/<a href="./API_Owner.html#AmazonS3-Type-Owner-DisplayName">DisplayName</a>&gt;
+      &lt;<a href="./API_Owner.html#AmazonS3-Type-Owner-ID">ID</a>&gt;<b><em>string</em></b>&lt;/<a href="./API_Owner.html#AmazonS3-Type-Owner-ID">ID</a>&gt;
+   &lt;/<a href="#AmazonS3-ListBuckets-response-Owner">Owner</a>&gt;
+   &lt;<a href="#AmazonS3-ListBuckets-response-ContinuationToken">ContinuationToken</a>&gt;<b><em>string</em></b>&lt;/<a href="#AmazonS3-ListBuckets-response-ContinuationToken">ContinuationToken</a>&gt;
+   &lt;<a href="#AmazonS3-ListBuckets-response-Prefix">Prefix</a>&gt;<b><em>string</em></b>&lt;/<a href="#AmazonS3-ListBuckets-response-Prefix">Prefix</a>&gt;
+&lt;/<a href="#AmazonS3-ListBuckets-response-ListBucketsOutput">ListAllMyBucketsResult</a>&gt;</code></pre>
+    
+      <h2 id="API_ListBuckets_ResponseElements">Response Elements</h2>
+      <p>If the action is successful, the service sends back an HTTP 200 response.</p>
+      <p>The following data is returned in XML format by the service.</p>
+      <div class="variablelist">
+          
+          
+          
+          
+          
+      <dl>
+            <dt id="AmazonS3-ListBuckets-response-ListBucketsOutput"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_ResponseSyntax">ListAllMyBucketsResult</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Root level tag for the ListAllMyBucketsResult parameters.</p>
+               <p>Required: Yes</p>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-response-Buckets"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_ResponseSyntax">Buckets</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>The list of buckets owned by the requester.</p>
+               <p>Type: Array of <a href="./API_Bucket.html">Bucket</a> data types</p>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-response-ContinuationToken"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_ResponseSyntax">ContinuationToken</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>
+                  <code class="code">ContinuationToken</code> is included in the response when there are more buckets that can be
+      listed with pagination. The next <code class="code">ListBuckets</code> request to Amazon S3 can be continued with this
+        <code class="code">ContinuationToken</code>. <code class="code">ContinuationToken</code> is obfuscated and is not a real
+      bucket.</p>
+               <p>Type: String</p>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-response-Owner"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_ResponseSyntax">Owner</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>The owner of the buckets listed.</p>
+               <p>Type: <a href="./API_Owner.html">Owner</a> data type</p>
+            </dd>
+          
+            <dt id="AmazonS3-ListBuckets-response-Prefix"><span class="term">
+               <b>
+                  <a href="#API_ListBuckets_ResponseSyntax">Prefix</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>If <code class="code">Prefix</code> was sent with the request, it is included in the response.</p>
+               <p>All bucket names in the response begin with the specified bucket name prefix.</p>
+               <p>Type: String</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_ListBuckets_Examples">Examples</h2>
+       
+         <h3 id="API_ListBuckets_Example_1">Example 1: Unpaginated ListBuckets request</h3>
+         <p>This example lists all the buckets in your account in a single unpaginated response. Unpaginated
+          requests are only supported for AWS accounts that have the default service quota of 10,000
+          buckets. If you have an approved general purpose bucket quota that is greater than 10,000 buckets,
+          all unpaginated requests will be rejected for your account.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">GET / host:s3.us-east-2.amazonaws.com HTTP/1.1</code></pre>
+         
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">
+HTTP/1.1 200 OK
+&lt;ListAllMyBucketsResult&gt;
+   &lt;Buckets&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2019-12-11T23:32:47+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket&lt;/Name&gt;
+      &lt;/Bucket&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2019-11-10T23:32:13+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket1&lt;/Name&gt;
+      &lt;/Bucket&gt;
+   &lt;/Buckets&gt;
+   &lt;Owner&gt;
+      &lt;ID&gt;AIDACKCEVSQ6C2EXAMPLE&lt;/ID&gt;
+   &lt;/Owner&gt;  
+&lt;/ListAllMyBucketsResult&gt;   
+         </code></pre>
+         
+       
+       
+         <h3 id="API_ListBuckets_Example_2">Example 2: Paginated ListBuckets request</h3>
+         <p>The following example request lists all buckets in your account using pagination. It gets the
+          first page of results with the page size set to 1000 buckets. The response returns a
+            <code class="code">ContinuationToken</code> that is used in <b>Example 3</b> to list
+          the next 1000 buckets.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">GET /?max-buckets=1000&amp;host:s3.us-east-2.amazonaws.com HTTP/1.1</code></pre>
+         
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">
+HTTP/1.1 200 OK
+&lt;ListAllMyBucketsResult&gt;
+   &lt;Buckets&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:47+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-1&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:13+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket1&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-2&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+   &lt;/Buckets&gt;
+   &lt;Owner&gt;
+      &lt;ID&gt;AIDACKCEVSQ6C2EXAMPLE&lt;/ID&gt;
+   &lt;/Owner&gt;  
+   &lt;ContinuationToken&gt;eyJNYXJrZXIiOiBudWxsLCAiYm90b190cnVuY2F0ZV9hbW91bnQiOiAxfQ==&lt;/ContinuationToken&gt;      
+&lt;/ListAllMyBucketsResult&gt;   
+         </code></pre>
+         
+       
+       
+         <h3 id="API_ListBuckets_Example_3">Example 3: Paginated ListBuckets request with continuation token</h3>
+         <p>This example request uses the token returned in <b>Example 2</b> to
+          return the next 1000 buckets. Continue until there are no more results. If you do not receive a
+          continuation token with your initial paginated ListBuckets request, then your single paginated
+          request returned all of the buckets in your account.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">GET /?max-buckets=1000&amp;continuation-token=eyJNYXJrZXIiOiBudWxsLCAiYm90b190cnVuY2F0ZV9hbW91bnQiOiAxfQ== host:s3.us-east-2.amazonaws.com HTTP/1.1</code></pre>
+         
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">
+HTTP/1.1 200 OK
+&lt;ListAllMyBucketsResult&gt;
+   &lt;Buckets&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:47+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-1&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:13+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket1&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-2&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+   &lt;/Buckets&gt;
+   &lt;Owner&gt;
+      &lt;ID&gt;AIDACKCEVSQ6C2EXAMPLE&lt;/ID&gt;
+   &lt;/Owner&gt;  
+   &lt;ContinuationToken&gt;eyJOZXh0VG9rZW4iOiBudWxsLCAiYm90b190cnVuY2F0ZV9hbW91bnQiEXAMPLE=&lt;/ContinuationToken&gt;      
+&lt;/ListAllMyBucketsResult&gt;   
+         </code></pre>
+         
+       
+       
+         <h3 id="API_ListBuckets_Example_4">Example 4: Paginated ListBuckets request for buckets in US East (Ohio) (us-east-2)</h3>
+         <p>The following example lists all the buckets in your account in the <code class="code">us-east-2</code>
+          Region. The first paginated response will return up to 1000 buckets. Requests made to a Regional
+          endpoint that is different from the <code class="code">bucket-region</code> parameter are not supported. </p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">GET /?bucket-region=us-east-2&amp;max-buckets=1000 host:s3.us-east-2.amazonaws.com HTTP/1.1</code></pre>
+         
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">
+HTTP/1.1 200 OK
+&lt;ListAllMyBucketsResult&gt;
+   &lt;Buckets&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:47+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;DOC-EXAMPLE-BUCKET&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-2&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:13+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;DOC-EXAMPLE-BUCKET1002&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-2&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+   &lt;/Buckets&gt;
+   &lt;Owner&gt;
+      &lt;ID&gt;AIDACKCEVSQ6C2EXAMPLE&lt;/ID&gt;
+   &lt;/Owner&gt;  
+   &lt;ContinuationToken&gt;eyJOZXh0VG9rZW4iOiBudWxsLCAiYm90b190cnVuY2F0ZV9hbW91bnQiEXAMPLEcd =&lt;/ContinuationToken&gt;      
+&lt;/ListAllMyBucketsResult&gt;   
+         </code></pre>
+         
+       
+       
+         <h3 id="API_ListBuckets_Example_5">Example 5: Paginated ListBuckets request for buckets in your account that begin with amzn-s3-demo-bucket in US East (Ohio) (us-east-2)</h3>
+         <p>The following example lists all the buckets in your account located in the
+            <code class="code">us-east-2</code> Region that begin with the <code class="code">amzn-s3-demo-bucket</code>
+          bucket prefix. This request uses pagination.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">GET /?bucket-region=us-east-2&amp;max-buckets=1000&amp;prefix=amzn-s3-demo-bucket host:s3.us-east-2.amazonaws.com HTTP/1.1</code></pre>
+         
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">
+HTTP/1.1 200 OK
+&lt;ListAllMyBucketsResult&gt;
+   &lt;Buckets&gt;
+      &lt;Bucket&gt;
+         &lt;CreationDate&gt;2024-11-14T23:32:47+00:00&lt;/CreationDate&gt;
+         &lt;Name&gt;amzn-s3-demo-bucket&lt;/Name&gt;
+         &lt;BucketRegion&gt;us-east-2&lt;/BucketRegion&gt;
+      &lt;/Bucket&gt;
+   &lt;/Buckets&gt;
+   &lt;Owner&gt;
+      &lt;ID&gt;AIDACKCEVSQ6C2EXAMPLE&lt;/ID&gt;
+   &lt;/Owner&gt;  
+   &lt;Prefix&gt;
+       amzn-s3-demo-bucket
+   &lt;/Prefix&gt;
+   &lt;ContinuationToken&gt;eyJOZXh0VG9rZW4iOiBudWxsLCAiYm90b190cnVuY2F0ZV9hbW91bnQiEXAMPLE=&lt;/ContinuationToken&gt;
+&lt;/ListAllMyBucketsResult&gt;   
+         </code></pre>
+         
+       
+    
+      <h2 id="API_ListBuckets_SeeAlso">See Also</h2>
+      <p>For more information about using this API in one of the language-specific AWS SDKs, see the following:</p>
+      <div class="itemizedlist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <ul class="itemizedlist"><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/cli2/s3-2006-03-01/ListBuckets">AWS Command Line Interface V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/DotNetSDKV4/s3-2006-03-01/ListBuckets">AWS SDK for .NET V4</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForCpp/s3-2006-03-01/ListBuckets">AWS SDK for C++</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForGoV2/s3-2006-03-01/ListBuckets">AWS SDK for Go v2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaV2/s3-2006-03-01/ListBuckets">AWS SDK for Java V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaScriptV3/s3-2006-03-01/ListBuckets">AWS SDK for JavaScript V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForKotlin/s3-2006-03-01/ListBuckets">AWS SDK for Kotlin</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForPHPV3/s3-2006-03-01/ListBuckets">AWS SDK for PHP V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/boto3/s3-2006-03-01/ListBuckets">AWS SDK for Python (Boto3)</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForRubyV3/s3-2006-03-01/ListBuckets">AWS SDK for Ruby V3</a>
+            </p>
+         </li></ul></div>
+   <awsdocs-copyright class="copyright-print"></awsdocs-copyright><awsdocs-thumb-feedback right-edge="{{$ctrl.thumbFeedbackRightEdge}}"></awsdocs-thumb-feedback></div><noscript><div><div><div><div id="js_error_message"><p><img src="https://d1ge0kk1l5kms0.cloudfront.net/images/G/01/webservices/console/warning.png" alt="Warning" /> <strong>Javascript is disabled or is unavailable in your browser.</strong></p><p>To use the Amazon Web Services Documentation, Javascript must be enabled. Please refer to your browser's Help pages for instructions.</p></div></div></div></div></noscript><div id="main-col-footer" class="awsui-util-font-size-0"><div id="doc-conventions"><a target="_top" href="/general/latest/gr/docconventions.html">Document Conventions</a></div><div class="prev-next"><div id="previous" class="prev-link" accesskey="p" href="./API_ListBucketMetricsConfigurations.html">ListBucketMetricsConfigurations</div><div id="next" class="next-link" accesskey="n" href="./API_ListDirectoryBuckets.html">ListDirectoryBuckets</div></div></div><awsdocs-page-utilities></awsdocs-page-utilities></div><div id="quick-feedback-yes" style="display: none;"><div class="title">Did this page help you? - Yes</div><div class="content"><p>Thanks for letting us know we're doing a good job!</p><p>If you've got a moment, please tell us what we did right so we can do more of it.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=S3&amp;topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_ListBuckets.html"></awsui-button></p></div></div><div id="quick-feedback-no" style="display: none;"><div class="title">Did this page help you? - No</div><div class="content"><p>Thanks for letting us know this page needs work. We're sorry we let you down.</p><p>If you've got a moment, please tell us how we can make the documentation better.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=S3&amp;topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_ListBuckets.html"></awsui-button></p></div></div></div></body></div></awsdocs-view><div class="page-loading-indicator" id="page-loading-indicator"><awsui-spinner size="large"></awsui-spinner></div></div><div id="tools-panel" dom-region="tools"><awsdocs-tools-panel id="awsdocs-tools-panel"></awsdocs-tools-panel></div></awsui-app-layout><awsdocs-cookie-banner class="doc-cookie-banner"></awsdocs-cookie-banner></div></body></html>

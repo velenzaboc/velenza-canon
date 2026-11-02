@@ -1150,7 +1150,6 @@ func validateSourceContractSemanticRows(rows dependencySemanticRows, plan *parse
 			continue
 		}
 		actualResources[sourceSymbol] = symbol
-		state.resourceSymbols[sourceSymbol] = struct{}{}
 		matchedResourceIDs[symbol.ID] = struct{}{}
 	}
 	for _, resourceID := range sortedProviderStringMapKeys(operationApplicability.resourceSourceSymbolsByID) {
@@ -1432,6 +1431,10 @@ func validateSourceContractSemanticRows(rows dependencySemanticRows, plan *parse
 			if !ok {
 				return state, semanticRowError(rows, row, "%s is missing source_symbol", kind)
 			}
+			surfaceKind, surfaceKindOK := semanticString(row.data, "surface_kind")
+			if !surfaceKindOK {
+				return state, semanticRowError(rows, row, "%s source_symbol %q is missing surface_kind", kind, symbol)
+			}
 			occurrences, exists := state.classificationsBySymbol[symbol]
 			if !exists {
 				return state, semanticRowError(rows, row, "%s source_symbol %q has no selected classification occurrence", kind, symbol)
@@ -1462,7 +1465,149 @@ func validateSourceContractSemanticRows(rows dependencySemanticRows, plan *parse
 					return state, semanticRowError(rows, row, "duplicate field_contract occurrence identity")
 				}
 				state.fieldsByIdentity[identity] = row
+				// An API graph resource is an operation-access endpoint; it is
+				// not, by itself, the owner of a source-schema field.  The exact
+				// field contract and its resource-surface classification establish
+				// the typed source owner independently, so a nested provider API
+				// resource cannot absorb a field whose retained bytes live in a
+				// different schema boundary.
+				if surfaceKind != "resource" {
+					return state, semanticRowError(rows, row, "field_contract source_symbol %q is not classified as a typed resource surface", symbol)
+				}
+				state.resourceSymbols[symbol] = struct{}{}
 			}
+		}
+	}
+	// The extension/factory bridge deliberately separates an API resource
+	// endpoint from the retained source-schema surface which owns its fields.
+	// It is opt-in for legacy candidate fixtures, but once present it closes the
+	// complete selected API-resource set and makes a missing/duplicate/retargeted
+	// source-schema owner fail before any surface disposition is accepted.
+	bindingContract := ""
+	if manifests := rows.byKind["artifact_manifest"]; len(manifests) == 1 {
+		bindingContract, _ = semanticString(manifests[0].data, "api_resource_source_schema_binding_contract")
+	}
+	if bindingContract != "" && bindingContract != "v1" {
+		return state, fmt.Errorf("source-contract api_resource_source_schema_binding_contract is unsupported")
+	}
+	if bindings := rows.byKind["api_resource_source_schema_binding"]; len(bindings) != 0 || bindingContract == "v1" {
+		if len(bindings) == 0 {
+			return state, fmt.Errorf("source-contract v1 requires a complete api_resource_source_schema_binding roster")
+		}
+		bound := map[string]dependencySemanticRow{}
+		fieldOwners := map[string]struct{}{}
+		fieldOccurrencesByOwner := map[string]map[string]struct{}{}
+		allFieldOccurrences := map[string]struct{}{}
+		// A source-schema owner is not merely a label.  Each sealed field
+		// surface must occur through exactly one endpoint bridge.  Otherwise a
+		// second endpoint can silently claim the same retained field, or a
+		// binding can omit a field surface while preserving the endpoint roster.
+		fieldOwnerBindings := map[string]string{}
+		for _, field := range state.fieldsByIdentity {
+			symbol, ok := semanticString(field.data, "source_symbol")
+			if !ok {
+				return state, semanticRowError(rows, field, "field_contract source_symbol is missing")
+			}
+			fieldOwners[symbol] = struct{}{}
+			identity, err := sourceFieldOccurrenceIdentity(field.data)
+			if err != nil {
+				return state, semanticRowError(rows, field, "field_contract occurrence identity: %v", err)
+			}
+			if fieldOccurrencesByOwner[symbol] == nil {
+				fieldOccurrencesByOwner[symbol] = map[string]struct{}{}
+			}
+			fieldOccurrencesByOwner[symbol][identity] = struct{}{}
+			allFieldOccurrences[identity] = struct{}{}
+		}
+		boundFieldOccurrences := map[string]struct{}{}
+		for _, row := range bindings {
+			resourceID, idOK := semanticString(row.data, "api_resource_id")
+			resourceSource, sourceOK := semanticString(row.data, "api_resource_source_symbol")
+			status, statusOK := semanticString(row.data, "binding_status")
+			if !idOK || !sourceOK || !statusOK || (status != "field_surface_present" && status != "no_source_schema_surface") {
+				return state, semanticRowError(rows, row, "api_resource_source_schema_binding has invalid identity or binding_status")
+			}
+			resource, exists := plan.Symbols[resourceID]
+			if !exists || resource.Role != "resource" || loaded.CandidateSymbolsBySourceSymbol[resourceSource] != resourceID {
+				return state, semanticRowError(rows, row, "api_resource_source_schema_binding retargets an absent or mismatched API resource")
+			}
+			if _, duplicate := bound[resourceID]; duplicate {
+				return state, semanticRowError(rows, row, "duplicate api_resource_source_schema_binding for %q", resourceID)
+			}
+			if status == "field_surface_present" {
+				surfaces, surfacesOK := semanticObjectSlice(row.data, "source_schema_surfaces")
+				if !surfacesOK || len(surfaces) == 0 {
+					return state, semanticRowError(rows, row, "field_surface_present binding lacks a closed source_schema_surfaces roster")
+				}
+				for _, legacy := range []string{"source_schema_owner_symbol", "field_source_symbols", "field_contract_occurrence_identities"} {
+					if _, present := row.data[legacy]; present {
+						return state, semanticRowError(rows, row, "field_surface_present binding carries retired top-level %s", legacy)
+					}
+				}
+				seenSchemas := map[string]struct{}{}
+				for _, surface := range surfaces {
+					owner, ownerOK := semanticString(surface, "source_schema_owner_symbol")
+					ownerLocatorID, ownerLocatorOK := semanticString(surface, "source_schema_owner_evidence_locator_id")
+					roster, rosterOK := semanticStringSlice(surface, "field_source_symbols")
+					occurrenceIDs, occurrencesOK := semanticStringSlice(surface, "field_contract_occurrence_identities")
+					if !ownerOK || !ownerLocatorOK || !rosterOK || !occurrencesOK || len(roster) == 0 || len(occurrenceIDs) == 0 || hasEmptyOrDuplicateSemanticStrings(roster) || hasEmptyOrDuplicateSemanticStrings(occurrenceIDs) {
+						return state, semanticRowError(rows, row, "source_schema_surfaces entry lacks its exact schema and field rosters")
+					}
+					if _, duplicate := seenSchemas[owner]; duplicate {
+						return state, semanticRowError(rows, row, "duplicate source schema owner %q within API resource binding", owner)
+					}
+					seenSchemas[owner] = struct{}{}
+					if _, fieldAlso := stringSliceAsSet(roster)[owner]; fieldAlso {
+						return state, semanticRowError(rows, row, "source schema owner %q is conflated with a field source", owner)
+					}
+					ownerOccurrences := state.classificationsBySymbol[owner]
+					if len(ownerOccurrences) != 1 || ownerOccurrences[0].SurfaceKind != "resource" || ownerOccurrences[0].Locator.ID != ownerLocatorID {
+						return state, semanticRowError(rows, row, "source schema owner %q lacks exactly one typed resource classification occurrence", owner)
+					}
+					expectedOccurrences := map[string]struct{}{}
+					for _, symbol := range roster {
+						if _, exists := fieldOwners[symbol]; !exists {
+							return state, semanticRowError(rows, row, "field source %q has no exact field_contract", symbol)
+						}
+						if prior, duplicate := fieldOwnerBindings[symbol]; duplicate {
+							return state, semanticRowError(rows, row, "field source %q is already bound to API resource %q", symbol, prior)
+						}
+						fieldOwnerBindings[symbol] = resourceID
+						for identity := range fieldOccurrencesByOwner[symbol] {
+							expectedOccurrences[identity] = struct{}{}
+						}
+					}
+					if err := requireExactSet("source-schema binding field occurrence roster", stringSliceAsSet(occurrenceIDs), expectedOccurrences); err != nil {
+						return state, semanticRowError(rows, row, "%v", err)
+					}
+					for _, identity := range occurrenceIDs {
+						if _, duplicate := boundFieldOccurrences[identity]; duplicate {
+							return state, semanticRowError(rows, row, "field_contract occurrence %q is already bound to an API resource", identity)
+						}
+						boundFieldOccurrences[identity] = struct{}{}
+					}
+				}
+			} else {
+				for _, field := range []string{"source_schema_surfaces", "source_schema_owner_symbol", "field_source_symbols", "field_contract_occurrence_identities"} {
+					if _, present := row.data[field]; present {
+						return state, semanticRowError(rows, row, "no_source_schema_surface binding carries %s", field)
+					}
+				}
+			}
+			bound[resourceID] = row
+		}
+		selectedResourceIDs := map[string]struct{}{}
+		for _, resource := range actualResources {
+			selectedResourceIDs[resource.ID] = struct{}{}
+		}
+		if err := requireExactSet("api resource source-schema binding closure", stringMapKeysAsSet(bound), selectedResourceIDs); err != nil {
+			return state, err
+		}
+		if err := requireExactSet("api resource source-schema field-owner closure", stringMapKeysAsSet(fieldOwnerBindings), fieldOwners); err != nil {
+			return state, err
+		}
+		if err := requireExactSet("api resource source-schema field occurrence closure", boundFieldOccurrences, allFieldOccurrences); err != nil {
+			return state, err
 		}
 	}
 	summary := rows.byKind["validation_summary"][0]
@@ -3368,6 +3513,14 @@ func sourceFieldOccurrenceIdentity(row map[string]interface{}) (string, error) {
 		"requirement": "provider_requirement",
 		"sections":    "section_path",
 	})
+}
+
+func stringSliceAsSet(values []string) map[string]struct{} {
+	set := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		set[value] = struct{}{}
+	}
+	return set
 }
 
 func mappingFieldOccurrenceIdentity(row map[string]interface{}) (string, error) {

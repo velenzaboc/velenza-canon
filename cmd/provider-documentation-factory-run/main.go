@@ -32,11 +32,18 @@ type factoryCommandOperations struct {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	return runWithBoot(args, stdout, stderr, nil)
+}
+
+// A protected launcher composes this dependency at startup. Command arguments
+// never select a verifier; the standalone offline command has no implicit
+// credential or authority fallback.
+func runWithBoot(args []string, stdout, stderr io.Writer, boot providerplan.DocumentationFactoryProductionSourceBootResolver) int {
 	return runWithOperations(args, stdout, stderr, factoryCommandOperations{
 		runPrepared: providerplan.RunDocumentationFactory,
 		runSource:   providerplan.CompileDocumentationFactorySourcePackage,
 		runProductionSource: func(ctx context.Context, options providerplan.DocumentationFactoryProductionSourceCompileOptions) (providerplan.DocumentationFactoryProductionSourceRunReceipt, error) {
-			result, err := providerplan.CompileDocumentationFactoryProductionSourcePackage(ctx, options, nil)
+			result, err := providerplan.CompileDocumentationFactoryProductionSourcePackageWithBoot(ctx, options, boot)
 			if err != nil {
 				return providerplan.DocumentationFactoryProductionSourceRunReceipt{}, err
 			}

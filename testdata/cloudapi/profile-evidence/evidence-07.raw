@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>GetPublicAccessBlock - Amazon S3</title><meta name="viewport" content="width=device-width,initial-scale=1" /><meta name="assets_root" content="/assets" /><meta name="target_state" content="API_GetPublicAccessBlock" /><meta name="default_state" content="API_GetPublicAccessBlock" /><link rel="icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="shortcut icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="canonical" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html" /><link rel="alternate" type="text/markdown" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.md" title="Markdown version" /><meta name="description" content="Retrieves the PublicAccessBlock configuration for an Amazon S3 bucket. This operation returns the bucket-level configuration only. To understand the effective public access behavior, you must also consider account-level settings (which may inherit from organization-level policies). To use this operation, you must have the" /><meta name="deployment_region" content="IAD" /><meta name="product" content="Amazon S3" /><meta name="guide" content="API Reference" /><meta name="abstract" content="Welcome to the Amazon S3 API Reference. This guide explains the Amazon Simple Storage Service (Amazon S3) application programming interface (API)." /><meta name="guide-locale" content="en_us" /><meta name="tocs" content="toc-contents.json" /><link rel="canonical" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="id-id" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="id" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="de-de" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="de" /><link rel="alternate" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="en-us" /><link rel="alternate" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="en" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="es-es" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="es" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="fr-fr" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="fr" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="it-it" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="it" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="ja-jp" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="ja" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="ko-kr" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="ko" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="pt-br" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="pt" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_cn/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="zh-cn" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="zh-tw" /><link rel="alternate" href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html" hreflang="x-default" /><meta name="feedback-item" content="S3" /><meta name="this_doc_product" content="Amazon S3" /><meta name="this_doc_guide" content="API Reference" /><head xmlns="http://www.w3.org/1999/xhtml"> <script defer="" src="/assets/r/awsdocs-doc-page.2.0.0.js"></script><link href="/assets/r/awsdocs-doc-page.2.0.0.css" rel="stylesheet"/></head>
+<script defer="" id="awsc-panorama-bundle" type="text/javascript" src="https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js" data-config="{'appEntity':'aws-documentation','region':'us-east-1','service':'s3'}"></script><meta id="panorama-serviceSubSection" value="API Reference" /><meta id="panorama-serviceConsolePage" value="GetPublicAccessBlock" /></head><body class="awsdocs awsui"><div class="awsdocs-container"><p><a href="API_GetPublicAccessBlock.md">View a markdown version of this page</a></p><awsdocs-header></awsdocs-header><awsui-app-layout id="app-layout" class="awsui-util-no-gutters" ng-controller="ContentController as $ctrl" header-selector="awsdocs-header" navigation-hide="false" navigation-width="$ctrl.navWidth" navigation-open="$ctrl.navOpen" navigation-change="$ctrl.onNavChange($event)" tools-hide="$ctrl.hideTools" tools-width="$ctrl.toolsWidth" tools-open="$ctrl.toolsOpen" tools-change="$ctrl.onToolsChange($event)"><div id="guide-toc" dom-region="navigation"><awsdocs-toc></awsdocs-toc></div><div id="main-column" dom-region="content" tabindex="-1"><awsdocs-view class="awsdocs-view"><div id="awsdocs-content"><head><title>GetPublicAccessBlock - Amazon S3</title><meta name="pdf" content="/pdfs/AmazonS3/latest/API/s3-api.pdf#API_GetPublicAccessBlock" /><meta name="forums" content="https://repost.aws/tags/TADSTjraA0Q4-a1dxk6eUYaw" /><meta name="feedback" content="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=S3&amp;topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_GetPublicAccessBlock.html" /><meta name="feedback-yes" content="feedbackyes.html?topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_GetPublicAccessBlock.html" /><meta name="feedback-no" content="feedbackno.html?topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_GetPublicAccessBlock.html" /><meta name="keywords" content="API,requests,GetPublicAccessBlock" /><script type="application/ld+json">
+{
+    "@context" : "https://schema.org",
+    "@type" : "BreadcrumbList",
+    "itemListElement" : [
+      {
+        "@type" : "ListItem",
+        "position" : 1,
+        "name" : "AWS",
+        "item" : "https://aws.amazon.com"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 2,
+        "name" : "Amazon Simple Storage Service (S3)",
+        "item" : "https://docs.aws.amazon.com/s3/index.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 3,
+        "name" : "API Reference",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 4,
+        "name" : "Actions",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 5,
+        "name" : "Amazon S3",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations_Amazon_Simple_Storage_Service.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 6,
+        "name" : "GetPublicAccessBlock",
+        "item" : "https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations_Amazon_Simple_Storage_Service.html"
+      }
+    ]
+}
+</script></head><body><div id="main"><div style="display: none"><a href="/pdfs/AmazonS3/latest/API/s3-api.pdf#API_GetPublicAccessBlock" target="_blank" rel="noopener noreferrer" title="Open PDF"></a></div><div id="breadcrumbs" class="breadcrumb"><a href="/index.html">Documentation</a><a href="/s3/index.html">Amazon Simple Storage Service (S3)</a><a href="Welcome.html">API Reference</a></div><div id="page-toc-src"><a href="#API_GetPublicAccessBlock_RequestSyntax">Request Syntax</a><a href="#API_GetPublicAccessBlock_RequestParameters">URI Request Parameters</a><a href="#API_GetPublicAccessBlock_RequestBody">Request Body</a><a href="#API_GetPublicAccessBlock_ResponseSyntax">Response Syntax</a><a href="#API_GetPublicAccessBlock_ResponseElements">Response Elements</a><a href="#API_GetPublicAccessBlock_Examples">Examples</a><a href="#API_GetPublicAccessBlock_SeeAlso">See Also</a></div><div id="main-content" class="awsui-util-container"><div id="main-col-body"><awsdocs-language-banner data-service="$ctrl.pageService"></awsdocs-language-banner><h1 class="topictitle" id="API_GetPublicAccessBlock">GetPublicAccessBlock</h1><div class="awsdocs-page-header-container"><awsdocs-page-header></awsdocs-page-header><awsdocs-filter-selector id="awsdocs-filter-selector"></awsdocs-filter-selector></div><div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>This operation is not supported for directory buckets.</p></div></div><p>Retrieves the <code class="code">PublicAccessBlock</code> configuration for an Amazon S3 bucket. This
+      operation returns the bucket-level configuration only. To understand the effective public
+      access behavior, you must also consider account-level settings (which may inherit from
+      organization-level policies). To use this operation, you must have the
+        <code class="code">s3:GetBucketPublicAccessBlock</code> permission. For more information about Amazon S3
+      permissions, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html">Specifying Permissions in a
+        Policy</a>.</p><div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>When Amazon S3 evaluates the <code class="code">PublicAccessBlock</code> configuration for a bucket or an
+        object, it checks the <code class="code">PublicAccessBlock</code> configuration for both the bucket (or
+        the bucket that contains the object) and the bucket owner's account. Account-level settings
+        automatically inherit from organization-level policies when present. If the
+          <code class="code">PublicAccessBlock</code> settings are different between the bucket and the account,
+        Amazon S3 uses the most restrictive combination of the bucket-level and account-level
+        settings.</p></div></div><p>For more information about when Amazon S3 considers a bucket or an object public, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html#access-control-block-public-access-policy-status">The Meaning of "Public"</a>.</p><p>The following operations are related to <code class="code">GetPublicAccessBlock</code>:</p><div class="itemizedlist">
+       
+       
+       
+       
+   <ul class="itemizedlist"><li class="listitem">
+         <p>
+            <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html">Using Amazon S3 Block Public Access</a>
+         </p>
+      </li><li class="listitem">
+         <p>
+            <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutPublicAccessBlock.html">PutPublicAccessBlock</a>
+         </p>
+      </li><li class="listitem">
+         <p>
+            <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html">GetPublicAccessBlock</a>
+         </p>
+      </li><li class="listitem">
+         <p>
+            <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeletePublicAccessBlock.html">DeletePublicAccessBlock</a>
+         </p>
+      </li></ul></div><div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>You must URL encode any signed header values that contain spaces. For example, if your header value is <code class="code">my  file.txt</code>, containing two spaces after <code class="code">my</code>, you must URL encode this value to <code class="code">my%20%20file.txt</code>.</p></div></div>
+      <h2 id="API_GetPublicAccessBlock_RequestSyntax">Request Syntax</h2>
+      <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight">GET /?publicAccessBlock HTTP/1.1
+Host: <code class="replaceable">Bucket</code>.s3.amazonaws.com
+x-amz-expected-bucket-owner: <code class="replaceable">ExpectedBucketOwner</code>
+</code></pre>
+    
+      <h2 id="API_GetPublicAccessBlock_RequestParameters">URI Request Parameters</h2>
+      <p>The request uses the following URI parameters.</p>
+      <div class="variablelist">
+          
+          
+      <dl>
+            <dt id="AmazonS3-GetPublicAccessBlock-request-header-Bucket"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_RequestSyntax">Bucket</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>The name of the Amazon S3 bucket whose <code class="code">PublicAccessBlock</code> configuration you want to retrieve.
+    </p>
+               <p>Required: Yes</p>
+            </dd>
+          
+            <dt id="AmazonS3-GetPublicAccessBlock-request-header-ExpectedBucketOwner"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_RequestSyntax">x-amz-expected-bucket-owner</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>The account ID of the expected bucket owner. If the account ID that you provide does not match the actual owner of the bucket, the request fails with the HTTP status code <code class="code">403 Forbidden</code> (access denied).</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_GetPublicAccessBlock_RequestBody">Request Body</h2>
+      <p>The request does not have a request body.</p>
+    
+      <h2 id="API_GetPublicAccessBlock_ResponseSyntax">Response Syntax</h2>
+      <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight">HTTP/1.1 200
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;<a href="#AmazonS3-GetPublicAccessBlock-response-PublicAccessBlockConfiguration">PublicAccessBlockConfiguration</a>&gt;
+   &lt;<a href="#AmazonS3-GetPublicAccessBlock-response-BlockPublicAcls">BlockPublicAcls</a>&gt;<b><em>boolean</em></b>&lt;/<a href="#AmazonS3-GetPublicAccessBlock-response-BlockPublicAcls">BlockPublicAcls</a>&gt;
+   &lt;<a href="#AmazonS3-GetPublicAccessBlock-response-IgnorePublicAcls">IgnorePublicAcls</a>&gt;<b><em>boolean</em></b>&lt;/<a href="#AmazonS3-GetPublicAccessBlock-response-IgnorePublicAcls">IgnorePublicAcls</a>&gt;
+   &lt;<a href="#AmazonS3-GetPublicAccessBlock-response-BlockPublicPolicy">BlockPublicPolicy</a>&gt;<b><em>boolean</em></b>&lt;/<a href="#AmazonS3-GetPublicAccessBlock-response-BlockPublicPolicy">BlockPublicPolicy</a>&gt;
+   &lt;<a href="#AmazonS3-GetPublicAccessBlock-response-RestrictPublicBuckets">RestrictPublicBuckets</a>&gt;<b><em>boolean</em></b>&lt;/<a href="#AmazonS3-GetPublicAccessBlock-response-RestrictPublicBuckets">RestrictPublicBuckets</a>&gt;
+&lt;/<a href="#AmazonS3-GetPublicAccessBlock-response-PublicAccessBlockConfiguration">PublicAccessBlockConfiguration</a>&gt;</code></pre>
+    
+      <h2 id="API_GetPublicAccessBlock_ResponseElements">Response Elements</h2>
+      <p>If the action is successful, the service sends back an HTTP 200 response.</p>
+      <p>The following data is returned in XML format by the service.</p>
+      <div class="variablelist">
+          
+          
+          
+          
+          
+      <dl>
+            <dt id="AmazonS3-GetPublicAccessBlock-response-PublicAccessBlockConfiguration"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_ResponseSyntax">PublicAccessBlockConfiguration</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Root level tag for the PublicAccessBlockConfiguration parameters.</p>
+               <p>Required: Yes</p>
+            </dd>
+          
+            <dt id="AmazonS3-GetPublicAccessBlock-response-BlockPublicAcls"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_ResponseSyntax">BlockPublicAcls</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Specifies whether Amazon S3 should block public access control lists (ACLs) for this bucket and objects
+      in this bucket. Setting this element to <code class="code">TRUE</code> causes the following behavior:</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>PUT Bucket ACL and PUT Object ACL calls fail if the specified ACL is public.</p>
+                  </li><li class="listitem">
+                     <p>PUT Object calls fail if the request includes a public ACL.</p>
+                  </li><li class="listitem">
+                     <p>PUT Bucket calls fail if the request includes a public ACL.</p>
+                  </li></ul></div>
+               <p>Enabling this setting doesn't affect existing policies or ACLs.</p>
+               <p>Type: Boolean</p>
+            </dd>
+          
+            <dt id="AmazonS3-GetPublicAccessBlock-response-BlockPublicPolicy"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_ResponseSyntax">BlockPublicPolicy</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Specifies whether Amazon S3 should block public bucket policies for this bucket. Setting this element to
+        <code class="code">TRUE</code> causes Amazon S3 to reject calls to PUT Bucket policy if the specified bucket policy
+      allows public access. </p>
+               <p>Enabling this setting doesn't affect existing bucket policies.</p>
+               <p>Type: Boolean</p>
+            </dd>
+          
+            <dt id="AmazonS3-GetPublicAccessBlock-response-IgnorePublicAcls"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_ResponseSyntax">IgnorePublicAcls</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Specifies whether Amazon S3 should ignore public ACLs for this bucket and objects in this bucket. Setting
+      this element to <code class="code">TRUE</code> causes Amazon S3 to ignore all public ACLs on this bucket and objects in
+      this bucket.</p>
+               <p>Enabling this setting doesn't affect the persistence of any existing ACLs and doesn't prevent new
+      public ACLs from being set.</p>
+               <p>Type: Boolean</p>
+            </dd>
+          
+            <dt id="AmazonS3-GetPublicAccessBlock-response-RestrictPublicBuckets"><span class="term">
+               <b>
+                  <a href="#API_GetPublicAccessBlock_ResponseSyntax">RestrictPublicBuckets</a>
+               </b>
+            </span></dt>
+            <dd>
+               <p>Specifies whether Amazon S3 should restrict public bucket policies for this bucket. Setting this element
+      to <code class="code">TRUE</code> restricts access to this bucket to only AWS service principals and
+      authorized users within this account if the bucket has a public policy.</p>
+               <p>Enabling this setting doesn't affect previously stored bucket policies, except that public and
+      cross-account access within any public bucket policy, including non-public delegation to specific
+      accounts, is blocked.</p>
+               <p>Type: Boolean</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_GetPublicAccessBlock_Examples">Examples</h2>
+       
+         <h3 id="API_GetPublicAccessBlock_Example_1">Sample Request</h3>
+         <p>The following request gets a bucket <code class="code">PublicAccessBlock</code> configuration.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="nohighlight">
+            GET /&lt;bucket-name&gt;?publicAccessBlock HTTP/1.1
+            Host: &lt;bucket-name&gt;.s3.<em>&lt;Region&gt;</em>.amazonaws.com
+            x-amz-date: &lt;Thu, 15 Nov 2016 00:17:21 GMT&gt;
+            Authorization: &lt;signatureValue&gt;
+         </code></pre>
+         
+       
+       
+         <h3 id="API_GetPublicAccessBlock_Example_2">Sample Response</h3>
+         <p>This example illustrates one usage of GetPublicAccessBlock.</p>
+         
+            <pre class="programlisting"><div class="code-btn-container"><div class="btn-copy-code" title="Copy"><awsui-icon name="copy"></awsui-icon></div></div><!--DEBUG: cli ()--><code class="">
+         HTTP/1.1 200 OK
+         x-amz-id-2: ITnGT1y4REXAMPLEPi4hklTXouTf0hccUjo0iCPEXAMPLEutBj3M7fPGlWO2SEWp
+         x-amz-request-id: 51991EXAMPLE5321
+         Date: Thu, 15 Nov 2016 00:17:22 GMT
+         Server: AmazonS3
+         Content-Length: 0
+
+         &lt;PublicAccessBlockConfiguration&gt;
+            &lt;BlockPublicAcls&gt;TRUE&lt;/BlockPublicAcls&gt; 
+            &lt;IgnorePublicAcls&gt;FALSE&lt;/IgnorePublicAcls&gt; 
+            &lt;BlockPublicPolicy&gt;FALSE&lt;/BlockPublicPolicy&gt; 
+            &lt;RestrictPublicBuckets&gt;FALSE&lt;/RestrictPublicBuckets&gt;
+         &lt;/PublicAccessBlockConfiguration&gt;
+         </code></pre>
+         
+       
+    
+      <h2 id="API_GetPublicAccessBlock_SeeAlso">See Also</h2>
+      <p>For more information about using this API in one of the language-specific AWS SDKs, see the following:</p>
+      <div class="itemizedlist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <ul class="itemizedlist"><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/cli2/s3-2006-03-01/GetPublicAccessBlock">AWS Command Line Interface V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/DotNetSDKV4/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for .NET V4</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForCpp/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for C++</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForGoV2/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for Go v2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaV2/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for Java V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaScriptV3/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for JavaScript V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForKotlin/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for Kotlin</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForPHPV3/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for PHP V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/boto3/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for Python (Boto3)</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForRubyV3/s3-2006-03-01/GetPublicAccessBlock">AWS SDK for Ruby V3</a>
+            </p>
+         </li></ul></div>
+   <awsdocs-copyright class="copyright-print"></awsdocs-copyright><awsdocs-thumb-feedback right-edge="{{$ctrl.thumbFeedbackRightEdge}}"></awsdocs-thumb-feedback></div><noscript><div><div><div><div id="js_error_message"><p><img src="https://d1ge0kk1l5kms0.cloudfront.net/images/G/01/webservices/console/warning.png" alt="Warning" /> <strong>Javascript is disabled or is unavailable in your browser.</strong></p><p>To use the Amazon Web Services Documentation, Javascript must be enabled. Please refer to your browser's Help pages for instructions.</p></div></div></div></div></noscript><div id="main-col-footer" class="awsui-util-font-size-0"><div id="doc-conventions"><a target="_top" href="/general/latest/gr/docconventions.html">Document Conventions</a></div><div class="prev-next"><div id="previous" class="prev-link" accesskey="p" href="./API_GetObjectTorrent.html">GetObjectTorrent</div><div id="next" class="next-link" accesskey="n" href="./API_HeadBucket.html">HeadBucket</div></div></div><awsdocs-page-utilities></awsdocs-page-utilities></div><div id="quick-feedback-yes" style="display: none;"><div class="title">Did this page help you? - Yes</div><div class="content"><p>Thanks for letting us know we're doing a good job!</p><p>If you've got a moment, please tell us what we did right so we can do more of it.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=S3&amp;topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_GetPublicAccessBlock.html"></awsui-button></p></div></div><div id="quick-feedback-no" style="display: none;"><div class="title">Did this page help you? - No</div><div class="content"><p>Thanks for letting us know this page needs work. We're sorry we let you down.</p><p>If you've got a moment, please tell us how we can make the documentation better.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=S3&amp;topic_url=https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/API_GetPublicAccessBlock.html"></awsui-button></p></div></div></div></body></div></awsdocs-view><div class="page-loading-indicator" id="page-loading-indicator"><awsui-spinner size="large"></awsui-spinner></div></div><div id="tools-panel" dom-region="tools"><awsdocs-tools-panel id="awsdocs-tools-panel"></awsdocs-tools-panel></div></awsui-app-layout><awsdocs-cookie-banner class="doc-cookie-banner"></awsdocs-cookie-banner></div></body></html>

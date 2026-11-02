@@ -44,6 +44,10 @@ type testFixture struct {
 	derivationTargetSchemas         map[string]string
 	documentationDerivation         *testDocumentationDerivationBundle
 	classificationSelections        map[string]map[string][]sourceClassificationOccurrence
+	// exactEvidenceBodies is deliberately test-only inspection state.  Native
+	// fixture compilers use it to assert that independently pinned documents
+	// remain independently hydrated; it is never candidate authority.
+	exactEvidenceBodies map[string]exactEvidenceBody
 }
 
 type fixtureApplicabilityBinding struct {
@@ -167,6 +171,53 @@ func TestVerifyAcceptsExactHydratedProviderPlan(t *testing.T) {
 	}
 	if receipt.ExactHydratedEvidenceLocatorCount != 2 || receipt.ExactSourceCoordinateBindingCount != 2 || receipt.SourceCoordinateBindingRule == "" || receipt.DependencyArtifactCount != len(fixture.options.DependencyArtifactPath) || receipt.DependencyBindingRule == "" || receipt.APISymbolCount != len(fixture.roles)+1 || receipt.APIRelationshipCount != 1 || receipt.APIPropertyClaimCount != 0 || receipt.ExplicitGraphGapCount != 2 {
 		t.Fatalf("unexpected receipt counts: %+v", receipt)
+	}
+}
+
+func TestVerifyAcceptsMultipleIndependentEvidenceFixtureLanes(t *testing.T) {
+	// This is intentionally a second source document rather than protocolBody:
+	// multi-model cloud fixtures must retain their actual model/source identity.
+	primary := defaultTestPrimaryEvidenceFixture()
+	supplemental := []byte(`{"supplemental_model":"association evidence"}`)
+	primary.additionalEvidence = []testSupplementalEvidenceFixture{{
+		name:                     "second_model",
+		body:                     supplemental,
+		sourceRef:                "fixture.second-model",
+		sourceURL:                "https://example.com/fixture/second-model",
+		representation:           "source_declared_machine_export",
+		representationCoordinate: "fixture.second-model",
+		artifactSuffix:           "second_model",
+		ranges: []officialProviderEvidenceRange{{
+			Name:                   "second_model_api",
+			SourceSymbol:           "fixture_vendor_api",
+			SurfaceKind:            "vendor_api",
+			ByteStartOffset:        0,
+			ByteEndOffsetExclusive: int64(len(supplemental)),
+			SelectedRangeSHA256:    sha256Hex(supplemental),
+		}},
+	}}
+	fixture := newTestFixtureWithPrimaryEvidence(t, primary)
+	if _, err := Verify(fixture.options); err != nil {
+		t.Fatalf("Verify multi-evidence fixture: %v", err)
+	}
+	secondDigest := sha256Hex(supplemental)
+	second, ok := fixture.exactEvidenceBodies[secondDigest]
+	if !ok || !bytes.Equal(second.Bytes, supplemental) {
+		t.Fatalf("second model body was not independently retained")
+	}
+	coordinate := evidenceSourceCoordinate{Ref: "fixture.second-model", URL: "https://example.com/fixture/second-model"}
+	if len(second.Coordinates) != 1 || !isLowerSHA256(second.Coordinates[coordinate]) {
+		t.Fatalf("second model has no exact independent source/manifest identity: %+v", second.Coordinates)
+	}
+	occurrences := fixture.classificationSelections[primary.provider]["fixture_vendor_api"]
+	foundSecond := false
+	for _, occurrence := range occurrences {
+		if occurrence.Locator.SourceContentSHA256 == secondDigest {
+			foundSecond = occurrence.Locator.SourceRefs[0] == coordinate.Ref && occurrence.Locator.SourceURLs[0] == coordinate.URL
+		}
+	}
+	if !foundSecond {
+		t.Fatalf("second model has no exact classification occurrence")
 	}
 }
 
@@ -584,6 +635,129 @@ func TestVerifyRejectsForgedDependencyManifestStatus(t *testing.T) {
 	_, err := Verify(fixture.options)
 	if err == nil || !strings.Contains(err.Error(), "status other than candidate_not_admissible") {
 		t.Fatalf("got %v, want forged dependency-manifest status refusal", err)
+	}
+}
+
+// The source-schema bridge is deliberately a closed, typed association: an
+// API resource endpoint and the independently classified schema surface that
+// owns its fields cannot be conflated or partially listed.
+func TestVerifyRejectsInvalidAPIResourceSourceSchemaBindings(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name   string
+		mutate func(*testing.T, *testFixture)
+		want   string
+	}{
+		{
+			name: "missing complete roster",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				removeJSONLMatchingRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(map[string]interface{}) bool { return true })
+			},
+			want: "requires a complete api_resource_source_schema_binding roster",
+		},
+		{
+			name: "duplicate endpoint binding",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				path := fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract)
+				_, rows := fixtureDependencySemanticArtifact(t, path)
+				binding := cloneSemanticObjectForTest(t, rows.byKind["api_resource_source_schema_binding"][0].data)
+				raw, err := canonicalFactoryJSON(binding)
+				if err != nil {
+					t.Fatal(err)
+				}
+				file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := file.Write(append(raw, '\n')); err != nil {
+					_ = file.Close()
+					t.Fatal(err)
+				}
+				if err := file.Close(); err != nil {
+					t.Fatal(err)
+				}
+			},
+			want: "duplicate api_resource_source_schema_binding",
+		},
+		{
+			name: "retargeted endpoint",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					row["api_resource_id"] = fixture.sourceOperationID
+				})
+			},
+			want: "retargets an absent or mismatched API resource",
+		},
+		{
+			name: "foreign source schema",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					surface := row["source_schema_surfaces"].([]interface{})[0].(map[string]interface{})
+					surface["source_schema_owner_symbol"] = "foreign_schema_owner"
+				})
+			},
+			want: "lacks exactly one typed resource classification occurrence",
+		},
+		{
+			name: "duplicate schema surface",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					surfaces := row["source_schema_surfaces"].([]interface{})
+					duplicate := cloneSemanticObjectForTest(t, surfaces[0].(map[string]interface{}))
+					row["source_schema_surfaces"] = append(surfaces, duplicate)
+				})
+			},
+			want: "duplicate source schema owner",
+		},
+		{
+			name: "schema owner conflated with field",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					surface := row["source_schema_surfaces"].([]interface{})[0].(map[string]interface{})
+					surface["source_schema_owner_symbol"] = surface["field_source_symbols"].([]interface{})[0]
+				})
+			},
+			want: "is conflated with a field source",
+		},
+		{
+			name: "schema owner locator retargeted",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					surface := row["source_schema_surfaces"].([]interface{})[0].(map[string]interface{})
+					surface["source_schema_owner_evidence_locator_id"] = "foreign_schema_locator"
+				})
+			},
+			want: "lacks exactly one typed resource classification occurrence",
+		},
+		{
+			name: "forged field occurrence set",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					surface := row["source_schema_surfaces"].([]interface{})[0].(map[string]interface{})
+					surface["field_contract_occurrence_identities"] = []string{"forged_field_occurrence"}
+				})
+			},
+			want: "source-schema binding field occurrence roster",
+		},
+		{
+			name: "zero field binding carrying a schema",
+			mutate: func(t *testing.T, fixture *testFixture) {
+				mutateJSONLRow(t, fixtureSemanticArtifactPath(fixture, dependencySemanticRoleSourceContract), "api_resource_source_schema_binding", func(row map[string]interface{}) {
+					row["binding_status"] = "no_source_schema_surface"
+				})
+			},
+			want: "no_source_schema_surface binding carries source_schema_surfaces",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			fixture := newTestFixture(t)
+			test.mutate(t, fixture)
+			rebindSourceContract(t, fixture)
+			_, err := Verify(fixture.options)
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("got %v, want source-schema bridge refusal containing %q", err, test.want)
+			}
+		})
 	}
 }
 
@@ -1749,28 +1923,32 @@ func TestRawInputReadersSeparateStructuredUTF8FromByteNeutralEvidenceBodies(t *t
 }
 
 type testPrimaryEvidenceFixture struct {
-	body                             []byte
-	derivationPattern                string
-	fieldDerivationPattern           string
-	providerDescription              string
-	provider                         string
-	sourceRef                        string
-	sourceURL                        string
-	representation                   string
-	representationCoord              string
-	artifactPrefix                   string
-	sourceSymbolPrefix               string
-	operationName                    string
-	readOperationSource              string
-	sectionRoot                      string
-	protocolBody                     []byte
-	protocolSourceRef                string
-	protocolSourceURL                string
-	protocolLiteralA                 string
-	protocolLiteralB                 string
-	singleDocument                   bool
-	additionalRanges                 []officialProviderEvidenceRange
-	sampleRange                      *officialProviderEvidenceRange
+	body                   []byte
+	derivationPattern      string
+	fieldDerivationPattern string
+	providerDescription    string
+	provider               string
+	sourceRef              string
+	sourceURL              string
+	representation         string
+	representationCoord    string
+	artifactPrefix         string
+	sourceSymbolPrefix     string
+	operationName          string
+	readOperationSource    string
+	sectionRoot            string
+	protocolBody           []byte
+	protocolSourceRef      string
+	protocolSourceURL      string
+	protocolLiteralA       string
+	protocolLiteralB       string
+	singleDocument         bool
+	additionalRanges       []officialProviderEvidenceRange
+	sampleRange            *officialProviderEvidenceRange
+	// sampleSourceSymbol permits a source-schema field boundary to own the
+	// sample artifact independently from the API-resource graph endpoint.
+	// Empty retains the legacy resource source for every existing fixture.
+	sampleSourceSymbol               string
 	protocolClassifierResourceSource string
 	// exactRoleClassificationRanges replaces a role's default whole-document
 	// classification occurrence when an explicit range names that same source
@@ -1781,8 +1959,12 @@ type testPrimaryEvidenceFixture struct {
 	additionalProtocolRanges       []officialProviderEvidenceRange
 	additionalRangeBuilder         func(string, string) []officialProviderEvidenceRange
 	additionalProtocolRangeBuilder func(string, string) []officialProviderEvidenceRange
-	extraRoles                     []string
-	extraConstraints               []relationshipConstraint
+	// additionalEvidence contains independently manifested source documents.
+	// It is intentionally distinct from protocolBody: an additional cloud
+	// model or association document must not be relabelled as protocol evidence.
+	additionalEvidence []testSupplementalEvidenceFixture
+	extraRoles         []string
+	extraConstraints   []relationshipConstraint
 	// relationshipSubjectEndpoints is test-only fixture authority for labels
 	// whose applicability subject is not the legacy target-operation default.
 	// Values are the closed "source" or "target" endpoint names.
@@ -1790,6 +1972,29 @@ type testPrimaryEvidenceFixture struct {
 	relationshipDefaultDispositions map[string]string
 	nativeSelectedOperationOnly     bool
 	derivationBuilder               testDocumentationDerivationBuilder
+}
+
+// testSupplementalEvidenceFixture is one complete, exact source-document
+// lane. Every range is checked against this lane's own bytes and becomes a
+// classification occurrence in this lane's selected-source roster row.
+type testSupplementalEvidenceFixture struct {
+	name                     string
+	body                     []byte
+	sourceRef                string
+	sourceURL                string
+	representation           string
+	representationCoordinate string
+	artifactSuffix           string
+	ranges                   []officialProviderEvidenceRange
+	consumerRoles            []string
+}
+
+type testSupplementalEvidenceLane struct {
+	fixture        testSupplementalEvidenceFixture
+	manifestSHA256 string
+	bodySHA256     string
+	path           string
+	occurrences    []interface{}
 }
 
 type testDocumentationDerivationBuilder func(*testing.T, sourceClassificationSelectionProof, map[string]exactEvidenceBody) *testDocumentationDerivationBundle
@@ -1809,6 +2014,7 @@ type testDocumentationDerivationBundle struct {
 	outcomeCount     int64
 	factCount        int64
 	wholeRowCount    int64
+	rowMemberCount   int64
 	pageSetRoot      string
 	resultSetRoot    string
 	targetRoot       string
@@ -1932,7 +2138,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	forbiddenSourceClasses := []string{"unofficial_blog", "forum_answer", "scraped_search_result", "AI_summary_without_primary_source", "mirrored_docs_without_admitted_affirmative_authority_and_permission"}
 	sourceAuthorityRule := "fixture source authority requires exact typed binding and fails closed"
 
-	ood := map[string]interface{}{"doc_id": "fixture-ood", "version": 1, "status": "locked", "sections": map[string]interface{}{
+	ood := map[string]interface{}{"doc_id": "ef6f8aa7-ccdd-42da-84ca-eac17d1b63c6", "version": 1, "status": "locked", "sections": map[string]interface{}{
 		"s2_graph_object_model": map[string]interface{}{
 			"api_symbol_role_registry": map[string]interface{}{"roles": roles, "cardinality_rule": roleCardinalityRule, "authority_rule": roleAuthorityRule},
 			"api_property_claim_model": map[string]interface{}{
@@ -2015,9 +2221,57 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		})
 		protocolEvidenceManifestDigest = fileSHA256(t, protocolEvidencePath)
 	}
+	// Supplemental lanes are complete source documents, never fragments folded
+	// into either the primary model or the protocol document.  This gives cloud
+	// fixtures the same manifest/hash/source-identity closure as production
+	// multi-document inputs.
+	supplementalLanes := make([]testSupplementalEvidenceLane, 0, len(primary.additionalEvidence))
+	supplementalNames := map[string]struct{}{}
+	for index, configured := range primary.additionalEvidence {
+		lane := configured
+		if len(lane.body) == 0 || lane.sourceRef == "" || lane.sourceURL == "" || len(lane.ranges) == 0 {
+			t.Fatalf("supplemental evidence lane %d is incomplete", index)
+		}
+		if lane.name == "" {
+			lane.name = fmt.Sprintf("supplemental_%d", index)
+		}
+		if _, duplicate := supplementalNames[lane.name]; duplicate {
+			t.Fatalf("duplicate supplemental evidence lane %q", lane.name)
+		}
+		supplementalNames[lane.name] = struct{}{}
+		if lane.artifactSuffix == "" {
+			lane.artifactSuffix = lane.name
+		}
+		if lane.representation == "" {
+			lane.representation = representation
+		}
+		if lane.representationCoordinate == "" {
+			lane.representationCoordinate = representationCoordinate
+		}
+		laneBody := bytes.Clone(lane.body)
+		laneDigest := sha256Hex(laneBody)
+		laneBodyPath := filepath.Join(dir, fmt.Sprintf("supplemental-%d-body.md.b64", index))
+		if err := os.WriteFile(laneBodyPath, []byte(base64.StdEncoding.EncodeToString(laneBody)), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		lanePath := filepath.Join(dir, fmt.Sprintf("supplemental-%d-evidence.jsonl", index))
+		laneArtifact := artifactPrefix + "_" + lane.artifactSuffix + "_evidence_manifest"
+		writeJSONL(t, lanePath, []interface{}{
+			map[string]interface{}{"row_kind": "artifact_manifest", "artifact": laneArtifact, "artifact_version": "1", "status": "candidate_not_admissible", "provider": provider, "representation": lane.representation, "representation_coordinate": lane.representationCoordinate, "source_representation_kind": supportedEvidenceRepresentationKind, "canonical_bytes": manifestCanonicalBytesProfile},
+			map[string]interface{}{"row_kind": "external_evidence_body", "component_ordinal": 0, "component_stable_coordinate": "source_ref_url_pair_v1|" + lengthPrefixedIdentityKey(lane.sourceRef, lane.sourceURL), "component_byte_length": len(laneBody), "component_sha256": laneDigest, "component_byte_domain_profile": componentByteDomainProfile, "source_ref": lane.sourceRef, "source_url": lane.sourceURL, "representation": lane.representation, "representation_coordinate": lane.representationCoordinate, "source_representation_kind": supportedEvidenceRepresentationKind, "content_sha256": laneDigest, "content_bytes": len(laneBody), "source_content_hash_profile": sourceContentHashProfile, "observed_line_delimiter_profile": exactLineDelimiterProfile(laneBody), "staging_file": filepath.Base(laneBodyPath), "body_authority": evidenceBodyAuthorityExact},
+			map[string]interface{}{"row_kind": "validation_summary", "selected_source_count": 1, "captured_source_count": 1, "total_exact_source_bytes": len(laneBody), "missing_source_refs": []string{}, "unexpected_source_refs": []string{}, "selected_representation_is_only_evidence_body": true, "rendered_dom_body_accepted": false, "result": "structural_candidate_selected_source_document_capture"},
+		})
+		supplementalLanes = append(supplementalLanes, testSupplementalEvidenceLane{fixture: lane, manifestSHA256: fileSHA256(t, lanePath), bodySHA256: laneDigest, path: lanePath})
+	}
 	if primary.additionalRangeBuilder != nil {
 		primary.additionalRanges = append(primary.additionalRanges, primary.additionalRangeBuilder(bodyDigest, evidenceManifestDigest)...)
 	}
+	// The source schema is a separately classified source surface.  It is not
+	// the API endpoint and it is not one of its extracted field occurrences.
+	// Production cloud fixtures replace this whole-body test span with the
+	// exact ObjectSchema declaration span.
+	sourceSchemaOwnerSymbol := primary.sourceSymbolPrefix + "_source_schema"
+	primary.additionalRanges = append(primary.additionalRanges, officialProviderEvidenceRange{Name: "source_schema_owner", SourceSymbol: sourceSchemaOwnerSymbol, SurfaceKind: "resource", ByteStartOffset: 0, ByteEndOffsetExclusive: int64(len(body)), SelectedRangeSHA256: bodyDigest})
 	if primary.additionalProtocolRangeBuilder != nil {
 		primary.additionalProtocolRanges = append(primary.additionalProtocolRanges, primary.additionalProtocolRangeBuilder(protocolBodyDigest, protocolEvidenceManifestDigest)...)
 	}
@@ -2063,6 +2317,18 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		declaredClassificationSurfaces[selected.SourceSymbol] = selected.SurfaceKind
 		classificationRows = append(classificationRows, map[string]interface{}{"row_kind": "source_symbol", "source_symbol": selected.SourceSymbol, "surface_kind": selected.SurfaceKind})
 	}
+	for _, lane := range supplementalLanes {
+		for _, selected := range lane.fixture.ranges {
+			if prior, exists := declaredClassificationSurfaces[selected.SourceSymbol]; exists {
+				if prior != selected.SurfaceKind {
+					t.Fatalf("supplemental source symbol %q has conflicting surfaces %q and %q", selected.SourceSymbol, prior, selected.SurfaceKind)
+				}
+				continue
+			}
+			declaredClassificationSurfaces[selected.SourceSymbol] = selected.SurfaceKind
+			classificationRows = append(classificationRows, map[string]interface{}{"row_kind": "source_symbol", "source_symbol": selected.SourceSymbol, "surface_kind": selected.SurfaceKind})
+		}
+	}
 	classificationManifest["source_symbol_count"] = len(classificationRows) - 1
 	classificationRosterPath := filepath.Join(dir, "source-classification-roster.jsonl")
 	writeJSONL(t, classificationRosterPath, classificationRows)
@@ -2087,6 +2353,13 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		for _, selected := range primary.additionalProtocolRanges {
 			if selected.SourceSymbol == sourceSymbol {
 				return true
+			}
+		}
+		for _, lane := range supplementalLanes {
+			for _, selected := range lane.fixture.ranges {
+				if selected.SourceSymbol == sourceSymbol {
+					return true
+				}
 			}
 		}
 		return false
@@ -2129,6 +2402,14 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		classificationOccurrences[selected.SourceSymbol] = append(classificationOccurrences[selected.SourceSymbol], occurrence)
 		protocolOccurrences = append(protocolOccurrences, fixtureClassificationOccurrenceObject(t, occurrence))
 	}
+	for _, lane := range supplementalLanes {
+		for _, selected := range lane.fixture.ranges {
+			if selected.SourceSymbol == sourceReadOperationSymbol {
+				hasExactReadOperationRange = true
+				break
+			}
+		}
+	}
 	if !hasExactReadOperationRange {
 		readOperationOccurrence := sourceClassificationOccurrence{Binding: classificationBinding, SourceSymbol: sourceReadOperationSymbol, SurfaceKind: "operation", Locator: classificationLocator}
 		classificationOccurrences[sourceReadOperationSymbol] = []sourceClassificationOccurrence{readOperationOccurrence}
@@ -2153,6 +2434,33 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		classificationOccurrences[selected.SourceSymbol] = append(classificationOccurrences[selected.SourceSymbol], occurrence)
 		entityOccurrences = append(entityOccurrences, fixtureClassificationOccurrenceObject(t, occurrence))
 	}
+	for laneIndex := range supplementalLanes {
+		lane := &supplementalLanes[laneIndex]
+		laneBody := lane.fixture.body
+		for _, selected := range lane.fixture.ranges {
+			if selected.ByteStartOffset < 0 || selected.ByteEndOffsetExclusive <= selected.ByteStartOffset || selected.ByteEndOffsetExclusive > int64(len(laneBody)) {
+				t.Fatalf("supplemental source range %q is outside exact body for lane %q", selected.Name, lane.fixture.name)
+			}
+			exact := laneBody[selected.ByteStartOffset:selected.ByteEndOffsetExclusive]
+			if sha256Hex(exact) != selected.SelectedRangeSHA256 {
+				t.Fatalf("supplemental source range %q differs from its exact SHA-256 pin", selected.Name)
+			}
+			locator := evidenceLocator{RowKind: "candidate_evidence_locator", EvidenceManifestSHA256: lane.manifestSHA256, SourceContentSHA256: lane.bodySHA256,
+				ByteStartOffset: selected.ByteStartOffset, ByteEndOffsetExclusive: selected.ByteEndOffsetExclusive,
+				SelectedRangeByteCount: selected.ByteEndOffsetExclusive - selected.ByteStartOffset, SelectedRangeSHA256: selected.SelectedRangeSHA256,
+				SourceRefs: []string{lane.fixture.sourceRef}, SourceURLs: []string{lane.fixture.sourceURL}, LocatorSemantics: exactLocatorSemantics,
+			}
+			locator.ID = stableID("evloc", candidateEvidenceLocatorIdentityKey(locator))
+			occurrence := sourceClassificationOccurrence{Binding: classificationBinding, SourceSymbol: selected.SourceSymbol, SurfaceKind: selected.SurfaceKind, Locator: locator}
+			classificationOccurrences[selected.SourceSymbol] = append(classificationOccurrences[selected.SourceSymbol], occurrence)
+			lane.occurrences = append(lane.occurrences, fixtureClassificationOccurrenceObject(t, occurrence))
+		}
+		sort.Slice(lane.occurrences, func(i, j int) bool {
+			left := lane.occurrences[i].(map[string]interface{})["evidence_locator"].(map[string]interface{})
+			right := lane.occurrences[j].(map[string]interface{})["evidence_locator"].(map[string]interface{})
+			return fmt.Sprint(left["evidence_locator_id"]) < fmt.Sprint(right["evidence_locator_id"])
+		})
+	}
 	for _, occurrences := range [][]interface{}{entityOccurrences, protocolOccurrences} {
 		sort.Slice(occurrences, func(i, j int) bool {
 			left := occurrences[i].(map[string]interface{})
@@ -2165,19 +2473,43 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		})
 	}
 	selectionRosterPath := filepath.Join(dir, "evidence-selection-roster.jsonl")
-	selectionManifest := map[string]interface{}{"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_documentation_evidence_selection_roster", "artifact_version": "4", "status": "candidate_source_selection_input", "provider": provider, "selected_source_count": 2, "classification_artifact_bindings": []interface{}{map[string]interface{}{"artifact_id": classificationArtifact, "artifact_version": "2", "artifact_sha256": classificationRosterDigest}}}
+	selectedSourceCount := 1 + len(supplementalLanes)
+	if !primary.singleDocument {
+		selectedSourceCount++
+	}
+	selectionManifest := map[string]interface{}{"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_documentation_evidence_selection_roster", "artifact_version": "4", "status": "candidate_source_selection_input", "provider": provider, "selected_source_count": selectedSourceCount, "classification_artifact_bindings": []interface{}{map[string]interface{}{"artifact_id": classificationArtifact, "artifact_version": "2", "artifact_sha256": classificationRosterDigest}}}
 	primarySelectionRow := map[string]interface{}{"row_kind": "selected_source_document", "evidence_manifest_artifact": primaryEvidenceArtifact, "evidence_manifest_artifact_version": "2", "source_ref": sourceRef, "current_reference_url": sourceURL, "representation": representation, "representation_coordinate": representationCoordinate, "source_representation_kind": supportedEvidenceRepresentationKind, "consumer_roles": []string{"api_graph_projection", "field_mapping_candidate", "sample_shape_index", "source_contract_index", "surface_family_disposition"}, "classification_occurrences": entityOccurrences}
 	selectionRows := []interface{}{selectionManifest, primarySelectionRow}
 	if primary.singleDocument {
-		selectionManifest["selected_source_count"] = 1
 		primarySelectionRow["consumer_roles"] = []string{"api_graph_projection", "field_mapping_candidate", "protocol_contract_index", "sample_shape_index", "source_contract_index", "surface_family_disposition"}
-		selectionRows = append(selectionRows, map[string]interface{}{"row_kind": "validation_summary", "selected_source_count": 1, "evidence_manifest_artifact_count": 1, "classified_source_document_count": 1, "classification_occurrence_count": len(entityOccurrences), "captured_consumer_role_counts": map[string]interface{}{"api_graph_projection": 1, "field_mapping_candidate": 1, "protocol_contract_index": 1, "sample_shape_index": 1, "source_contract_index": 1, "surface_family_disposition": 1}, "result": "structural_candidate_source_selection_roster"})
 	} else {
 		selectionRows = append(selectionRows,
 			map[string]interface{}{"row_kind": "selected_source_document", "evidence_manifest_artifact": protocolEvidenceArtifact, "evidence_manifest_artifact_version": "1", "source_ref": protocolSourceRef, "current_reference_url": protocolSourceURL, "representation": representation, "representation_coordinate": representationCoordinate, "source_representation_kind": supportedEvidenceRepresentationKind, "consumer_roles": []string{"api_graph_projection", "protocol_contract_index"}, "classification_occurrences": protocolOccurrences},
-			map[string]interface{}{"row_kind": "validation_summary", "selected_source_count": 2, "evidence_manifest_artifact_count": 2, "classified_source_document_count": 2, "classification_occurrence_count": len(entityOccurrences) + len(protocolOccurrences), "captured_consumer_role_counts": map[string]interface{}{"api_graph_projection": 2, "field_mapping_candidate": 1, "protocol_contract_index": 1, "sample_shape_index": 1, "source_contract_index": 1, "surface_family_disposition": 1}, "result": "structural_candidate_source_selection_roster"},
 		)
 	}
+	classificationOccurrenceCount := len(entityOccurrences) + len(protocolOccurrences)
+	consumerRoleCounts := map[string]interface{}{}
+	addRoles := func(roles []string) {
+		for _, role := range roles {
+			count, _ := consumerRoleCounts[role].(int)
+			consumerRoleCounts[role] = count + 1
+		}
+	}
+	addRoles(primarySelectionRow["consumer_roles"].([]string))
+	if !primary.singleDocument {
+		addRoles([]string{"api_graph_projection", "protocol_contract_index"})
+	}
+	for _, lane := range supplementalLanes {
+		roles := append([]string(nil), lane.fixture.consumerRoles...)
+		if len(roles) == 0 {
+			roles = []string{"api_graph_projection"}
+		}
+		sort.Strings(roles)
+		classificationOccurrenceCount += len(lane.occurrences)
+		selectionRows = append(selectionRows, map[string]interface{}{"row_kind": "selected_source_document", "evidence_manifest_artifact": artifactPrefix + "_" + lane.fixture.artifactSuffix + "_evidence_manifest", "evidence_manifest_artifact_version": "1", "source_ref": lane.fixture.sourceRef, "current_reference_url": lane.fixture.sourceURL, "representation": lane.fixture.representation, "representation_coordinate": lane.fixture.representationCoordinate, "source_representation_kind": supportedEvidenceRepresentationKind, "consumer_roles": roles, "classification_occurrences": lane.occurrences})
+		addRoles(roles)
+	}
+	selectionRows = append(selectionRows, map[string]interface{}{"row_kind": "validation_summary", "selected_source_count": selectedSourceCount, "evidence_manifest_artifact_count": selectedSourceCount, "classified_source_document_count": selectedSourceCount, "classification_occurrence_count": classificationOccurrenceCount, "captured_consumer_role_counts": consumerRoleCounts, "result": "structural_candidate_source_selection_roster"})
 	writeJSONL(t, selectionRosterPath, selectionRows)
 	selectionRosterDigest := fileSHA256(t, selectionRosterPath)
 	claimKind := "source_neutral_projection_claim"
@@ -2276,6 +2608,9 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	if !primary.singleDocument {
 		derivationBodies[protocolBodyDigest] = exactEvidenceBody{Bytes: protocolBody, Coordinates: map[evidenceSourceCoordinate]string{{Ref: protocolSourceRef, URL: protocolSourceURL}: protocolEvidenceManifestDigest}}
 	}
+	for _, lane := range supplementalLanes {
+		derivationBodies[lane.bodySHA256] = exactEvidenceBody{Bytes: bytes.Clone(lane.fixture.body), Coordinates: map[evidenceSourceCoordinate]string{{Ref: lane.fixture.sourceRef, URL: lane.fixture.sourceURL}: lane.manifestSHA256}}
+	}
 	var derivationFacts []exactDocumentationDerivedFact
 	var sourceAccessFact, sourceFieldFact exactDocumentationDerivedFact
 	var derivationBundle *testDocumentationDerivationBundle
@@ -2316,8 +2651,17 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		if err != nil {
 			t.Fatalf("parse complete documentation derivation fixture: %v", err)
 		}
-		if dependencyProfileReferenceKey(sourceAccessFact.Profile) != dependencyProfileReferenceKey(sourceFieldFact.Profile) {
-			t.Fatal("complete documentation projection facts do not bind one exact derivation profile")
+		// Access and field facts may be independently derived under distinct
+		// closed profiles. The source-contract fact and the field-mapping fact
+		// must each retain their own exact profile/schema binding; only the
+		// latter selects the field-mapping derivation profile below. Existing
+		// one-profile fixtures remain the degenerate valid case.
+		accessDefinition, ok := derivationState.derivations[dependencyProfileReferenceKey(sourceAccessFact.Profile)]
+		if !ok {
+			t.Fatal("complete documentation projection access fact has no exact derivation definition")
+		}
+		if _, ok := derivationState.validationSchemas[dependencyProfileReferenceKey(accessDefinition.validationSchema)]; !ok {
+			t.Fatal("complete documentation projection access fact has no exact claim-schema authority")
 		}
 		definition, ok := derivationState.derivations[dependencyProfileReferenceKey(sourceFieldFact.Profile)]
 		if !ok {
@@ -2344,6 +2688,11 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	providerType := "Decimal"
 	providerRequirement := "Required"
 	providerDescription := primary.providerDescription
+	fieldSourceSymbol := sourceSymbolByRole["resource"]
+	fieldCardinality := "scalar"
+	fieldPointer := "/entities/" + primary.sourceSymbolPrefix
+	var fieldLineNumber interface{} = 1
+	fieldSectionPath := []string{primary.sectionRoot, "Fields"}
 	if derivationBundle != nil {
 		var ok bool
 		fieldName, ok = sourceFieldClaim["field_name"].(string)
@@ -2362,6 +2711,38 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 			providerDescription = value
 		} else if value, ok := sourceFieldClaim["description"].(string); ok && value != "" {
 			providerDescription = value
+		}
+		if value, ok := sourceFieldClaim["source_symbol"].(string); ok && value != "" {
+			fieldSourceSymbol = value
+		} else {
+			t.Fatal("complete documentation field fact has no exact source_symbol")
+		}
+		if value, ok := sourceFieldClaim["cardinality"].(string); ok && value != "" {
+			fieldCardinality = value
+		} else {
+			t.Fatal("complete documentation field fact has no exact cardinality")
+		}
+		if value, ok := sourceFieldClaim["official_json_pointer"].(string); ok && value != "" {
+			fieldPointer = value
+		} else {
+			t.Fatal("complete documentation field fact has no exact official_json_pointer")
+		}
+		if value, exists := sourceFieldClaim["line_number"]; exists {
+			fieldLineNumber = value
+		} else {
+			t.Fatal("complete documentation field fact has no exact line_number")
+		}
+		if values, ok := sourceFieldClaim["section_path"].([]interface{}); ok && len(values) != 0 {
+			fieldSectionPath = make([]string, len(values))
+			for index, value := range values {
+				var valid bool
+				fieldSectionPath[index], valid = value.(string)
+				if !valid || fieldSectionPath[index] == "" {
+					t.Fatal("complete documentation field fact has invalid section_path")
+				}
+			}
+		} else {
+			t.Fatal("complete documentation field fact has no exact section_path")
 		}
 	}
 	numericSemantics := "exact_decimal"
@@ -2388,7 +2769,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	profilePath := filepath.Join(dir, "profile.jsonl")
 	profileRows := []interface{}{map[string]interface{}{
 		"row_kind": "artifact_manifest", "artifact": "fixture_provider_neutral_compilation_profile", "artifact_version": "2", "schema_version": "provider_documentation_compilation_profile_candidate.v2", "status": "candidate_not_admissible", "named_system": "Velenza BOC", "purpose": "source-neutral test compiler profile", "authority_posture": "derived_candidate_only",
-		"canonical_ood_graph_spec":         map[string]interface{}{"doc_id": "fixture-ood", "version": "1", "raw_sha256": sha256Hex(oodRaw), "canonical_ref": "fixture/OOD_GRAPH_PROTOCOL_v1.ood.json"},
+		"canonical_ood_graph_spec":         map[string]interface{}{"doc_id": "ef6f8aa7-ccdd-42da-84ca-eac17d1b63c6", "version": "1", "raw_sha256": sha256Hex(oodRaw), "canonical_ref": "fixture/OOD_GRAPH_PROTOCOL_v1.ood.json"},
 		"grand_vision":                     map[string]interface{}{"raw_sha256": fileSHA256(t, visionPath), "canonical_ref": "fixture/VELENZA_GRAND_VISION_v1.md", "governing_principles": []string{"P1", "P2", "P3", "P6", "P7", "P12", "P16"}},
 		"source_record_contract":           map[string]interface{}{"doc_id": "fixture-source-record", "version": "1", "raw_sha256": fileSHA256(t, sourceRecordPath), "canonical_ref": "fixture/SOURCE_RECORD_AND_SEMANTIC_PROJECTION_v1.ood.json"},
 		"canonical_execution_is_this_file": false, "canonical_execution": "admitted_capability_sequence_only",
@@ -2451,15 +2832,36 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		"selected_range_byte_count": sourceFieldFact.EvidenceLocator.SelectedRangeByteCount,
 		"selected_range_sha256":     sourceFieldFact.EvidenceLocator.SelectedRangeSHA256,
 	}
+	sourceFieldOccurrenceID, err := sourceFieldOccurrenceIdentity(map[string]interface{}{
+		exactDocumentationDerivedFactIDField: sourceFieldFactID,
+		"source_symbol":                      fieldSourceSymbol,
+		"surface_kind":                       "resource",
+		"field_name":                         fieldName,
+		"provider_type":                      providerType,
+		"cardinality":                        fieldCardinality,
+		"provider_requirement":               providerRequirement,
+		"section_path":                       stringInterfaces(fieldSectionPath),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	schemaOwnerOccurrences := derivationProof.classificationsBySourceSymbol[sourceSchemaOwnerSymbol]
+	if len(schemaOwnerOccurrences) != 1 || schemaOwnerOccurrences[0].SurfaceKind != "resource" {
+		t.Fatalf("source schema owner %q has invalid classification occurrences: %#v", sourceSchemaOwnerSymbol, schemaOwnerOccurrences)
+	}
+	sourceSchemaOwnerLocatorID := schemaOwnerOccurrences[0].Locator.ID
 	sourceContractPath := filepath.Join(dir, "source-contract.jsonl")
+	resourceCandidateID := stableID("capi_sym", lengthPrefixedIdentityKey("resource", "resource:"+artifactPrefix))
 	writeJSONL(t, sourceContractPath, []interface{}{map[string]interface{}{
-		"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_source_contract_index", "artifact_version": "2", "status": "candidate_not_admissible", "provider": provider, "source_evidence_authority": "selected_machine_export", "derived_from_manifest_sha256s": []string{evidenceManifestDigest}, "evidence_hydration": "exact byte range", "locator_authority": "selected body only", "line_and_section_coordinates": "diagnostic only", "target_home_status": "candidate", "consumer_contract": "source blind", "financial_value_contract": "exact values only",
+		"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_source_contract_index", "artifact_version": "2", "status": "candidate_not_admissible", "provider": provider, "source_evidence_authority": "selected_machine_export", "derived_from_manifest_sha256s": []string{evidenceManifestDigest}, "evidence_hydration": "exact byte range", "locator_authority": "selected body only", "line_and_section_coordinates": "diagnostic only", "target_home_status": "candidate", "consumer_contract": "source blind", "financial_value_contract": "exact values only", "api_resource_source_schema_binding_contract": "v1",
 	}, map[string]interface{}{
 		"row_kind": "source_document", "evidence_manifest_sha256": evidenceManifestDigest, "source_ref": sourceRef, "source_url": sourceURL, "content_sha256": bodyDigest, "content_bytes": len(body), "source_content_hash_profile": sourceContentHashProfile, "observed_line_delimiter_profile": bodyLineDelimiterProfile, "representation": representation, "representation_coordinate": representationCoordinate, "source_representation_kind": supportedEvidenceRepresentationKind, "component_byte_domain_profile": componentByteDomainProfile, "evidence_hydration_coordinate": entityCoordinate,
 	}, map[string]interface{}{
 		"row_kind": "api_operation", "source_symbol": sourceReadOperationSymbol, "surface_kind": "operation", "source_ref": sourceRef, "source_url": sourceURL, "content_sha256": bodyDigest, "line_number": 1, "section_path": []string{primary.sectionRoot, "Operations"}, "source_operation_identity": map[string]interface{}{"identity_kind": "source_contract_operation", "identity_components": map[string]interface{}{"operation_name": primary.operationName}}, "source_neutral_capability": "candidate_read", "operation_evidence_occurrences": []interface{}{map[string]interface{}{"occurrence_id": sourceAccessOccurrenceID, "evidence_locator_id": sourceAccessFact.EvidenceLocatorID, "documentation_derived_fact_id": sourceAccessFactID}}, "resource_accesses": []interface{}{map[string]interface{}{"source_symbol": sourceSymbolByRole["resource"], "relationship_label": "operation_reads_resource", "evidence_locator_ids": []string{sourceAccessFact.EvidenceLocatorID}, "documentation_derived_fact_ids": []string{sourceAccessFactID}}}, "evidence_hydration_coordinate": sourceAccessCoordinate,
 	}, map[string]interface{}{
-		"row_kind": "field_contract", "documentation_derived_fact_id": sourceFieldFactID, "source_symbol": sourceSymbolByRole["resource"], "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "source_content_sha256": bodyDigest, "official_json_pointer": "/entities/" + primary.sourceSymbolPrefix, "line_number": 1, "section_path": []string{primary.sectionRoot, "Fields"}, "field_display": fieldDisplay, "field_name": fieldName, "cardinality": "scalar", "provider_type": providerType, "provider_requirement": providerRequirement, "provider_description": providerDescription, "numeric_disposition": map[string]interface{}{"numeric_semantics": numericSemantics, "authoritative_carrier": numericCarrier, "binary_float_authoritative": false, "computation_path": computationPath}, "source_neutral_target": "candidate", "evidence_hydration_coordinate": sourceFieldCoordinate,
+		"row_kind": "field_contract", "documentation_derived_fact_id": sourceFieldFactID, "source_symbol": fieldSourceSymbol, "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "source_content_sha256": bodyDigest, "official_json_pointer": fieldPointer, "line_number": fieldLineNumber, "section_path": fieldSectionPath, "field_display": fieldDisplay, "field_name": fieldName, "cardinality": fieldCardinality, "provider_type": providerType, "provider_requirement": providerRequirement, "provider_description": providerDescription, "numeric_disposition": map[string]interface{}{"numeric_semantics": numericSemantics, "authoritative_carrier": numericCarrier, "binary_float_authoritative": false, "computation_path": computationPath}, "source_neutral_target": "candidate", "evidence_hydration_coordinate": sourceFieldCoordinate,
+	}, map[string]interface{}{
+		"row_kind": "api_resource_source_schema_binding", "api_resource_id": resourceCandidateID, "api_resource_source_symbol": sourceSymbolByRole["resource"], "binding_status": "field_surface_present", "source_schema_surfaces": []interface{}{map[string]interface{}{"source_schema_owner_symbol": sourceSchemaOwnerSymbol, "source_schema_owner_evidence_locator_id": sourceSchemaOwnerLocatorID, "field_source_symbols": []string{fieldSourceSymbol}, "field_contract_occurrence_identities": []string{sourceFieldOccurrenceID}}},
 	}, map[string]interface{}{
 		"row_kind": "validation_summary", "expected_source_documents": 1, "parsed_source_documents": 1, "section_count": 0, "field_contract_count": 1, "documentation_table_row_count": 0, "api_operation_count": 1, "parse_issue_count": 0, "exact_evidence_hydration_coordinates_present": true, "authoritative_locator_form": zeroBasedHalfOpenLocatorForm, "diagnostic_line_and_section_coordinates_are_authority": false, "source_neutral_targets_admitted": false, "result": "candidate_parse_complete",
 	}})
@@ -2515,13 +2917,17 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 			"parse_profile_id": parseFailure.profile.id, "parse_profile_version": parseFailure.profile.version, "parse_profile_sha256": parseFailure.profile.digest,
 		}
 	}
+	sampleSourceSymbol := sourceSymbolByRole["resource"]
+	if primary.sampleSourceSymbol != "" {
+		sampleSourceSymbol = primary.sampleSourceSymbol
+	}
 	sampleShapePath := filepath.Join(dir, "sample-shape.jsonl")
 	sampleShapeRows := []interface{}{map[string]interface{}{
 		"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_json_sample_shape_index", "artifact_version": "2", "status": "candidate_not_admissible", "provider": provider, "source_evidence_authority": "selected_machine_export", "derived_from_manifest_sha256s": []string{evidenceManifestDigest}, "array_index_normalization": "wildcard", "number_handling": "raw lexeme", "sample_value_authority": "example only", "evidence_hydration": "exact byte range", "locator_authority": "selected body only", "line_and_section_coordinates": "diagnostic only",
 	}, map[string]interface{}{
 		"row_kind": "sample_parse_profile", "parse_profile_id": "fixture_json_utf8_parse_profile", "parse_profile_version": "1", "parse_profile_sha256": parseProfileDigest, "canonical_profile_json": parseProfileCanonical,
 	}, map[string]interface{}{
-		"row_kind": "sample_json_block", "source_symbol": sourceSymbolByRole["resource"], "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "document_content_sha256": bodyDigest, "section_path": []string{primary.sectionRoot, "Sample"}, "start_line_number": 1, "end_line_number": 1, "block_content_sha256": sampleDigest, "block_content_bytes": len(sampleBody), "parse_outcome": parseOutcome, "parse_failure": parseFailureValue, "parse_profile_binding": parseProfileBinding, "evidence_hydration_coordinate": sampleCoordinate, "diagnostic_navigation_coordinate": map[string]interface{}{"start_line_number": 1, "end_line_number": 1, "section_path": []string{primary.sectionRoot, "Sample"}},
+		"row_kind": "sample_json_block", "source_symbol": sampleSourceSymbol, "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "document_content_sha256": bodyDigest, "section_path": []string{primary.sectionRoot, "Sample"}, "start_line_number": 1, "end_line_number": 1, "block_content_sha256": sampleDigest, "block_content_bytes": len(sampleBody), "parse_outcome": parseOutcome, "parse_failure": parseFailureValue, "parse_profile_binding": parseProfileBinding, "evidence_hydration_coordinate": sampleCoordinate, "diagnostic_navigation_coordinate": map[string]interface{}{"start_line_number": 1, "end_line_number": 1, "section_path": []string{primary.sectionRoot, "Sample"}},
 	}}
 	sampleShapeCount := 0
 	if parseOutcome == sampleParseOutcomeParsed {
@@ -2530,7 +2936,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		for _, pointer := range sortedProviderStringMapKeys(shapes) {
 			shape := shapes[pointer]
 			sampleShapeRows = append(sampleShapeRows, map[string]interface{}{
-				"row_kind": "sample_json_shape", "source_symbol": sourceSymbolByRole["resource"], "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "block_content_sha256": sampleDigest, "normalized_json_pointer": pointer, "observed_kinds": sortedSetKeys(shape.kinds), "occurrences": shape.occurrences, "observed_raw_number_lexemes": sortedSetKeys(shape.numberLexemes), "observed_string_classes": sortedSetKeys(shape.stringClasses), "schema_authority": "sample_only_not_schema", "binary_float_authoritative": false, "evidence_hydration_coordinate": sampleCoordinate,
+				"row_kind": "sample_json_shape", "source_symbol": sampleSourceSymbol, "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "block_content_sha256": sampleDigest, "normalized_json_pointer": pointer, "observed_kinds": sortedSetKeys(shape.kinds), "occurrences": shape.occurrences, "observed_raw_number_lexemes": sortedSetKeys(shape.numberLexemes), "observed_string_classes": sortedSetKeys(shape.stringClasses), "schema_authority": "sample_only_not_schema", "binary_float_authoritative": false, "evidence_hydration_coordinate": sampleCoordinate,
 			})
 		}
 		sampleShapeCount = len(shapes)
@@ -2728,7 +3134,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 			preparedClosure.outcomeCount != derivationBundle.outcomeCount ||
 			preparedClosure.factCount != derivationBundle.factCount ||
 			preparedClosure.wholeRowBindingCount != derivationBundle.wholeRowCount ||
-			preparedClosure.rowMemberBindingCount != 0 {
+			preparedClosure.rowMemberBindingCount != derivationBundle.rowMemberCount {
 			t.Fatal("prepared documentation artifact changed the independently executed official derivation/materialization closure")
 		}
 		derivationBundle.closureProofRoot = preparedClosure.proofSHA256
@@ -2755,7 +3161,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	writeJSONL(t, surfaceDispositionPath, []interface{}{map[string]interface{}{
 		"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_surface_family_disposition", "artifact_version": "2", "status": "candidate_not_admissible", "provider": provider, "evidence_manifest_sha256s": []string{evidenceManifestDigest}, "source_contract_index_sha256": fileSHA256(t, sourceContractPath), "documentation_claim_derivation_profile_sha256": documentationDerivationDigest, "evidence_hydration": "exact byte range", "mapping_rule": "source-neutral candidate family only", "silent_unknowns_allowed": false, "universal_blob_target_allowed": false, "normal_consumer_contract": "source blind typed projection", "line_section_dom_navigation_or_ai_summary_authority": false,
 	}, map[string]interface{}{
-		"row_kind": "surface_disposition", "source_symbol": sourceSymbolByRole["resource"], "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "official_json_pointer": "/entities/" + primary.sourceSymbolPrefix, "evidence_content_sha256": bodyDigest, "source_neutral_family": "fixture_record", "target_kind": "typed_record", "target_contract_status": "candidate_contract_unlocked", "business_record_projection": true, "typed_home_rule": "canonical typed contract required before admission", "lattice_rule": "source-blind projection only", "exact_numeric_profile": numericProfile, "numeric_ingress": "preserve source lexeme as typed exact candidate", "numeric_computation": "unresolved fail closed exact pipeline", "unsupported_field_disposition": "restricted_no_embed", "derivation_binding": surfaceDerivationBinding, "evidence_hydration_coordinate": sourceFieldCoordinate,
+		"row_kind": "surface_disposition", "source_symbol": fieldSourceSymbol, "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "official_json_pointer": fieldPointer, "evidence_content_sha256": bodyDigest, "source_neutral_family": "fixture_record", "target_kind": "typed_record", "target_contract_status": "candidate_contract_unlocked", "business_record_projection": true, "typed_home_rule": "canonical typed contract required before admission", "lattice_rule": "source-blind projection only", "exact_numeric_profile": numericProfile, "numeric_ingress": "preserve source lexeme as typed exact candidate", "numeric_computation": "unresolved fail closed exact pipeline", "unsupported_field_disposition": "restricted_no_embed", "derivation_binding": surfaceDerivationBinding, "evidence_hydration_coordinate": sourceFieldCoordinate,
 	}, map[string]interface{}{
 		"row_kind": "validation_summary", "expected_surface_count": 1, "selected_source_count": 1, "disposed_surface_count": 1, "disposed_surface_kind_counts": []interface{}{map[string]interface{}{"surface_kind": "resource", "count": 1}}, "captured_surface_kind_counts": []interface{}{map[string]interface{}{"surface_kind": "resource", "count": 1}}, "silent_unknown_count": 0, "universal_blob_targets": 0, "canonical_contracts_still_unlocked": 1, "exact_evidence_locator_binding_count": 1, "authoritative_locator_form": zeroBasedHalfOpenLocatorForm, "diagnostic_coordinates_are_authority": false, "result": "candidate_exhaustive_surface_family_disposition_complete",
 	}})
@@ -2864,7 +3270,7 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	writeJSONL(t, fieldMappingPath, []interface{}{map[string]interface{}{
 		"row_kind": "artifact_manifest", "artifact": artifactPrefix + "_all_field_source_neutral_map", "artifact_version": "2", "status": "candidate_not_admissible", "provider": provider, "evidence_manifest_sha256s": []string{evidenceManifestDigest}, "source_contract_index_sha256": fileSHA256(t, sourceContractPath), "surface_family_disposition_sha256": fileSHA256(t, surfaceDispositionPath), "mapping_transitive_dependency_roster_sha256": fileSHA256(t, transitiveRosterPath), "field_security_policy_artifact_sha256": fileSHA256(t, fieldSecurityPath), "field_security_policy_id": "fixture_security", "field_security_policy_version": "1", "field_security_policy_profile_sha256": securityPolicyDigest, "field_security_policy_sha256": securityPolicyDigest, "documentation_claim_derivation_profile_sha256": documentationDerivationDigest, "provider_documentation_evidence": "exact source field contract", "mapping_rule": "source-neutral target candidate", "unknown_passthrough_allowed": false, "arbitrary_provider_json_allowed": false, "consumer_source_awareness_allowed": false, "canonical_target_contracts_locked": false, "embedding_raw_field_values_allowed": false, "binary_float_authoritative": false,
 	}, map[string]interface{}{
-		"row_kind": "field_occurrence_disposition", "documentation_derived_fact_id": sourceFieldFactID, "source_symbol": sourceSymbolByRole["resource"], "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "target_record_family": "fixture_record", "source_field": fieldName, "source_provider_type": providerType, "source_cardinality": "scalar", "source_requirement": providerRequirement, "source_section_path": []string{primary.sectionRoot, "Fields"}, "target_role": "amount", "target_candidate_path": "fixture_record.amount", "disposition": "typed_field", "mapping_source": "candidate source-neutral compiler", "mapping_is_provider_documentation_fact": false, "provider_field_contract_is_evidence": true, "absence_semantics": "absent remains absent", "exact_numeric_semantics": numericSemantics, "numeric_authoritative_carrier": numericCarrier, "binary_float_authoritative": false, "financial_computation_path": computationPath, "security_class": "standard_no_raw_value_embedding", "security_classification_reason": "standard_exact_field_name", "security_policy_id": "fixture_security", "security_policy_version": "1", "security_policy_profile_sha256": securityPolicyDigest, "raw_source_value_embedding_allowed": false, "normal_consumer_visibility": true, "typed_home_contract_locked": false, "applicable_transitive_dependency_binding_ids": []string{mappingBindingID}, "exact_computation_dependency": map[string]interface{}{"applicability": computationApplicability, "resolution_status": "unresolved_fail_closed_gap", "resolution_profile_id": resolutionProfileID, "resolution_profile_version": semanticProfileVersion, "resolution_profile_sha256": resolutionProfileDigest}, "derivation_binding": fieldDerivationBinding, "evidence_hydration_coordinate": sourceFieldCoordinate,
+		"row_kind": "field_occurrence_disposition", "documentation_derived_fact_id": sourceFieldFactID, "source_symbol": fieldSourceSymbol, "surface_kind": "resource", "source_ref": sourceRef, "source_url": sourceURL, "target_record_family": "fixture_record", "source_field": fieldName, "source_provider_type": providerType, "source_cardinality": fieldCardinality, "source_requirement": providerRequirement, "source_section_path": fieldSectionPath, "target_role": "amount", "target_candidate_path": "fixture_record.amount", "disposition": "typed_field", "mapping_source": "candidate source-neutral compiler", "mapping_is_provider_documentation_fact": false, "provider_field_contract_is_evidence": true, "absence_semantics": "absent remains absent", "exact_numeric_semantics": numericSemantics, "numeric_authoritative_carrier": numericCarrier, "binary_float_authoritative": false, "financial_computation_path": computationPath, "security_class": "standard_no_raw_value_embedding", "security_classification_reason": "standard_exact_field_name", "security_policy_id": "fixture_security", "security_policy_version": "1", "security_policy_profile_sha256": securityPolicyDigest, "raw_source_value_embedding_allowed": false, "normal_consumer_visibility": true, "typed_home_contract_locked": false, "applicable_transitive_dependency_binding_ids": []string{mappingBindingID}, "exact_computation_dependency": map[string]interface{}{"applicability": computationApplicability, "resolution_status": "unresolved_fail_closed_gap", "resolution_profile_id": resolutionProfileID, "resolution_profile_version": semanticProfileVersion, "resolution_profile_sha256": resolutionProfileDigest}, "derivation_binding": fieldDerivationBinding, "evidence_hydration_coordinate": sourceFieldCoordinate,
 	}, fieldMappingSummary})
 	dependencyByRole["field_mapping"] = fieldMappingPath
 
@@ -2906,6 +3312,26 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	for _, occurrence := range classificationOccurrences[sourceReadOperationSymbol] {
 		addPlanLocator(occurrence.Locator)
 	}
+	// Additional graph evidence can classify native API/resource symbols that
+	// are separate from this scaffold's legacy sample symbol. Retain its exact
+	// classified locators before the native adapter replaces the graph, so the
+	// intermediate selection proof consumes every declared graph evidence lane.
+	for _, lane := range supplementalLanes {
+		graphConsumer := len(lane.fixture.consumerRoles) == 0
+		for _, role := range lane.fixture.consumerRoles {
+			graphConsumer = graphConsumer || role == "api_graph_projection"
+		}
+		if !graphConsumer {
+			continue
+		}
+		for _, occurrences := range classificationOccurrences {
+			for _, occurrence := range occurrences {
+				if occurrence.Locator.EvidenceManifestSHA256 == lane.manifestSHA256 {
+					addPlanLocator(occurrence.Locator)
+				}
+			}
+		}
+	}
 	addPlanLocator(sourceAccessFact.EvidenceLocator)
 	planLocatorIDs := sortedProviderStringMapKeys(planLocatorByID)
 	planLocators := make([]*evidenceLocator, 0, len(planLocatorIDs))
@@ -2929,6 +3355,15 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	} else {
 		evidenceBindings = append(evidenceBindings, evidenceManifestBinding{EvidenceManifestSHA256: protocolEvidenceManifestDigest, EvidenceBodyKind: evidenceBodyKindSourceDocument, ConsumerRoles: []string{"api_graph_projection", "protocol_contract_index"}})
 		evidencePaths = append(evidencePaths, protocolEvidencePath)
+	}
+	for _, lane := range supplementalLanes {
+		roles := append([]string(nil), lane.fixture.consumerRoles...)
+		if len(roles) == 0 {
+			roles = []string{"api_graph_projection"}
+		}
+		sort.Strings(roles)
+		evidenceBindings = append(evidenceBindings, evidenceManifestBinding{EvidenceManifestSHA256: lane.manifestSHA256, EvidenceBodyKind: evidenceBodyKindSourceDocument, ConsumerRoles: roles})
+		evidencePaths = append(evidencePaths, lane.path)
 	}
 	planRows := []interface{}{&artifactManifest{
 		RowKind: "artifact_manifest", Artifact: artifactPrefix + "_api_graph_plan", ArtifactVersion: "1", Status: "candidate_not_admissible_or_executable", Provider: provider, NamedSystem: "Velenza BOC", CanonicalOODGraphSHA256: sha256Hex(oodRaw),
@@ -2993,6 +3428,10 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 		t.Fatal(err)
 	}
 	planRows = append(planRows, sourceCoverage)
+	// ExactSourceDocumentCount is the parsed source-contract document count,
+	// not the evidence-manifest roster count. Supplemental documents may be
+	// classifier-only inputs to the candidate graph until a source-contract
+	// projection explicitly consumes them.
 	planRows = append(planRows, &validationSummary{RowKind: "validation_summary", CandidateEvidenceLocatorCount: len(planLocators), CandidateAPISymbolCount: len(roles) + 1, CandidateAPIRelationshipCount: 1, CandidateAPIPropertyClaimCount: 0, CandidateGraphGapCount: 0, APIElementRolesMaterialized: len(roles), APIRelationshipLabelsMaterialized: 1, APIPropertyFamiliesMaterialized: 0, ExactSourceDocumentCount: 1, CandidateOperationCount: 2, CapturedOperationKindCounts: []operationKindCount{{OperationKind: "event_driven_write_operation", Count: 1}, {OperationKind: "request_response_read_operation", Count: 1}}, OperationApplicabilityCount: 2, CandidateSubjectCount: len(roles) + 2, SubjectSetRootSHA256: sha256Hex([]byte("fixture subject set")), FactSetRootSHA256: sha256Hex([]byte("fixture fact set")), GapSetRootSHA256: sha256Hex(nil), ExactDocumentedFieldOccurrenceCount: 1, SampleJSONBlockCount: 1, ProtocolAssertionCount: 2, PreservedContradictionCount: 1, Result: "structural_candidate_only"})
 	planPath := filepath.Join(dir, "plan.jsonl")
 	writeJSONL(t, planPath, planRows)
@@ -3014,7 +3453,10 @@ func newTestFixtureWithPrimaryEvidence(t *testing.T, primary testPrimaryEvidence
 	if primary.singleDocument {
 		protocolEvidenceRolePath = evidencePath
 	}
-	fixture := &testFixture{planPath: planPath, oodPath: oodPath, evidencePath: evidencePath, evidenceByRole: map[string]string{"entity": evidencePath, "protocol": protocolEvidenceRolePath}, planRows: planRows, roles: roles, constraints: constraints, relationshipSubjectEndpoints: primary.relationshipSubjectEndpoints, relationshipDefaultDispositions: primary.relationshipDefaultDispositions, nativeSelectedOperationOnly: primary.nativeSelectedOperationOnly, families: families, locatorID: locatorID, symbolByRole: symbolByRole, sourceSymbolByRole: sourceSymbolByRole, sourceReadOperationSymbol: sourceReadOperationSymbol, sourceOperationID: sourceOperationID, dependencyByRole: dependencyByRole, schemaByRole: map[string]string{}, artifactCoordinateByRole: map[string]stageMaterialCoordinate{}, sourceOperationIdentity: sourceOperationIdentity, derivationTargetPaths: map[string]string{}, derivationTargetSchemas: map[string]string{}}
+	fixture := &testFixture{planPath: planPath, oodPath: oodPath, evidencePath: evidencePath, evidenceByRole: map[string]string{"entity": evidencePath, "protocol": protocolEvidenceRolePath}, planRows: planRows, roles: roles, constraints: constraints, relationshipSubjectEndpoints: primary.relationshipSubjectEndpoints, relationshipDefaultDispositions: primary.relationshipDefaultDispositions, nativeSelectedOperationOnly: primary.nativeSelectedOperationOnly, families: families, locatorID: locatorID, symbolByRole: symbolByRole, sourceSymbolByRole: sourceSymbolByRole, sourceReadOperationSymbol: sourceReadOperationSymbol, sourceOperationID: sourceOperationID, dependencyByRole: dependencyByRole, schemaByRole: map[string]string{}, artifactCoordinateByRole: map[string]stageMaterialCoordinate{}, sourceOperationIdentity: sourceOperationIdentity, derivationTargetPaths: map[string]string{}, derivationTargetSchemas: map[string]string{}, classificationSelections: map[string]map[string][]sourceClassificationOccurrence{provider: classificationOccurrences}, exactEvidenceBodies: derivationBodies}
+	for _, lane := range supplementalLanes {
+		fixture.evidenceByRole["source:"+lane.fixture.sourceRef] = lane.path
+	}
 	if derivationBundle != nil {
 		fixture.derivationTargets = derivationBundle.targetArtifacts
 		fixture.derivationTargetAuthority = derivationBundle.targetAuthority

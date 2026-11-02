@@ -1000,11 +1000,65 @@ func validateStageBodyFreeClosure(label string, items []stageBodyFreeItem, bodie
 		}
 	}
 	if digest, encoding, reconstructed, err := reconstructsStageEvidenceBodyWithoutCarrierOrder(carrierOccurrences, bodies); err != nil {
+		if errors.Is(err, stageEvidenceAggregateStateBoundError) {
+			return fmt.Errorf("%s is not body-free: %w; unproven scalar roster: %s", label, err, stageBodyFreeUnprovenScalarRoster(items))
+		}
 		return fmt.Errorf("%s is not body-free: %w", label, err)
 	} else if reconstructed {
 		return fmt.Errorf("%s is not body-free: unordered exact scalar carriers reconstruct %s from selected evidence digest %s", label, encoding, digest)
 	}
 	return nil
+}
+
+func stageBodyFreeUnprovenScalarRoster(items []stageBodyFreeItem) string {
+	counts := map[string]int{}
+	var walk func(stageBodyFreeItem, int, string, interface{})
+	walk = func(item stageBodyFreeItem, row int, pointer string, value interface{}) {
+		switch typed := value.(type) {
+		case string:
+			if !item.provenance(row, pointer, []byte(typed)) {
+				counts[fmt.Sprintf("%s%s:%d", item.label, pointer, len(typed))]++
+			}
+		case map[string]interface{}:
+			for key, child := range typed {
+				walk(item, row, jsonPointerChild(pointer, key), child)
+			}
+		case []interface{}:
+			for index, child := range typed {
+				walk(item, row, jsonPointerChild(pointer, strconv.Itoa(index)), child)
+			}
+		}
+	}
+	for _, item := range items {
+		if !item.structured {
+			continue
+		}
+		for lineIndex, line := range bytes.Split(item.raw, []byte{'\n'}) {
+			line = bytes.TrimSpace(line)
+			if len(line) == 0 {
+				continue
+			}
+			var value interface{}
+			decoder := json.NewDecoder(bytes.NewReader(line))
+			decoder.UseNumber()
+			if decoder.Decode(&value) == nil {
+				walk(item, lineIndex+1, "", value)
+			}
+		}
+	}
+	keys := make([]string, 0, len(counts))
+	for key := range counts {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	if len(keys) > 32 {
+		keys = keys[:32]
+	}
+	parts := make([]string, 0, len(keys))
+	for _, key := range keys {
+		parts = append(parts, fmt.Sprintf("%s×%d", key, counts[key]))
+	}
+	return strings.Join(parts, ", ")
 }
 
 type stageEvidenceCarrierOccurrence struct {
@@ -1094,9 +1148,14 @@ const (
 	stageEvidenceMaxRetainedCarrierBytes         int64 = 384 << 20
 	stageEvidenceMaxSegmentationIndexBytes       int64 = 64 << 20
 	stageEvidenceMaxWrappedCandidateCacheBytes   int64 = 48 << 20
-	stageEvidenceMaxOccurrenceAuxiliaryBytes     int64 = 16 << 20
-	stageEvidenceMaxAnalyzerAuxiliaryBytes       int64 = 1280 << 20
-	stageEvidenceRetainedEntryOverheadBytes      int64 = 96
+	// Above this size even the map-entry floor for one candidate result at every
+	// target offset would consume a material part of the fixed cache budget.
+	// These targets use the exact streaming path below: candidates are
+	// recomputed and discarded instead of being retained by offset.
+	stageEvidenceWrappedStreamingTargetBytes       = 64 << 10
+	stageEvidenceMaxOccurrenceAuxiliaryBytes int64 = 16 << 20
+	stageEvidenceMaxAnalyzerAuxiliaryBytes   int64 = 1280 << 20
+	stageEvidenceRetainedEntryOverheadBytes  int64 = 96
 	// Index bookkeeping is not a byte comparison. Its fixed linear-work ceiling
 	// is derived from, and cannot outgrow, the unchanged 64 MiB index-storage
 	// ceiling; exact candidate bytes remain under the separate unchanged 64 MiB
@@ -1613,6 +1672,26 @@ func (budget *stageEvidenceSegmentationBudget) consumeCandidateBytes(count int64
 	return nil
 }
 
+// releaseCandidateBytes returns storage that was charged for a candidate
+// slice whose lifetime has ended. It is deliberately limited to the exact
+// allocation charge made by stageEvidenceIndexedWrappedCandidates; work spent
+// discovering the candidates remains charged. This lets the streaming proof
+// retain at most one transient candidate slice without treating a cache-size
+// ceiling as a disclosure exemption.
+func (budget *stageEvidenceSegmentationBudget) releaseCandidateBytes(count int64) {
+	if count <= 0 {
+		return
+	}
+	if count > budget.candidateBytesUsed {
+		panic("body-free candidate storage accounting underflow")
+	}
+	budget.candidateBytesUsed -= count
+}
+
+func stageEvidenceDiscardWrappedCandidates(candidates []stageEvidenceWrappedCandidate, budget *stageEvidenceSegmentationBudget) {
+	budget.releaseCandidateBytes(int64(len(candidates)) * 32)
+}
+
 func (budget *stageEvidenceSegmentationBudget) consumeScalarIndexWork(count int64) error {
 	limit := budget.scalarIndexWorkLimit
 	if limit == 0 {
@@ -1963,12 +2042,40 @@ func stageEvidenceTargetHasWrappedSegmentationCascadeWithIndex(target []byte, in
 	if !feasible {
 		return false, nil
 	}
+	capacityFeasible, err := stageEvidenceTargetHasWrappedMatchCapacity(target, index, foldHex, budget)
+	if err != nil {
+		return false, fmt.Errorf("target-specific wrapped capacity gate: %w", err)
+	}
+	// The SAM bound intentionally permits an occurrence to use its best common
+	// substring at unrelated target positions. For the small targets where the
+	// original exact per-offset proof is bounded, tighten that over-approximation
+	// before any witness search can spend aggregate states.
+	if capacityFeasible && len(target) <= stageEvidenceWrappedStreamingTargetBytes {
+		capacityFeasible, err = stageEvidenceTargetHasWrappedPerOffsetCapacity(target, index, foldHex, budget)
+		if err != nil {
+			return false, fmt.Errorf("target-specific wrapped per-offset capacity gate: %w", err)
+		}
+	}
+	if !capacityFeasible {
+		return false, nil
+	}
 	reachable, err := stageEvidenceTargetReachableWithWrappedLengthUpperBounds(target, index, foldHex, budget)
 	if err != nil {
 		return false, fmt.Errorf("wrapped upper-bound reachability gate: %w", err)
 	}
 	if !reachable {
 		return false, nil
+	}
+	// A dense folded-hexadecimal three-nibble graph is just as combinatorial
+	// below the streaming threshold as above it. Run the exact fixed-width flow
+	// before choosing the storage strategy for the general matcher.
+	if handled, reconstructed, err := stageEvidenceTargetHasExactThreeWrappedSegmentation(target, index, foldHex, budget); err != nil {
+		return false, fmt.Errorf("fixed three-fragment gate: %w", err)
+	} else if handled {
+		return reconstructed, nil
+	}
+	if len(target) >= stageEvidenceWrappedStreamingTargetBytes {
+		return stageEvidenceTargetHasWrappedSegmentationStreaming(target, index, foldHex, budget)
 	}
 	// Reserve the general-search cache before materializing the reusable prefix
 	// candidates. The entry and backing slice are charged by their existing
@@ -2005,6 +2112,691 @@ func stageEvidenceTargetHasWrappedSegmentationCascadeWithIndex(target []byte, in
 		return false, fmt.Errorf("multi-occurrence gate: %w", err)
 	}
 	return reconstructed, nil
+}
+
+type stageEvidenceExactThreeFlowEdge struct {
+	to       int
+	reverse  int
+	capacity int
+}
+
+// stageEvidenceTargetHasExactThreeWrappedSegmentation looks for a compressed,
+// positive wrapped witness: three-nibble hexadecimal grid cells, plus an
+// optional terminal four- or five-nibble cell. Reconstruction for that fixed
+// partition is precisely a capacitated bipartite matching from cells to
+// distinct scalar occurrences.
+//
+// Failure to construct this one partition returns handled=false so the caller
+// uses the general exact matcher. A positive flow is an actual legal witness,
+// even if those carriers can also provide longer fragments.
+func stageEvidenceTargetHasExactThreeWrappedSegmentation(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, budget *stageEvidenceSegmentationBudget) (handled, reconstructed bool, err error) {
+	// The observed dense graph is the folded hexadecimal target (only 4,096
+	// trigram classes). Other encodings retain the general matcher; running a
+	// flow probe for every byte triplet in their much larger alphabets adds work
+	// without addressing this state-explosion shape.
+	if !foldHex || len(target) == 0 {
+		return false, false, nil
+	}
+	segments := len(target) / stageEvidenceWrappedMinFragmentBytes
+	terminalLength := 0
+	if remainder := len(target) % stageEvidenceWrappedMinFragmentBytes; remainder != 0 {
+		terminalLength = stageEvidenceWrappedMinFragmentBytes + remainder
+		segments = (len(target) - terminalLength) / stageEvidenceWrappedMinFragmentBytes
+	}
+	// Reserve one type node for the optional terminal residual.
+	typeCapacity := segments + 1
+	occurrenceBase := 1 + typeCapacity
+	sink := occurrenceBase + len(index.multiplicities)
+	// Graph headers, Dinic's level/edge cursors, the per-type demand array and
+	// the touched-occurrence bitmap all coexist.  Reserve their conservative
+	// footprint before allocating; every residual edge is checked below.
+	// 80 bytes/node covers graph slice headers, level/cursor/queue storage and
+	// conservative map bookkeeping in addition to the explicit demand and
+	// touched arrays below. Residual edges are charged separately.
+	fixedBytes := int64(sink+1)*80 + int64(segments)*8 + int64(len(index.multiplicities))
+	if fixedBytes < 0 || fixedBytes > stageEvidenceMaxOccurrenceAuxiliaryBytes {
+		return false, false, nil
+	}
+	usedBytes := fixedBytes
+	reserveEdges := func(count int) bool {
+		if count < 0 || int64(count) > (stageEvidenceMaxOccurrenceAuxiliaryBytes-usedBytes)/48 {
+			return false
+		}
+		usedBytes += int64(count) * 48 // forward + residual edge
+		return true
+	}
+	graph := make([][]stageEvidenceExactThreeFlowEdge, sink+1)
+	addEdge := func(from, to, capacity int) bool {
+		if capacity <= 0 || !reserveEdges(1) {
+			return false
+		}
+		graph[from] = append(graph[from], stageEvidenceExactThreeFlowEdge{to: to, reverse: len(graph[to]), capacity: capacity})
+		graph[to] = append(graph[to], stageEvidenceExactThreeFlowEdge{to: from, reverse: len(graph[from]) - 1})
+		return true
+	}
+	typeByTrigram := make(map[string]int)
+	demands := make([]int, typeCapacity)
+	touchedOccurrences := make([]bool, len(index.multiplicities))
+	typeCount := 0
+	for offset := 0; offset < segments*stageEvidenceWrappedMinFragmentBytes; offset += stageEvidenceWrappedMinFragmentBytes {
+		candidates, candidateErr := stageEvidenceIndexedWrappedCandidates(target, offset, index, foldHex, false, budget)
+		if candidateErr != nil {
+			return false, false, candidateErr
+		}
+		if len(candidates) == 0 {
+			stageEvidenceDiscardWrappedCandidates(candidates, budget)
+			return false, false, nil
+		}
+		keyBytes := target[offset : offset+stageEvidenceWrappedMinFragmentBytes]
+		if foldHex {
+			var folded [stageEvidenceWrappedMinFragmentBytes]byte
+			for position, value := range keyBytes {
+				folded[position] = stageEvidenceFoldHexByte(value)
+			}
+			keyBytes = folded[:]
+		}
+		key := string(keyBytes)
+		typeNode, exists := typeByTrigram[key]
+		if !exists {
+			typeNode = 1 + typeCount
+			typeCount++
+			typeByTrigram[key] = typeNode
+			for _, candidate := range candidates {
+				// Each candidate contains this three-nibble target cell; longer
+				// matches remain eligible because the cell itself is a legal
+				// wrapped substring.
+				multiplicity := index.multiplicities[candidate.occurrence]
+				if multiplicity <= 0 {
+					stageEvidenceDiscardWrappedCandidates(candidates, budget)
+					return false, false, fmt.Errorf("body-free wrapped segmentation occurrence group has nonpositive multiplicity")
+				}
+				if !addEdge(typeNode, occurrenceBase+candidate.occurrence, multiplicity) {
+					stageEvidenceDiscardWrappedCandidates(candidates, budget)
+					return false, false, nil
+				}
+				touchedOccurrences[candidate.occurrence] = true
+			}
+		}
+		demands[typeNode-1]++
+		stageEvidenceDiscardWrappedCandidates(candidates, budget)
+	}
+	if terminalLength != 0 {
+		offset := len(target) - terminalLength
+		candidates, candidateErr := stageEvidenceIndexedWrappedCandidates(target, offset, index, foldHex, false, budget)
+		if candidateErr != nil {
+			return false, false, candidateErr
+		}
+		if len(candidates) == 0 || candidates[0].length < terminalLength {
+			stageEvidenceDiscardWrappedCandidates(candidates, budget)
+			return false, false, nil
+		}
+		typeNode := 1 + typeCount
+		typeCount++
+		for _, candidate := range candidates {
+			if candidate.length < terminalLength {
+				break
+			}
+			multiplicity := index.multiplicities[candidate.occurrence]
+			if multiplicity <= 0 {
+				stageEvidenceDiscardWrappedCandidates(candidates, budget)
+				return false, false, fmt.Errorf("body-free wrapped segmentation occurrence group has nonpositive multiplicity")
+			}
+			if !addEdge(typeNode, occurrenceBase+candidate.occurrence, multiplicity) {
+				stageEvidenceDiscardWrappedCandidates(candidates, budget)
+				return false, false, nil
+			}
+			touchedOccurrences[candidate.occurrence] = true
+		}
+		demands[typeNode-1] = 1
+		stageEvidenceDiscardWrappedCandidates(candidates, budget)
+	}
+	certificateSegments := segments
+	if terminalLength != 0 {
+		certificateSegments++
+	}
+	for typeIndex := 0; typeIndex < typeCount; typeIndex++ {
+		if !addEdge(0, 1+typeIndex, demands[typeIndex]) {
+			return false, false, nil
+		}
+	}
+	for occurrence, touched := range touchedOccurrences {
+		if !touched {
+			continue
+		}
+		multiplicity := index.multiplicities[occurrence]
+		if multiplicity <= 0 {
+			return false, false, fmt.Errorf("body-free wrapped segmentation occurrence group has nonpositive multiplicity")
+		}
+		if !addEdge(occurrenceBase+occurrence, sink, multiplicity) {
+			return false, false, nil
+		}
+	}
+	level := make([]int, len(graph))
+	nextEdge := make([]int, len(graph))
+	flow := 0
+	for {
+		for node := range level {
+			level[node] = -1
+		}
+		queue := make([]int, 0, len(graph))
+		level[0] = 0
+		queue = append(queue, 0)
+		for head := 0; head < len(queue); head++ {
+			node := queue[head]
+			for _, edge := range graph[node] {
+				if err := budget.consumeScalarIndexWork(1); err != nil {
+					return true, false, err
+				}
+				if edge.capacity > 0 && level[edge.to] < 0 {
+					level[edge.to] = level[node] + 1
+					queue = append(queue, edge.to)
+				}
+			}
+		}
+		if level[sink] < 0 {
+			if flow == certificateSegments {
+				return true, true, nil
+			}
+			return false, false, nil
+		}
+		clear(nextEdge)
+		var send func(int, int) (int, error)
+		send = func(node, available int) (int, error) {
+			if node == sink {
+				return available, nil
+			}
+			for nextEdge[node] < len(graph[node]) {
+				edgeIndex := nextEdge[node]
+				edge := &graph[node][edgeIndex]
+				if err := budget.consumeScalarIndexWork(1); err != nil {
+					return 0, err
+				}
+				if edge.capacity > 0 && level[edge.to] == level[node]+1 {
+					sent, sendErr := send(edge.to, min(available, edge.capacity))
+					if sendErr != nil {
+						return 0, sendErr
+					}
+					if sent != 0 {
+						edge.capacity -= sent
+						graph[edge.to][edge.reverse].capacity += sent
+						return sent, nil
+					}
+				}
+				nextEdge[node]++
+			}
+			return 0, nil
+		}
+		for {
+			sent, sendErr := send(0, certificateSegments-flow)
+			if sendErr != nil {
+				return true, false, sendErr
+			}
+			if sent == 0 {
+				break
+			}
+			flow += sent
+			if flow == certificateSegments {
+				return true, true, nil
+			}
+		}
+	}
+}
+
+// stageEvidenceTargetHasWrappedMatchCapacity is an exact impossibility gate.
+// It measures, for every occurrence group, the longest eligible substring it
+// can actually contribute to this target (rather than its raw scalar length).
+// Multiplicity-scaled total capacity below the target length proves no legal
+// distinct-occurrence segmentation exists. A passing result is only an upper
+// bound and always proceeds to the ordinary exact search.
+func stageEvidenceTargetHasWrappedMatchCapacity(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, budget *stageEvidenceSegmentationBudget) (bool, error) {
+	return stageEvidenceTargetHasWrappedMatchCapacityBounded(target, index, foldHex, budget, stageEvidenceMaxOccurrenceAuxiliaryBytes)
+}
+
+func stageEvidenceTargetHasWrappedMatchCapacityBounded(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, budget *stageEvidenceSegmentationBudget, auxiliaryLimit int64) (bool, error) {
+	if len(target) < stageEvidenceWrappedMinFragmentBytes {
+		return false, nil
+	}
+	// A packed SAM costs at most 60 bytes per target byte. Reuse one bounded
+	// automaton for at most two sequential chunks: a legal whole-target
+	// fragment splits into at most one substring per chunk, each bounded by
+	// that occurrence group's chunk LCS. Their sum is therefore still a safe
+	// (intentionally loose) contribution upper bound.
+	// Keep both the accumulated two-chunk upper bound and the current chunk
+	// maxima. They coexist with the one reusable packed automaton.
+	occurrenceBytes := int64(len(index.multiplicities)) * 8
+	if auxiliaryLimit < 0 || occurrenceBytes < 0 || occurrenceBytes > auxiliaryLimit {
+		return true, nil
+	}
+	chunkBytes := (auxiliaryLimit - occurrenceBytes) / 60
+	if chunkBytes < stageEvidenceWrappedMinFragmentBytes || int64(len(target)) > 2*chunkBytes {
+		// This optional gate cannot fit; preserve the original exact matcher.
+		return true, nil
+	}
+	stateCount := 2*chunkBytes - 1
+	edgeCount := 3 * chunkBytes
+	maximums := make([]uint32, len(index.multiplicities))
+	chunkMaximums := make([]uint32, len(index.multiplicities))
+	automaton := stageEvidenceTargetSuffixAutomaton{
+		states: make([]stageEvidenceTargetSuffixState, 1, stateCount),
+		edges:  make([]stageEvidenceTargetSuffixEdge, 0, edgeCount),
+	}
+	for chunkStart := 0; chunkStart < len(target); {
+		chunkEnd := chunkStart + int(chunkBytes)
+		if chunkEnd > len(target) {
+			chunkEnd = len(target)
+		}
+		clear(chunkMaximums)
+		automaton.states = automaton.states[:1]
+		automaton.edges = automaton.edges[:0]
+		automaton.last = 0
+		automaton.states[0] = stageEvidenceTargetSuffixState{link: -1, firstEdge: -1}
+		for _, value := range target[chunkStart:chunkEnd] {
+			if foldHex {
+				value = stageEvidenceFoldHexByte(value)
+			}
+			if err := automaton.extend(value, budget); err != nil {
+				return false, err
+			}
+		}
+		for _, representation := range index.representations {
+			longest, err := automaton.longestCommonSubstring(representation.raw, foldHex, budget)
+			if err != nil {
+				return false, err
+			}
+			for occurrenceRef := representation.occurrenceStart; occurrenceRef < representation.occurrenceEnd; occurrenceRef++ {
+				occurrence := index.occurrences[occurrenceRef]
+				if longest > chunkMaximums[occurrence] {
+					chunkMaximums[occurrence] = longest
+				}
+			}
+		}
+		for occurrence, maximum := range chunkMaximums {
+			if maximum > math.MaxUint32-maximums[occurrence] {
+				return false, fmt.Errorf("body-free wrapped target capacity overflows uint32")
+			}
+			maximums[occurrence] += maximum
+			if maximums[occurrence] > uint32(index.profile.maxLengths[occurrence]) {
+				maximums[occurrence] = uint32(index.profile.maxLengths[occurrence])
+			}
+		}
+		chunkStart = chunkEnd
+	}
+	var capacity int64
+	for occurrence, maximum := range maximums {
+		// A fragment is legal only at the existing three-byte floor. For a
+		// two-chunk fragment apply it after summing: a 1+2 boundary split is
+		// legal, while either piece alone is not.
+		if maximum < stageEvidenceWrappedMinFragmentBytes {
+			continue
+		}
+		multiplicity := index.multiplicities[occurrence]
+		if multiplicity <= 0 || int64(maximum) > (math.MaxInt64-capacity)/int64(multiplicity) {
+			return false, fmt.Errorf("body-free wrapped target capacity overflows int64")
+		}
+		capacity += int64(maximum) * int64(multiplicity)
+		if capacity >= int64(len(target)) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// stageEvidenceTargetHasWrappedPerOffsetCapacity is a tighter exact negative
+// gate for small targets. Unlike the target-wide LCS bound it only credits an
+// occurrence's longest legal match at an actual target offset. The maximum
+// over all offsets is still an upper bound on one distinct occurrence's
+// contribution, so a multiplicity-scaled shortfall proves reconstruction is
+// impossible. Candidates are released at every offset; no offset cache grows.
+func stageEvidenceTargetHasWrappedPerOffsetCapacity(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, budget *stageEvidenceSegmentationBudget) (bool, error) {
+	if len(target) < stageEvidenceWrappedMinFragmentBytes {
+		return false, nil
+	}
+	if int64(len(index.multiplicities))*4 > stageEvidenceMaxOccurrenceAuxiliaryBytes {
+		return true, nil
+	}
+	maximums := make([]uint32, len(index.multiplicities))
+	var capacity int64
+	for offset := 0; offset+stageEvidenceWrappedMinFragmentBytes <= len(target); offset++ {
+		candidates, err := stageEvidenceIndexedWrappedCandidates(target, offset, index, foldHex, false, budget)
+		if err != nil {
+			return false, err
+		}
+		for _, candidate := range candidates {
+			if uint32(candidate.length) <= maximums[candidate.occurrence] {
+				continue
+			}
+			multiplicity := index.multiplicities[candidate.occurrence]
+			if multiplicity <= 0 {
+				stageEvidenceDiscardWrappedCandidates(candidates, budget)
+				return false, fmt.Errorf("body-free wrapped segmentation occurrence group has nonpositive multiplicity")
+			}
+			delta := int64(uint32(candidate.length) - maximums[candidate.occurrence])
+			if delta > (math.MaxInt64-capacity)/int64(multiplicity) {
+				stageEvidenceDiscardWrappedCandidates(candidates, budget)
+				return false, fmt.Errorf("body-free wrapped target capacity overflows int64")
+			}
+			capacity += delta * int64(multiplicity)
+			maximums[candidate.occurrence] = uint32(candidate.length)
+			if capacity >= int64(len(target)) {
+				stageEvidenceDiscardWrappedCandidates(candidates, budget)
+				return true, nil
+			}
+		}
+		stageEvidenceDiscardWrappedCandidates(candidates, budget)
+	}
+	return false, nil
+}
+
+// The suffix automaton is deliberately packed: states and transitions are
+// twelve bytes each, so the optional target-specific proof remains bounded by
+// the existing occurrence auxiliary limit even for the large native targets.
+type stageEvidenceTargetSuffixState struct {
+	link      int32
+	length    uint32
+	firstEdge int32
+}
+type stageEvidenceTargetSuffixEdge struct {
+	to    int32
+	next  int32
+	value byte
+	_     [3]byte
+}
+type stageEvidenceTargetSuffixAutomaton struct {
+	states []stageEvidenceTargetSuffixState
+	edges  []stageEvidenceTargetSuffixEdge
+	last   int32
+}
+
+func (automaton *stageEvidenceTargetSuffixAutomaton) edge(state int32, value byte, budget *stageEvidenceSegmentationBudget) (int32, error) {
+	for edge := automaton.states[state].firstEdge; edge >= 0; edge = automaton.edges[edge].next {
+		if err := budget.consumeScalarIndexWork(1); err != nil {
+			return 0, err
+		}
+		if automaton.edges[edge].value == value {
+			return automaton.edges[edge].to, nil
+		}
+	}
+	return -1, nil
+}
+func (automaton *stageEvidenceTargetSuffixAutomaton) setEdge(state int32, value byte, to int32, budget *stageEvidenceSegmentationBudget) error {
+	for edge := automaton.states[state].firstEdge; edge >= 0; edge = automaton.edges[edge].next {
+		if err := budget.consumeScalarIndexWork(1); err != nil {
+			return err
+		}
+		if automaton.edges[edge].value == value {
+			automaton.edges[edge].to = to
+			return nil
+		}
+	}
+	if len(automaton.edges) == cap(automaton.edges) {
+		return fmt.Errorf("body-free suffix capacity transition bound exhausted")
+	}
+	if err := budget.consumeScalarIndexWork(1); err != nil {
+		return err
+	}
+	automaton.edges = append(automaton.edges, stageEvidenceTargetSuffixEdge{to: to, next: automaton.states[state].firstEdge, value: value})
+	automaton.states[state].firstEdge = int32(len(automaton.edges) - 1)
+	return nil
+}
+func (automaton *stageEvidenceTargetSuffixAutomaton) extend(value byte, budget *stageEvidenceSegmentationBudget) error {
+	if len(automaton.states)+1 > cap(automaton.states) {
+		return fmt.Errorf("body-free suffix capacity state bound exhausted")
+	}
+	current := int32(len(automaton.states))
+	automaton.states = append(automaton.states, stageEvidenceTargetSuffixState{length: automaton.states[automaton.last].length + 1, link: -1, firstEdge: -1})
+	p := automaton.last
+	for p >= 0 {
+		next, err := automaton.edge(p, value, budget)
+		if err != nil {
+			return err
+		}
+		if next >= 0 {
+			break
+		}
+		if err := automaton.setEdge(p, value, current, budget); err != nil {
+			return err
+		}
+		p = automaton.states[p].link
+	}
+	if p < 0 {
+		automaton.states[current].link = 0
+	} else {
+		q, err := automaton.edge(p, value, budget)
+		if err != nil {
+			return err
+		}
+		if automaton.states[p].length+1 == automaton.states[q].length {
+			automaton.states[current].link = q
+		} else {
+			if len(automaton.states)+1 > cap(automaton.states) {
+				return fmt.Errorf("body-free suffix capacity state bound exhausted")
+			}
+			clone, err := automaton.clone(q, automaton.states[p].length+1, budget)
+			if err != nil {
+				return err
+			}
+			for p >= 0 {
+				next, err := automaton.edge(p, value, budget)
+				if err != nil {
+					return err
+				}
+				if next != q {
+					break
+				}
+				if err := automaton.setEdge(p, value, clone, budget); err != nil {
+					return err
+				}
+				p = automaton.states[p].link
+			}
+			automaton.states[q].link, automaton.states[current].link = clone, clone
+		}
+	}
+	automaton.last = current
+	return nil
+}
+
+// clone duplicates q's transition list. Edges are mutable when suffix links
+// are redirected, so sharing q's list would silently redirect clone edges too.
+func (automaton *stageEvidenceTargetSuffixAutomaton) clone(q int32, length uint32, budget *stageEvidenceSegmentationBudget) (int32, error) {
+	if len(automaton.states)+1 > cap(automaton.states) {
+		return 0, fmt.Errorf("body-free suffix capacity state bound exhausted")
+	}
+	clone := int32(len(automaton.states))
+	automaton.states = append(automaton.states, stageEvidenceTargetSuffixState{link: automaton.states[q].link, length: length, firstEdge: -1})
+	for edge := automaton.states[q].firstEdge; edge >= 0; edge = automaton.edges[edge].next {
+		if len(automaton.edges) == cap(automaton.edges) {
+			return 0, fmt.Errorf("body-free suffix capacity transition bound exhausted")
+		}
+		if err := budget.consumeScalarIndexWork(1); err != nil {
+			return 0, err
+		}
+		original := automaton.edges[edge]
+		automaton.edges = append(automaton.edges, stageEvidenceTargetSuffixEdge{to: original.to, next: automaton.states[clone].firstEdge, value: original.value})
+		automaton.states[clone].firstEdge = int32(len(automaton.edges) - 1)
+	}
+	return clone, nil
+}
+func (automaton *stageEvidenceTargetSuffixAutomaton) longestCommonSubstring(value []byte, foldHex bool, budget *stageEvidenceSegmentationBudget) (uint32, error) {
+	state, length, longest := int32(0), uint32(0), uint32(0)
+	for _, current := range value {
+		if foldHex {
+			current = stageEvidenceFoldHexByte(current)
+		}
+		next, err := automaton.edge(state, current, budget)
+		if err != nil {
+			return 0, err
+		}
+		for state != 0 && next < 0 {
+			state = automaton.states[state].link
+			length = automaton.states[state].length
+			next, err = automaton.edge(state, current, budget)
+			if err != nil {
+				return 0, err
+			}
+		}
+		if next >= 0 {
+			state, length = next, length+1
+		} else {
+			length = 0
+		}
+		if length > longest {
+			longest = length
+		}
+	}
+	return longest, nil
+}
+
+// stageEvidenceTargetHasWrappedSegmentationStreaming proves the same
+// distinct-occurrence predicate as the cached search, but retains no
+// offset-to-candidate map. It is used for large selected bodies, where a
+// harmless field-profile expansion must not turn the fixed cache ceiling into
+// an acceptance shortcut. Candidate bytes are released after each exact
+// query; all comparison and scalar-index work remains charged and therefore
+// still fails closed at the established deterministic limits.
+func stageEvidenceTargetHasWrappedSegmentationStreaming(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, budget *stageEvidenceSegmentationBudget) (bool, error) {
+	maxFrameCount := len(target)/stageEvidenceWrappedMinFragmentBytes + 1
+	const frameBytes = int64(64)
+	auxiliaryBytes := int64(len(index.profile.maxLengths))*8 + 2*int64(len(target)+1) + int64(maxFrameCount)*frameBytes
+	if auxiliaryBytes < 0 || auxiliaryBytes > stageEvidenceMaxOccurrenceAuxiliaryBytes {
+		return false, fmt.Errorf("body-free wrapped streaming segmentation exceeds fixed occurrence auxiliary byte limit %d", stageEvidenceMaxOccurrenceAuxiliaryBytes)
+	}
+	reachable := make([]bool, len(target)+1)
+	// Candidate intervals for one offset are nested by their longest exact
+	// match. Retaining that one integer is enough for both reachability passes;
+	// the occurrence-bearing candidate roster is recomputed only by the final
+	// witness search.
+	longestAt := make([]int, len(target))
+	reachable[0] = true
+	for offset := 0; offset < len(target); offset++ {
+		if !reachable[offset] {
+			continue
+		}
+		candidates, err := stageEvidenceIndexedWrappedCandidates(target, offset, index, foldHex, offset == 0, budget)
+		if err != nil {
+			return false, err
+		}
+		longest := 0
+		if len(candidates) != 0 {
+			longest = candidates[0].length
+		}
+		stageEvidenceDiscardWrappedCandidates(candidates, budget)
+		longestAt[offset] = longest
+		if longest == 0 {
+			continue
+		}
+		if err := budget.consumeScalarIndexWork(int64(longest - stageEvidenceWrappedMinFragmentBytes + 1)); err != nil {
+			return false, err
+		}
+		for length := stageEvidenceWrappedMinFragmentBytes; length <= longest; length++ {
+			reachable[offset+length] = true
+		}
+	}
+	if !reachable[len(target)] {
+		return false, nil
+	}
+	canFinish := make([]bool, len(target)+1)
+	canFinish[len(target)] = true
+	for offset := len(target) - 1; offset >= 0; offset-- {
+		if !reachable[offset] {
+			continue
+		}
+		longest := longestAt[offset]
+		if longest == 0 {
+			continue
+		}
+		if err := budget.consumeScalarIndexWork(int64(longest - stageEvidenceWrappedMinFragmentBytes + 1)); err != nil {
+			return false, err
+		}
+		for length := stageEvidenceWrappedMinFragmentBytes; length <= longest; length++ {
+			if canFinish[offset+length] {
+				canFinish[offset] = true
+				break
+			}
+		}
+	}
+	if !canFinish[0] {
+		return false, nil
+	}
+	return stageEvidenceWrappedSegmentationStreamingSearch(target, index, foldHex, reachable, canFinish, maxFrameCount, budget)
+}
+
+func stageEvidenceWrappedSegmentationStreamingSearch(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, reachable, canFinish []bool, maxFrameCount int, budget *stageEvidenceSegmentationBudget) (bool, error) {
+	used := make([]int, len(index.profile.maxLengths))
+	frames := make([]stageEvidenceWrappedSearchFrame, 0, maxFrameCount)
+	push := func(frame stageEvidenceWrappedSearchFrame) error {
+		budget.statesRemaining--
+		if budget.statesRemaining < 0 {
+			return stageEvidenceAggregateStateBoundError
+		}
+		frames = append(frames, frame)
+		return nil
+	}
+	pop := func() {
+		frame := frames[len(frames)-1]
+		if frame.chosenOccurrence >= 0 {
+			used[frame.chosenOccurrence]--
+		}
+		frames = frames[:len(frames)-1]
+	}
+	if err := push(stageEvidenceWrappedSearchFrame{chosenOccurrence: -1}); err != nil {
+		return false, err
+	}
+	for len(frames) != 0 {
+		frame := &frames[len(frames)-1]
+		if frame.offset == len(target) {
+			if frame.segmentCount >= 2 {
+				return true, nil
+			}
+			pop()
+			continue
+		}
+		if !reachable[frame.offset] || !canFinish[frame.offset] {
+			pop()
+			continue
+		}
+		candidates, err := stageEvidenceIndexedWrappedCandidates(target, frame.offset, index, foldHex, frame.offset == 0, budget)
+		if err != nil {
+			return false, err
+		}
+		if frame.candidateIndex >= len(candidates) {
+			stageEvidenceDiscardWrappedCandidates(candidates, budget)
+			pop()
+			continue
+		}
+		candidate := candidates[frame.candidateIndex]
+		stageEvidenceDiscardWrappedCandidates(candidates, budget)
+		if err := budget.consumeScalarIndexWork(1); err != nil {
+			return false, err
+		}
+		multiplicity := index.multiplicities[candidate.occurrence]
+		if multiplicity <= 0 {
+			return false, fmt.Errorf("body-free wrapped segmentation occurrence group has nonpositive multiplicity")
+		}
+		if used[candidate.occurrence] >= multiplicity {
+			frame.candidateIndex++
+			frame.candidateLength = 0
+			continue
+		}
+		if frame.candidateLength == 0 {
+			frame.candidateLength = candidate.length
+		}
+		length := frame.candidateLength
+		if length == stageEvidenceWrappedMinFragmentBytes {
+			frame.candidateIndex++
+			frame.candidateLength = 0
+		} else {
+			frame.candidateLength--
+		}
+		if !canFinish[frame.offset+length] {
+			continue
+		}
+		used[candidate.occurrence]++
+		if err := push(stageEvidenceWrappedSearchFrame{offset: frame.offset + length, segmentCount: frame.segmentCount + 1, chosenOccurrence: candidate.occurrence}); err != nil {
+			used[candidate.occurrence]--
+			return false, err
+		}
+	}
+	return false, nil
 }
 
 func stageEvidenceTargetHasWrappedSegmentationSearchWithCache(target []byte, index *stageEvidenceWrappedIndex, foldHex bool, cache map[int][]stageEvidenceWrappedCandidate, budget *stageEvidenceSegmentationBudget) (bool, error) {

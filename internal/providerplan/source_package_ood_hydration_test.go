@@ -56,8 +56,8 @@ func (s *hydrationSpanner) StreamingRead(req *spannerpb.ReadRequest, stream span
 	return stream.Send(&spannerpb.PartialResultSet{Metadata: &spannerpb.ResultSetMetadata{RowType: &spannerpb.StructType{Fields: fields}}, Values: vals})
 }
 func (s *hydrationSpanner) ExecuteStreamingSql(req *spannerpb.ExecuteSqlRequest, stream spannerpb.Spanner_ExecuteStreamingSqlServer) error {
-	cols := []string{"entry_ordinal", "entry_kind", "member_id", "member_hash", "child_manifest_node_hash"}
-	types := []*spannerpb.Type{{Code: spannerpb.TypeCode_INT64}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_STRING}}
+	cols := []string{"entry_ordinal", "entry_kind", "member_id", "member_hash", "child_manifest_node_hash", "canonical_entry_byte_count"}
+	types := []*spannerpb.Type{{Code: spannerpb.TypeCode_INT64}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_STRING}, {Code: spannerpb.TypeCode_INT64}}
 	fields := make([]*spannerpb.StructType_Field, len(cols))
 	for i := range cols {
 		fields[i] = &spannerpb.StructType_Field{Name: cols[i], Type: types[i]}
@@ -70,7 +70,7 @@ func (s *hydrationSpanner) ExecuteStreamingSql(req *spannerpb.ExecuteSqlRequest,
 	if kind == "" {
 		kind = "receipt"
 	}
-	values := []*structpb.Value{structpb.NewStringValue(ord), structpb.NewStringValue(kind), structpb.NewStringValue("receipt"), structpb.NewStringValue(strings.Repeat("a", 64)), structpb.NewNullValue()}
+	values := []*structpb.Value{structpb.NewStringValue(ord), structpb.NewStringValue(kind), structpb.NewStringValue("receipt"), structpb.NewStringValue(strings.Repeat("a", 64)), structpb.NewNullValue(), structpb.NewStringValue("1")}
 	return stream.Send(&spannerpb.PartialResultSet{Metadata: &spannerpb.ResultSetMetadata{RowType: &spannerpb.StructType{Fields: fields}}, Values: values})
 }
 func hydrationValue(c string, bad bool) (*spannerpb.Type, *structpb.Value) {

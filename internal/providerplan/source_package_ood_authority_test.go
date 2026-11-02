@@ -26,7 +26,7 @@ func productionSourceOODEligibilityProof() DocumentationFactoryProductionSourceO
 		SnapshotID: "123e4567-e89b-12d3-a456-426614174001", SnapshotKind: "provider_documentation", SnapshotHeadGeneration: 7, SnapshotState: "sealed", SnapshotStatus: "active",
 		SourceSetSHA256: strings.Repeat("1", 64), ClosureSHA256: strings.Repeat("2", 64),
 		VerificationCertificateID: "123e4567-e89b-12d3-a456-426614174002", VerificationCertificateSHA256: strings.Repeat("3", 64),
-		MaterializationProfileID: "provider_documentation_profile", MaterializationProfileVersion: "v1", MaterializationProfileSHA256: strings.Repeat("4", 64),
+		MaterializationProfileID: "123e4567-e89b-12d3-a456-426614174003", MaterializationProfileVersion: "v1", MaterializationProfileSHA256: strings.Repeat("4", 64),
 		ExternalReceiptManifestRootSHA256: strings.Repeat("5", 64), FetchBatchManifestRootSHA256: strings.Repeat("6", 64), FetchBatchCount: 1,
 		ArchiveBindingManifestRootSHA256: strings.Repeat("7", 64), ExternalCurrentValidityResultReference: "ood_current_validity", ExternalCurrentValidityResultSHA256: strings.Repeat("8", 64),
 	}

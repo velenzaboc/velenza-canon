@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>DescribeInstances - Amazon Elastic Compute Cloud</title><meta name="viewport" content="width=device-width,initial-scale=1" /><meta name="assets_root" content="/assets" /><meta name="target_state" content="API_DescribeInstances" /><meta name="default_state" content="API_DescribeInstances" /><link rel="icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="shortcut icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="canonical" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html" /><link rel="alternate" type="text/markdown" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.md" title="Markdown version" /><meta name="description" content="Describes the specified instances or all instances." /><meta name="deployment_region" content="IAD" /><meta name="product" content="Amazon Elastic Compute Cloud" /><meta name="guide" content="API Reference" /><meta name="abstract" content="This is the Amazon EC2 API Reference. It provides descriptions, API request parameters, and the XML response for each of the Amazon EC2 Query API actions. Note that the Amazon EC2 API includes actions for Amazon EC2 plus additional services, such as Amazon EBS and Amazon VPC." /><meta name="guide-locale" content="en_us" /><meta name="tocs" content="toc-contents.json" /><link rel="canonical" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="id-id" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="id" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="de-de" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="de" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="en-us" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="en" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="es-es" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="es" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="fr-fr" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="fr" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="it-it" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="it" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="ja-jp" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="ja" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="ko-kr" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="ko" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="pt-br" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="pt" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_cn/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="zh-cn" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_tw/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="zh-tw" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html" hreflang="x-default" /><meta name="feedback-item" content="EC2" /><meta name="this_doc_product" content="Amazon Elastic Compute Cloud" /><meta name="this_doc_guide" content="API Reference" /><head xmlns="http://www.w3.org/1999/xhtml"> <script defer="" src="/assets/r/awsdocs-doc-page.2.0.0.js"></script><link href="/assets/r/awsdocs-doc-page.2.0.0.css" rel="stylesheet"/></head>
+<script defer="" id="awsc-panorama-bundle" type="text/javascript" src="https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js" data-config="{'appEntity':'aws-documentation','region':'us-east-1','service':'ec2'}"></script><meta id="panorama-serviceSubSection" value="API Reference" /><meta id="panorama-serviceConsolePage" value="DescribeInstances" /></head><body class="awsdocs awsui"><div class="awsdocs-container"><p><a href="API_DescribeInstances.md">View a markdown version of this page</a></p><awsdocs-header></awsdocs-header><awsui-app-layout id="app-layout" class="awsui-util-no-gutters" ng-controller="ContentController as $ctrl" header-selector="awsdocs-header" navigation-hide="false" navigation-width="$ctrl.navWidth" navigation-open="$ctrl.navOpen" navigation-change="$ctrl.onNavChange($event)" tools-hide="$ctrl.hideTools" tools-width="$ctrl.toolsWidth" tools-open="$ctrl.toolsOpen" tools-change="$ctrl.onToolsChange($event)"><div id="guide-toc" dom-region="navigation"><awsdocs-toc></awsdocs-toc></div><div id="main-column" dom-region="content" tabindex="-1"><awsdocs-view class="awsdocs-view"><div id="awsdocs-content"><head><title>DescribeInstances - Amazon Elastic Compute Cloud</title><meta name="pdf" content="/pdfs/AWSEC2/latest/APIReference/ec2-api.pdf#API_DescribeInstances" /><meta name="forums" content="https://repost.aws/tags/TAO-wqN9fYRoyrpdULLa5y7g" /><meta name="feedback" content="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeInstances.html" /><meta name="feedback-yes" content="feedbackyes.html?topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeInstances.html" /><meta name="feedback-no" content="feedbackno.html?topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeInstances.html" /><meta name="keywords" content="API,requests,DescribeInstances" /><script type="application/ld+json">
+{
+    "@context" : "https://schema.org",
+    "@type" : "BreadcrumbList",
+    "itemListElement" : [
+      {
+        "@type" : "ListItem",
+        "position" : 1,
+        "name" : "AWS",
+        "item" : "https://aws.amazon.com"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 2,
+        "name" : "Amazon EC2",
+        "item" : "https://docs.aws.amazon.com/ec2/index.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 3,
+        "name" : "API Reference",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/APIReference"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 4,
+        "name" : "Actions",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Operations.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 5,
+        "name" : "DescribeInstances",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Operations.html"
+      }
+    ]
+}
+</script></head><body><div id="main"><div style="display: none"><a href="/pdfs/AWSEC2/latest/APIReference/ec2-api.pdf#API_DescribeInstances" target="_blank" rel="noopener noreferrer" title="Open PDF"></a></div><div id="breadcrumbs" class="breadcrumb"><a href="/index.html">Documentation</a><a href="/ec2/index.html">Amazon EC2</a><a href="Welcome.html">API Reference</a></div><div id="page-toc-src"><a href="#API_DescribeInstances_RequestParameters">Request Parameters</a><a href="#API_DescribeInstances_ResponseElements">Response Elements</a><a href="#API_DescribeInstances_Errors">Errors</a><a href="#API_DescribeInstances_Examples">Examples</a><a href="#API_DescribeInstances_SeeAlso">See Also</a></div><div id="main-content" class="awsui-util-container"><div id="main-col-body"><awsdocs-language-banner data-service="$ctrl.pageService"></awsdocs-language-banner><h1 class="topictitle" id="API_DescribeInstances">DescribeInstances</h1><div class="awsdocs-page-header-container"><awsdocs-page-header></awsdocs-page-header><awsdocs-filter-selector id="awsdocs-filter-selector"></awsdocs-filter-selector></div><p>Describes the specified instances or all instances.</p><p>If you specify instance IDs, the output includes information for only the specified
+            instances. If you specify filters, the output includes information for only those
+            instances that meet the filter criteria. If you do not specify instance IDs or filters,
+            the output includes information for all instances, which can affect performance. We
+            recommend that you use pagination to ensure that the operation returns quickly and
+            successfully.</p><p>The response includes SQL license exemption status information for instances registered
+            with the SQL LE service, providing visibility into license exemption configuration and status.</p><p>If you specify an instance ID that is not valid, an error is returned. If you specify
+            an instance that you do not own, it is not included in the output.</p><p>Recently terminated instances might appear in the returned results. This interval is
+            usually less than one hour.</p><p>If you describe instances in the rare case where an Availability Zone is experiencing
+            a service disruption and you specify instance IDs that are in the affected zone, or do
+            not specify any instance IDs at all, the call fails. If you describe instances and
+            specify only instance IDs that are in an unaffected zone, the call works
+            normally.</p><p>The Amazon EC2 API follows an eventual consistency model. This means that the result of an
+            API command you run that creates or modifies resources might not be immediately
+            available to all subsequent commands you run. For guidance on how to manage eventual
+            consistency, see <a href="https://docs.aws.amazon.com/ec2/latest/devguide/eventual-consistency.html">Eventual consistency in the
+                Amazon EC2 API</a> in the <em>Amazon EC2 Developer
+            Guide</em>.</p><div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>We strongly recommend using only paginated requests. Unpaginated requests are
+                susceptible to throttling and timeouts.</p></div></div><div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>The order of the elements in the response, including those within nested
+                structures, might vary. Applications should not assume the elements appear in a
+                particular order.</p></div></div>
+      <h2 id="API_DescribeInstances_RequestParameters">Request Parameters</h2>
+      <p>The following parameters are for this specific action. For more information about required and optional parameters that are common to all actions, see <a href="./CommonParameters.html">Common Query Parameters</a>.</p>
+      <div class="variablelist">
+          
+          
+          
+          
+          
+          
+      <dl>
+            <dt><span class="term">
+               <b>DryRun</b>
+            </span></dt>
+            <dd>
+               <p>Checks whether you have the required permissions for the operation, without actually making the 
+  request, and provides an error response. If you have the required permissions, the error response is 
+  <code class="code">DryRunOperation</code>. Otherwise, it is <code class="code">UnauthorizedOperation</code>.</p>
+               <p>Type: Boolean</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>Filter.N</b>
+            </span></dt>
+            <dd>
+               <p>The filters.</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>
+                        <code class="code">affinity</code> - The affinity setting for an instance running on a
+                    Dedicated Host (<code class="code">default</code> | <code class="code">host</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">architecture</code> - The instance architecture (<code class="code">i386</code> |
+                        <code class="code">x86_64</code> | <code class="code">arm64</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">availability-zone</code> - The Availability Zone of the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">availability-zone-id</code> - The ID of the Availability Zone of the
+                    instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">block-device-mapping.attach-time</code> - The attach time for an EBS
+                    volume mapped to the instance, for example,
+                        <code class="code">2022-09-15T17:15:20.000Z</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">block-device-mapping.delete-on-termination</code> - A Boolean that
+                    indicates whether the EBS volume is deleted on instance termination.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">block-device-mapping.device-name</code> - The device name specified in
+                    the block device mapping (for example, <code class="code">/dev/sdh</code> or
+                        <code class="code">xvdh</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">block-device-mapping.status</code> - The status for the EBS volume
+                        (<code class="code">attaching</code> | <code class="code">attached</code> | <code class="code">detaching</code> |
+                        <code class="code">detached</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">block-device-mapping.volume-id</code> - The volume ID of the EBS
+                    volume.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">boot-mode</code> - The boot mode that was specified by the AMI
+                        (<code class="code">legacy-bios</code> | <code class="code">uefi</code> |
+                    <code class="code">uefi-preferred</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">capacity-reservation-id</code> - The ID of the Capacity Reservation into which the
+                    instance was launched.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">capacity-reservation-specification.capacity-reservation-preference</code>
+                    - The instance's Capacity Reservation preference (<code class="code">open</code> | <code class="code">none</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">capacity-reservation-specification.capacity-reservation-target.capacity-reservation-id</code>
+                    - The ID of the targeted Capacity Reservation.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">capacity-reservation-specification.capacity-reservation-target.capacity-reservation-resource-group-arn</code>
+                    - The ARN of the targeted Capacity Reservation group.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">client-token</code> - The idempotency token you provided when you
+                    launched the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">current-instance-boot-mode</code> - The boot mode that is used to launch
+                    the instance at launch or start (<code class="code">legacy-bios</code> |
+                    <code class="code">uefi</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">dns-name</code> - The public DNS name of the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">ebs-optimized</code> - A Boolean that indicates whether the instance is
+                    optimized for Amazon EBS I/O.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">ena-support</code> - A Boolean that indicates whether the instance is
+                    enabled for enhanced networking with ENA.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">enclave-options.enabled</code> - A Boolean that indicates whether the
+                    instance is enabled for AWS Nitro Enclaves.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">hibernation-options.configured</code> - A Boolean that indicates whether
+                    the instance is enabled for hibernation. A value of <code class="code">true</code> means that
+                    the instance is enabled for hibernation.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">host-id</code> - The ID of the Dedicated Host on which the instance is
+                    running, if applicable.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">hypervisor</code> - The hypervisor type of the instance
+                        (<code class="code">ovm</code> | <code class="code">xen</code>). The value <code class="code">xen</code> is used
+                    for both Xen and Nitro hypervisors.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">iam-instance-profile.arn</code> - The instance profile associated with
+                    the instance. Specified as an ARN.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">iam-instance-profile.id</code> - The instance profile associated with
+                    the instance. Specified as an ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">image-id</code> - The ID of the image used to launch the
+                    instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance-id</code> - The ID of the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance-lifecycle</code> - Indicates whether this is a Spot Instance, a Scheduled Instance, or
+                     a Capacity Block (<code class="code">spot</code> | <code class="code">scheduled</code> | <code class="code">capacity-block</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance-state-code</code> - The state of the instance, as a 16-bit
+                    unsigned integer. The high byte is used for internal purposes and should be
+                    ignored. The low byte is set based on the state represented. The valid values
+                    are: 0 (pending), 16 (running), 32 (shutting-down), 48 (terminated), 64
+                    (stopping), and 80 (stopped).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance-state-name</code> - The state of the instance
+                        (<code class="code">pending</code> | <code class="code">running</code> | <code class="code">shutting-down</code> |
+                        <code class="code">terminated</code> | <code class="code">stopping</code> |
+                    <code class="code">stopped</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance-type</code> - The type of instance (for example,
+                        <code class="code">t2.micro</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance.group-id</code> - The ID of the security group for the
+                    instance. </p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">instance.group-name</code> - The name of the security group for the
+                    instance. </p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">ip-address</code> - The public IPv4 address of the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">ipv6-address</code> - The IPv6 address of the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">kernel-id</code> - The kernel ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">key-name</code> - The name of the key pair used when the instance was
+                    launched.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">launch-index</code> - When launching multiple instances, this is the
+                    index for the instance in the launch group (for example, 0, 1, 2, and so on).
+                </p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">launch-time</code> - The time when the instance was launched, in the ISO
+                    8601 format in the UTC time zone (YYYY-MM-DDThh:mm:ss.sssZ), for example,
+                        <code class="code">2021-09-29T11:04:43.305Z</code>. You can use a wildcard
+                        (<code class="code">*</code>), for example, <code class="code">2021-09-29T*</code>, which matches an
+                    entire day.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">maintenance-options.auto-recovery</code> - The current automatic
+                    recovery behavior of the instance (<code class="code">disabled</code> | <code class="code">default</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.http-endpoint</code> - The status of access to the HTTP
+                    metadata endpoint on your instance (<code class="code">enabled</code> |
+                    <code class="code">disabled</code>)</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.http-protocol-ipv4</code> - Indicates whether the IPv4
+                    endpoint is enabled (<code class="code">disabled</code> | <code class="code">enabled</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.http-protocol-ipv6</code> - Indicates whether the IPv6
+                    endpoint is enabled (<code class="code">disabled</code> | <code class="code">enabled</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.http-put-response-hop-limit</code> - The HTTP metadata
+                    request put response hop limit (integer, possible values <code class="code">1</code> to
+                        <code class="code">64</code>)</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.http-tokens</code> - The metadata request authorization
+                    state (<code class="code">optional</code> | <code class="code">required</code>)</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.instance-metadata-tags</code> - The status of access to
+                    instance tags from the instance metadata (<code class="code">enabled</code> |
+                        <code class="code">disabled</code>)</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">metadata-options.state</code> - The state of the metadata option changes
+                        (<code class="code">pending</code> | <code class="code">applied</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">monitoring-state</code> - Indicates whether detailed monitoring is
+                    enabled (<code class="code">disabled</code> | <code class="code">enabled</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.allocation-id</code> - The allocation ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.association-id</code> - The association ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.carrier-ip</code> - The carrier IP address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.customer-owned-ip</code> - The customer-owned IP address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.ip-owner-id</code> - The owner
+                    ID of the private IPv4 address associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.public-dns-name</code> - The public DNS name.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.association.public-ip</code> - The ID of the
+                    association of an Elastic IP address (IPv4) with a network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.primary</code> - Specifies whether the IPv4
+                    address of the network interface is the primary private IPv4 address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.private-dns-name</code> - The private DNS name.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.addresses.private-ip-address</code> - The private IPv4
+                    address associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.allocation-id</code> - The allocation ID
+                    returned when you allocated the Elastic IP address (IPv4) for your network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.association-id</code> - The association ID
+                    returned when the network interface was associated with an IPv4 address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.carrier-ip</code> - The customer-owned IP address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.customer-owned-ip</code> - The customer-owned IP address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.ip-owner-id</code> - The owner of the
+                    Elastic IP address (IPv4) associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.public-dns-name</code> - The public DNS name.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.association.public-ip</code> - The address of the
+                    Elastic IP address (IPv4) bound to the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.attach-time</code> - The time that the
+                    network interface was attached to an instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.attachment-id</code> - The ID of the
+                    interface attachment.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.delete-on-termination</code> - Specifies
+                    whether the attachment is deleted when an instance is terminated.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.device-index</code> - The device index to
+                    which the network interface is attached.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.instance-id</code> - The ID of the instance
+                    to which the network interface is attached.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.instance-owner-id</code> - The owner ID of
+                    the instance to which the network interface is attached.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.network-card-index</code> - The index of the network card.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.attachment.status</code> - The status of the
+                    attachment (<code class="code">attaching</code> | <code class="code">attached</code> |
+                    <code class="code">detaching</code> | <code class="code">detached</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.availability-zone</code> - The Availability Zone for
+                    the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.deny-all-igw-traffic</code> - A Boolean that indicates whether 
+                a network interface with an IPv6 address is unreachable from the public internet.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.description</code> - The description of the network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.group-id</code> - The ID of a security group
+                    associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.group-name</code> - The name of a security group
+                    associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.ipv4-prefixes.ipv4-prefix</code> - The IPv4 prefixes that are assigned to the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.ipv6-address</code> - The IPv6 address associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.ipv6-addresses.ipv6-address</code> - The IPv6 address
+                    associated with the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.ipv6-addresses.is-primary-ipv6</code> - A Boolean that indicates whether this
+                    is the primary IPv6 address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.ipv6-native</code> - A Boolean that indicates whether this is
+                    an IPv6 only network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.ipv6-prefixes.ipv6-prefix</code> - The IPv6 prefix assigned to the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.mac-address</code> - The MAC address of the network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.network-interface-id</code> - The ID of the network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.operator.managed</code> - A Boolean that indicates
+                    whether the instance has a managed network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.operator.principal</code> - The principal that manages
+                    the network interface. Only valid for instances with managed network interfaces,
+                    where <code class="code">managed</code> is <code class="code">true</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.outpost-arn</code> - The ARN of the Outpost.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.owner-id</code> - The ID of the owner of the network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.private-dns-name</code> - The private DNS name of the
+                    network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.private-ip-address</code> - The private IPv4 address.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.public-dns-name</code> - The public DNS name.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.requester-id</code> - The requester ID for the network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.requester-managed</code> - Indicates whether the
+                    network interface is being managed by AWS.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.status</code> - The status of the network interface
+                        (<code class="code">available</code>) | <code class="code">in-use</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.source-dest-check</code> - Whether the network
+                    interface performs source/destination checking. A value of <code class="code">true</code>
+                    means that checking is enabled, and <code class="code">false</code> means that checking is
+                    disabled. The value must be <code class="code">false</code> for the network interface to
+                    perform network address translation (NAT) in your VPC.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.subnet-id</code> - The ID of the subnet for the
+                    network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.tag-key</code> - The key of a tag assigned to the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.tag-value</code> - The value of a tag assigned to the network interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-interface.vpc-id</code> - The ID of the VPC for the network
+                    interface.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">network-performance-options.bandwidth-weighting</code> - Where the performance boost 
+        			is applied, if applicable. Valid values: <code class="code">default</code>, <code class="code">vpc-1</code>, 
+        			<code class="code">ebs-1</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">operator.managed</code> - A Boolean that indicates whether this is a
+                    managed instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">operator.principal</code> - The principal that manages the instance.
+                    Only valid for managed instances, where <code class="code">managed</code> is
+                        <code class="code">true</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">outpost-arn</code> - The Amazon Resource Name (ARN) of the
+                    Outpost.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">owner-id</code> - The AWS account ID of the instance
+                    owner.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">placement-group-name</code> - The name of the placement group for the
+                    instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">placement-partition-number</code> - The partition in which the instance is
+                    located.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">platform</code> - The platform. To list only Windows instances, use
+                        <code class="code">windows</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">platform-details</code> - The platform (<code class="code">Linux/UNIX</code> |
+                        <code class="code">Red Hat BYOL Linux</code> | <code class="code"> Red Hat Enterprise Linux</code> |
+                    <code class="code">Red Hat Enterprise Linux with HA</code> | <code class="code">Red Hat Enterprise Linux with High Availability</code> | <code class="code">Red Hat Enterprise
+                        Linux with SQL Server Standard and HA</code> | <code class="code">Red Hat Enterprise
+                        Linux with SQL Server Enterprise and HA</code> | <code class="code">Red Hat Enterprise
+                        Linux with SQL Server Standard</code> | <code class="code">Red Hat Enterprise Linux with
+                        SQL Server Web</code> | <code class="code">Red Hat Enterprise Linux with SQL Server
+                        Enterprise</code> | <code class="code">SQL Server Enterprise</code> | <code class="code">SQL Server
+                        Standard</code> | <code class="code">SQL Server Web</code> | <code class="code">SUSE Linux</code> |
+                        <code class="code">Ubuntu Pro</code> | <code class="code">Windows</code> | <code class="code">Windows BYOL</code> |
+                        <code class="code">Windows with SQL Server Enterprise</code> | <code class="code">Windows with SQL
+                        Server Standard</code> | <code class="code">Windows with SQL Server Web</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">private-dns-name</code> - The private IPv4 DNS name of the
+                    instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">private-dns-name-options.enable-resource-name-dns-a-record</code> - A
+                    Boolean that indicates whether to respond to DNS queries for instance hostnames
+                    with DNS A records.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">private-dns-name-options.enable-resource-name-dns-aaaa-record</code> - A
+                    Boolean that indicates whether to respond to DNS queries for instance hostnames
+                    with DNS AAAA records.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">private-dns-name-options.hostname-type</code> - The type of hostname
+                    (<code class="code">ip-name</code> | <code class="code">resource-name</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">private-ip-address</code> - The private IPv4 address of the instance.
+                    This can only be used to filter by the primary IP address of the network
+                    interface attached to the instance. To filter by additional IP addresses
+                    assigned to the network interface, use the filter
+                        <code class="code">network-interface.addresses.private-ip-address</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">product-code</code> - The product code associated with the AMI used to
+                    launch the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">product-code.type</code> - The type of product code (<code class="code">devpay</code>
+                    | <code class="code">marketplace</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">ramdisk-id</code> - The RAM disk ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">reason</code> - The reason for the current state of the instance (for
+                    example, shows "User Initiated [date]" when you stop or terminate the instance).
+                    Similar to the state-reason-code filter.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">requester-id</code> - The ID of the entity that launched the instance on
+                    your behalf (for example, AWS Management Console, Auto Scaling, and so
+                    on).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">reservation-id</code> - The ID of the instance's reservation. A
+                    reservation ID is created any time you launch an instance. A reservation ID has
+                    a one-to-one relationship with an instance launch request, but can be associated
+                    with more than one instance if you launch multiple instances using the same
+                    launch request. For example, if you launch one instance, you get one reservation
+                    ID. If you launch ten instances using the same launch request, you also get one
+                    reservation ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">root-device-name</code> - The device name of the root device volume (for
+                    example, <code class="code">/dev/sda1</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">root-device-type</code> - The type of the root device volume
+                        (<code class="code">ebs</code> | <code class="code">instance-store</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">source-dest-check</code> - Indicates whether the instance performs
+                    source/destination checking. A value of <code class="code">true</code> means that checking is
+                    enabled, and <code class="code">false</code> means that checking is disabled. The value must
+                    be <code class="code">false</code> for the instance to perform network address translation
+                    (NAT) in your VPC. </p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">spot-instance-request-id</code> - The ID of the Spot Instance
+                    request.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">state-reason-code</code> - The reason code for the state change.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">state-reason-message</code> - A message that describes the state
+                    change.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">subnet-id</code> - The ID of the subnet for the instance.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">tag:&lt;key&gt;</code> - The key/value combination of a tag assigned to the resource. Use the tag key in the filter name and the tag value as the filter value.
+    For example, to find all resources that have a tag with the key <code class="code">Owner</code> and the value <code class="code">TeamA</code>, specify <code class="code">tag:Owner</code> for the filter name and <code class="code">TeamA</code> for the filter value.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">tag-key</code> - The key of a tag assigned to the resource. Use this filter to find all resources that have a tag with a specific key, regardless of the tag value.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">tenancy</code> - The tenancy of an instance (<code class="code">dedicated</code> |
+                        <code class="code">default</code> | <code class="code">host</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">tpm-support</code> - Indicates if the instance is configured for
+                    NitroTPM support (<code class="code">v2.0</code>). </p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">usage-operation</code> - The usage operation value for the instance
+                        (<code class="code">RunInstances</code> | <code class="code">RunInstances:00g0</code> |
+                        <code class="code">RunInstances:0010</code> | <code class="code">RunInstances:1010</code> |
+                        <code class="code">RunInstances:1014</code> | <code class="code">RunInstances:1110</code> |
+                        <code class="code">RunInstances:0014</code> | <code class="code">RunInstances:0210</code> |
+                        <code class="code">RunInstances:0110</code> | <code class="code">RunInstances:0100</code> |
+                        <code class="code">RunInstances:0004</code> | <code class="code">RunInstances:0200</code> |
+                        <code class="code">RunInstances:000g</code> | <code class="code">RunInstances:0g00</code> |
+                        <code class="code">RunInstances:0002</code> | <code class="code">RunInstances:0800</code> |
+                        <code class="code">RunInstances:0102</code> | <code class="code">RunInstances:0006</code> |
+                        <code class="code">RunInstances:0202</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">usage-operation-update-time</code> - The time that the usage operation
+                    was last updated, for example, <code class="code">2022-09-15T17:15:20.000Z</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">virtualization-type</code> - The virtualization type of the instance
+                        (<code class="code">paravirtual</code> | <code class="code">hvm</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">vpc-id</code> - The ID of the VPC that the instance is running in.</p>
+                  </li></ul></div>
+               <p>Type: Array of <a href="./API_Filter.html">Filter</a> objects</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>IncludeManagedResources</b>
+            </span></dt>
+            <dd>
+               <p>Indicates whether to include managed resources in the output. If this parameter is set
+            to <code class="code">true</code>, the output includes resources that are managed by AWS services,
+            even if managed resource visibility is set to hidden.</p>
+               <p>Type: Boolean</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>InstanceId.N</b>
+            </span></dt>
+            <dd>
+               <p>The instance IDs.</p>
+               <p>Default: Describes all your instances.</p>
+               <p>Type: Array of strings</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>MaxResults</b>
+            </span></dt>
+            <dd>
+               <p>The maximum number of items to return for this request.
+         To get the next page of items, make another request with the token returned in the output.
+	        For more information, see <a href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination">Pagination</a>.</p>
+               <p>You cannot specify this parameter and the instance IDs parameter in the same request.</p>
+               <p>Type: Integer</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>NextToken</b>
+            </span></dt>
+            <dd>
+               <p>The token returned from a previous paginated request. Pagination continues from the end of the items returned by the previous request.</p>
+               <p>Type: String</p>
+               <p>Required: No</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_DescribeInstances_ResponseElements">Response Elements</h2>
+      <p>The following elements are returned by the service.</p>
+      <div class="variablelist">
+          
+          
+          
+      <dl>
+            <dt><span class="term">
+               <b>nextToken</b>
+            </span></dt>
+            <dd>
+               <p>The token to include in another request to get the next page of items. This value is <code class="code">null</code> when there
+         are no more items to return.</p>
+               <p>Type: String</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>requestId</b>
+            </span></dt>
+            <dd>
+               <p>The ID of the request.</p>
+               <p>Type: String</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>reservationSet</b>
+            </span></dt>
+            <dd>
+               <p>Information about the reservations.</p>
+               <p>Type: Array of <a href="./API_Reservation.html">Reservation</a> objects</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_DescribeInstances_Errors">Errors</h2>
+      <p>For information about the errors that are common to all actions, see <a href="./CommonErrors.html">Common Error Types</a>.</p>
+    
+      <h2 id="API_DescribeInstances_Examples">Examples</h2>
+       
+         <h3 id="API_DescribeInstances_Example_1">Example 1: Describe all instances</h3>
+         <p>This example describes all instances owned by your AWS account
+                    in the current Region. It uses pagination. The first example request gets the
+                    first page of results. The second example request uses the token returned by the
+                    previous request. Continue until there are no more results.</p>
+          
+            <h4 id="API_DescribeInstances_Example_1_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;MaxResults=10
+&amp;AUTHPARAMS</code></pre>
+          
+          
+            <h4 id="API_DescribeInstances_Example_1_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;MaxResults=10
+&amp;NextToken=eyJOZXh0VG9rZW4iOiBudWxsLCAiYm90b190cnVuY2F0ZV9hbW91bnQiEXAMPLE=
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_2">Example 2: Describe an instance</h3>
+         <p>This example describes the specified instance.</p>
+          
+            <h4 id="API_DescribeInstances_Example_2_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;InstanceId.1=i-1234567890abcdef0
+&amp;AUTHPARAMS</code></pre>
+          
+          
+            <h4 id="API_DescribeInstances_Example_2_Response">Sample Response</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">&lt;DescribeInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/"&gt;
+    &lt;requestId&gt;8f7724cf-496f-496e-8fe3-example&lt;/requestId&gt;
+    &lt;reservationSet&gt;
+        &lt;item&gt;
+            &lt;reservationId&gt;r-1234567890abcdef0&lt;/reservationId&gt;
+            &lt;ownerId&gt;123456789012&lt;/ownerId&gt;
+            &lt;groupSet/&gt;
+            &lt;instancesSet&gt;
+                &lt;item&gt;
+                    &lt;instanceId&gt;i-1234567890abcdef0&lt;/instanceId&gt;
+                    &lt;imageId&gt;ami-bff32ccc&lt;/imageId&gt;
+                    &lt;instanceState&gt;
+                        &lt;code&gt;16&lt;/code&gt;
+                        &lt;name&gt;running&lt;/name&gt;
+                    &lt;/instanceState&gt;
+                    &lt;privateDnsName&gt;ip-192-168-1-88.eu-west-1.compute.internal&lt;/privateDnsName&gt;
+                    &lt;dnsName&gt;ec2-54-194-252-215.eu-west-1.compute.amazonaws.com&lt;/dnsName&gt;
+                    &lt;reason/&gt;
+                    &lt;keyName&gt;my_keypair&lt;/keyName&gt;
+                    &lt;amiLaunchIndex&gt;0&lt;/amiLaunchIndex&gt;
+                    &lt;productCodes/&gt;
+                    &lt;instanceType&gt;t2.micro&lt;/instanceType&gt;
+                    &lt;launchTime&gt;2018-05-08T16:46:19.000Z&lt;/launchTime&gt;
+                    &lt;placement&gt;
+                        &lt;availabilityZone&gt;eu-west-1c&lt;/availabilityZone&gt;
+                        &lt;groupName/&gt;
+                        &lt;tenancy&gt;default&lt;/tenancy&gt;
+                    &lt;/placement&gt;
+                    &lt;monitoring&gt;
+                        &lt;state&gt;disabled&lt;/state&gt;
+                    &lt;/monitoring&gt;
+                    &lt;subnetId&gt;subnet-56f5f633&lt;/subnetId&gt;
+                    &lt;vpcId&gt;vpc-11112222&lt;/vpcId&gt;
+                    &lt;privateIpAddress&gt;192.168.1.88&lt;/privateIpAddress&gt;
+                    &lt;ipAddress&gt;54.194.252.215&lt;/ipAddress&gt;
+                    &lt;sourceDestCheck&gt;true&lt;/sourceDestCheck&gt;
+                    &lt;groupSet&gt;
+                        &lt;item&gt;
+                            &lt;groupId&gt;sg-e4076980&lt;/groupId&gt;
+                            &lt;groupName&gt;SecurityGroup1&lt;/groupName&gt;
+                        &lt;/item&gt;
+                    &lt;/groupSet&gt;
+                    &lt;architecture&gt;x86_64&lt;/architecture&gt;
+                    &lt;rootDeviceType&gt;ebs&lt;/rootDeviceType&gt;
+                    &lt;rootDeviceName&gt;/dev/xvda&lt;/rootDeviceName&gt;
+                    &lt;blockDeviceMapping&gt;
+                        &lt;item&gt;
+                            &lt;deviceName&gt;/dev/xvda&lt;/deviceName&gt;
+                            &lt;ebs&gt;
+                                &lt;volumeId&gt;vol-1234567890abcdef0&lt;/volumeId&gt;
+                                &lt;status&gt;attached&lt;/status&gt;
+                                &lt;attachTime&gt;2015-12-22T10:44:09.000Z&lt;/attachTime&gt;
+                                &lt;deleteOnTermination&gt;true&lt;/deleteOnTermination&gt;
+                            &lt;/ebs&gt;
+                        &lt;/item&gt;
+                    &lt;/blockDeviceMapping&gt;
+                    &lt;virtualizationType&gt;hvm&lt;/virtualizationType&gt;
+                    &lt;clientToken&gt;xMcwG14507example&lt;/clientToken&gt;
+                    &lt;tagSet&gt;
+                        &lt;item&gt;
+                            &lt;key&gt;Name&lt;/key&gt;
+                            &lt;value&gt;Server_1&lt;/value&gt;
+                        &lt;/item&gt;
+                    &lt;/tagSet&gt;
+                    &lt;hypervisor&gt;xen&lt;/hypervisor&gt;
+                    &lt;networkInterfaceSet&gt;
+                        &lt;item&gt;
+                            &lt;networkInterfaceId&gt;eni-551ba033&lt;/networkInterfaceId&gt;
+                            &lt;subnetId&gt;subnet-56f5f633&lt;/subnetId&gt;
+                            &lt;vpcId&gt;vpc-11112222&lt;/vpcId&gt;
+                            &lt;description&gt;Primary network interface&lt;/description&gt;
+                            &lt;ownerId&gt;123456789012&lt;/ownerId&gt;
+                            &lt;status&gt;in-use&lt;/status&gt;
+                            &lt;macAddress&gt;02:dd:2c:5e:01:69&lt;/macAddress&gt;
+                            &lt;privateIpAddress&gt;192.168.1.88&lt;/privateIpAddress&gt;
+                            &lt;privateDnsName&gt;ip-192-168-1-88.eu-west-1.compute.internal&lt;/privateDnsName&gt;
+                            &lt;sourceDestCheck&gt;true&lt;/sourceDestCheck&gt;
+                            &lt;groupSet&gt;
+                                &lt;item&gt;
+                                    &lt;groupId&gt;sg-e4076980&lt;/groupId&gt;
+                                    &lt;groupName&gt;SecurityGroup1&lt;/groupName&gt;
+                                &lt;/item&gt;
+                            &lt;/groupSet&gt;
+                            &lt;attachment&gt;
+                                &lt;attachmentId&gt;eni-attach-39697adc&lt;/attachmentId&gt;
+                                &lt;deviceIndex&gt;0&lt;/deviceIndex&gt;
+                                &lt;status&gt;attached&lt;/status&gt;
+                                &lt;attachTime&gt;2018-05-08T16:46:19.000Z&lt;/attachTime&gt;
+                                &lt;deleteOnTermination&gt;true&lt;/deleteOnTermination&gt;
+                            &lt;/attachment&gt;
+                            &lt;association&gt;
+                                &lt;publicIp&gt;54.194.252.215&lt;/publicIp&gt;
+                                &lt;publicDnsName&gt;ec2-54-194-252-215.eu-west-1.compute.amazonaws.com&lt;/publicDnsName&gt;
+                                &lt;ipOwnerId&gt;amazon&lt;/ipOwnerId&gt;
+                            &lt;/association&gt;
+                            &lt;privateIpAddressesSet&gt;
+                                &lt;item&gt;
+                                    &lt;privateIpAddress&gt;192.168.1.88&lt;/privateIpAddress&gt;
+                                    &lt;privateDnsName&gt;ip-192-168-1-88.eu-west-1.compute.internal&lt;/privateDnsName&gt;
+                                    &lt;primary&gt;true&lt;/primary&gt;
+                                    &lt;association&gt;
+                                    &lt;publicIp&gt;54.194.252.215&lt;/publicIp&gt;
+                                    &lt;publicDnsName&gt;ec2-54-194-252-215.eu-west-1.compute.amazonaws.com&lt;/publicDnsName&gt;
+                                    &lt;ipOwnerId&gt;amazon&lt;/ipOwnerId&gt;
+                                    &lt;/association&gt;
+                                &lt;/item&gt;
+                            &lt;/privateIpAddressesSet&gt;
+                            &lt;ipv6AddressesSet&gt;
+                               &lt;item&gt;
+                                   &lt;ipv6Address&gt;2001:db8:1234:1a2b::123&lt;/ipv6Address&gt;
+                               &lt;/item&gt;
+                           &lt;/ipv6AddressesSet&gt;
+                        &lt;/item&gt;
+                    &lt;/networkInterfaceSet&gt;
+                    &lt;iamInstanceProfile&gt;
+                        &lt;arn&gt;arn:aws:iam::123456789012:instance-profile/AdminRole&lt;/arn&gt;
+                        &lt;id&gt;ABCAJEDNCAA64SSD123AB&lt;/id&gt;
+                    &lt;/iamInstanceProfile&gt;
+                    &lt;ebsOptimized&gt;false&lt;/ebsOptimized&gt;
+                    &lt;cpuOptions&gt;
+                        &lt;coreCount&gt;1&lt;/coreCount&gt;
+                        &lt;threadsPerCore&gt;1&lt;/threadsPerCore&gt;
+                    &lt;/cpuOptions&gt;
+                &lt;/item&gt;
+            &lt;/instancesSet&gt;
+        &lt;/item&gt;
+    &lt;/reservationSet&gt;
+&lt;/DescribeInstancesResponse&gt;</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_3">Example 3: Filter by instance type</h3>
+         <p>This example describes only the instances that have the <code class="code">m1.small</code>
+                    or <code class="code">m1.large</code> instance type and an attached Amazon EBS volume to be
+                    deleted on termination.</p>
+          
+            <h4 id="API_DescribeInstances_Example_3_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.1.Name=instance-type
+&amp;Filter.1.Value.1=m1.small
+&amp;Filter.1.Value.2=m1.large
+&amp;Filter.2.Name=block-device-mapping.status
+&amp;Filter.2.Value.1=attached
+&amp;Filter.3.Name=block-device-mapping.delete-on-termination
+&amp;Filter.3.Value.1=true
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_4">Example 4: Filter by VPC</h3>
+         <p>This example describes all instances that are running in the specified
+                    VPC.</p>
+          
+            <h4 id="API_DescribeInstances_Example_4_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.1.Name=vpc-id
+&amp;Filter.1.Value.1=*
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_5">Example 5: Filter by tag key</h3>
+         <p>This example describes any instances that have a tag with the key
+                        <code class="code">Owner</code>, regardless of the value of the tag.</p>
+          
+            <h4 id="API_DescribeInstances_Example_5_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.1.Name=tag-key
+&amp;Filter.1.Value.1=Owner
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_6">Example 6: Filter by tag key and value</h3>
+         <p>This example lists only the instances that have a tag with the key
+                        <code class="code">Owner</code> and the value <code class="code">DbAdmin</code>.</p>
+          
+            <h4 id="API_DescribeInstances_Example_6_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.1.Name=tag:Owner
+&amp;Filter.1.Value.1=DbAdmin
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_7">Example 7: Filter by placement group</h3>
+         <p>This example describes any instances that are in the placement group with the
+                    name <code class="code">HDFS-Group-A</code>.</p>
+          
+            <h4 id="API_DescribeInstances_Example_7_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.1.Name=placement-group-name
+&amp;Filter.1.Value=HDFS-Group-A
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_8">Example 8: Filter by placement group partition</h3>
+         <p>This example describes only the instances that are in partition <code class="code">2</code>
+                    of the placement group with the name <code class="code">HDFS-Group-A</code>.</p>
+          
+            <h4 id="API_DescribeInstances_Example_8_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.1.Name=placement-group-name
+&amp;Filter.1.Value=HDFS-Group-A
+&amp;Filter.2.Name=placement-partition-number
+&amp;Filter.2.Value=2
+&amp;AUTHPARAMS</code></pre>
+          
+       
+       
+         <h3 id="API_DescribeInstances_Example_9">Example 9: Filter by metadata authentication</h3>
+         <p>The following example displays details about your instances that are not using
+                    any token header authentication requirement to access instance metadata. The
+                    response is truncated to show only the relevant pieces.</p>
+          
+            <h4 id="API_DescribeInstances_Example_9_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeInstances
+&amp;Filter.Name=metadata-options.http-tokens
+&amp;Filter.Values=optional
+&amp;AUTHPARAMS</code></pre>
+          
+          
+            <h4 id="API_DescribeInstances_Example_9_Response">Sample Response</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">&lt;DescribeInstances xmlns="http://ec2.amazonaws.com/doc/2016-11-15/"&gt;
+    &lt;instanceId&gt;i-1234567890abcdef0&lt;/instanceId&gt;
+    &lt;MetadataOptions&gt; 
+          &lt;state&gt;applied&lt;/state&gt;
+          &lt;HttpTokens&gt;optional&lt;/HttpTokens&gt;
+          &lt;HttpPutResponseHopLimit&gt;1&lt;/HttpPutResponseHopLimit&gt;     
+          &lt;HttpEndpoint&gt;enabled&lt;/HttpEndpoint&gt;
+    &lt;/MetadataOptions&gt;
+&lt;/DescribeInstances&gt;</code></pre>
+          
+       
+    
+      <h2 id="API_DescribeInstances_SeeAlso">See Also</h2>
+      <p>For more information about using this API in one of the language-specific AWS SDKs, see the following:</p>
+      <div class="itemizedlist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <ul class="itemizedlist"><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/cli2/ec2-2016-11-15/DescribeInstances">AWS Command Line Interface V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/DotNetSDKV4/ec2-2016-11-15/DescribeInstances">AWS SDK for .NET V4</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForCpp/ec2-2016-11-15/DescribeInstances">AWS SDK for C++</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForGoV2/ec2-2016-11-15/DescribeInstances">AWS SDK for Go v2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaV2/ec2-2016-11-15/DescribeInstances">AWS SDK for Java V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaScriptV3/ec2-2016-11-15/DescribeInstances">AWS SDK for JavaScript V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForKotlin/ec2-2016-11-15/DescribeInstances">AWS SDK for Kotlin</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForPHPV3/ec2-2016-11-15/DescribeInstances">AWS SDK for PHP V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/boto3/ec2-2016-11-15/DescribeInstances">AWS SDK for Python (Boto3)</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForRubyV3/ec2-2016-11-15/DescribeInstances">AWS SDK for Ruby V3</a>
+            </p>
+         </li></ul></div>
+   <awsdocs-copyright class="copyright-print"></awsdocs-copyright><awsdocs-thumb-feedback right-edge="{{$ctrl.thumbFeedbackRightEdge}}"></awsdocs-thumb-feedback></div><noscript><div><div><div><div id="js_error_message"><p><img src="https://d1ge0kk1l5kms0.cloudfront.net/images/G/01/webservices/console/warning.png" alt="Warning" /> <strong>Javascript is disabled or is unavailable in your browser.</strong></p><p>To use the Amazon Web Services Documentation, Javascript must be enabled. Please refer to your browser's Help pages for instructions.</p></div></div></div></div></noscript><div id="main-col-footer" class="awsui-util-font-size-0"><div id="doc-conventions"><a target="_top" href="/general/latest/gr/docconventions.html">Document Conventions</a></div><div class="prev-next"><div id="previous" class="prev-link" accesskey="p" href="./API_DescribeInstanceImageMetadata.html">DescribeInstanceImageMetadata</div><div id="next" class="next-link" accesskey="n" href="./API_DescribeInstanceSqlHaHistoryStates.html">DescribeInstanceSqlHaHistoryStates</div></div></div><awsdocs-page-utilities></awsdocs-page-utilities></div><div id="quick-feedback-yes" style="display: none;"><div class="title">Did this page help you? - Yes</div><div class="content"><p>Thanks for letting us know we're doing a good job!</p><p>If you've got a moment, please tell us what we did right so we can do more of it.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeInstances.html"></awsui-button></p></div></div><div id="quick-feedback-no" style="display: none;"><div class="title">Did this page help you? - No</div><div class="content"><p>Thanks for letting us know this page needs work. We're sorry we let you down.</p><p>If you've got a moment, please tell us how we can make the documentation better.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeInstances.html"></awsui-button></p></div></div></div></body></div></awsdocs-view><div class="page-loading-indicator" id="page-loading-indicator"><awsui-spinner size="large"></awsui-spinner></div></div><div id="tools-panel" dom-region="tools"><awsdocs-tools-panel id="awsdocs-tools-panel"></awsdocs-tools-panel></div></awsui-app-layout><awsdocs-cookie-banner class="doc-cookie-banner"></awsdocs-cookie-banner></div></body></html>

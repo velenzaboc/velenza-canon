@@ -88,6 +88,9 @@ type CloudSourceIdentityEvidence struct {
 type CloudSourceCandidateRequest struct {
 	Catalogs []CloudCatalog            `json:"catalogs"`
 	Targets  []CloudSourceObjectTarget `json:"targets"`
+	// Exact package-local model bodies retained for offline evidence derivation.
+	// These are not serialized into package manifests or treated as authority.
+	retainedModels []PinnedCloudModel
 }
 
 // CloudSourceCandidateBundle is suitable as payload input to the existing
@@ -131,7 +134,15 @@ func LoadCloudSourceCandidateInput(path string, parser CloudCatalogParser) (Clou
 	if err := strictUnmarshal(raw, &input); err != nil {
 		return CloudSourceCandidateRequest{}, fmt.Errorf("decode cloud candidate input: %w", err)
 	}
-	base := filepath.Dir(path)
+	return loadCloudSourceCandidateInputAt(filepath.Dir(path), input, parser)
+}
+
+// The package-local loader is shared by ordinary inputs and a checked model
+// successor before either candidate is published.
+func loadCloudSourceCandidateInputAt(base string, input CloudSourceCandidateInput, parser CloudCatalogParser) (CloudSourceCandidateRequest, error) {
+	if parser == nil {
+		return CloudSourceCandidateRequest{}, fmt.Errorf("cloud catalog parser is nil")
+	}
 	// The export is an evidence-local, source-neutral projection.  Its loader
 	// independently pins the canonical owner/profile provenance; candidate
 	// input cannot smuggle a caller-constructed neutral schema through this
@@ -145,6 +156,7 @@ func LoadCloudSourceCandidateInput(path string, parser CloudCatalogParser) (Clou
 		return CloudSourceCandidateRequest{}, fmt.Errorf("read neutral schema export: %w", err)
 	}
 	catalogs := make([]CloudCatalog, 0, len(input.Models))
+	retainedModels := make([]PinnedCloudModel, 0, len(input.Models))
 	for index, item := range input.Models {
 		modelPath, err := cloudCandidateLocalPath(base, item.ModelPath)
 		if err != nil {
@@ -172,12 +184,18 @@ func LoadCloudSourceCandidateInput(path string, parser CloudCatalogParser) (Clou
 			return CloudSourceCandidateRequest{}, fmt.Errorf("models[%d]: %w", index, parseErr)
 		}
 		catalogs = append(catalogs, catalog)
+		retainedModels = append(retainedModels, item.PinnedCloudModel)
 	}
 	targets := append([]CloudSourceObjectTarget(nil), input.Targets...)
 	for i := range targets {
 		if targets[i].MappingContract == nil {
 			return CloudSourceCandidateRequest{}, fmt.Errorf("targets[%d]: mapping contract is required", i)
 		}
+		// Loading resolves private evidence and neutral schema state. Keep that
+		// state detached from the portable input, including successor builders
+		// that must retain the exact historical document for comparison.
+		contractCopy := *targets[i].MappingContract
+		targets[i].MappingContract = &contractCopy
 		if !cloudNeutralSchemaIsZero(targets[i].MappingContract.Neutral) || len(targets[i].FieldMappings) != 0 || len(targets[i].SourceFields) != 0 {
 			return CloudSourceCandidateRequest{}, fmt.Errorf("targets[%d]: neutral schema and field roster are derived from the pinned mapping contract", i)
 		}
@@ -211,7 +229,7 @@ func LoadCloudSourceCandidateInput(path string, parser CloudCatalogParser) (Clou
 		targets[i].RecordClassContractRef = neutral.OwnerRef
 		targets[i].SourceFields, targets[i].FieldMappings = cloudDerivedTargetRoster(*targets[i].MappingContract)
 	}
-	return CloudSourceCandidateRequest{Catalogs: catalogs, Targets: targets}, nil
+	return CloudSourceCandidateRequest{Catalogs: catalogs, Targets: targets, retainedModels: retainedModels}, nil
 }
 
 func findCloudCandidateCatalog(catalogs []CloudCatalog, target CloudSourceObjectTarget) (CloudCatalog, bool) {

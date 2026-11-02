@@ -55,6 +55,16 @@ func TestCloudScaffoldClosesSchemaValidFixtureBodiesThroughFourStages(t *testing
 	if result.SourceReceipt.AuthoritySelected || result.SourceReceipt.AdmissionAuthorized || result.SourceReceipt.FactoryComplete {
 		t.Fatal("test-only source package promoted a candidate")
 	}
+	binding, err := result.OODProjectionBinding()
+	if err != nil || binding.APIGraphSHA256 == "" || binding.SourceMappingSHA256 == "" {
+		t.Fatalf("sealed compiler OOD handoff = %#v, %v", binding, err)
+	}
+	// The public receipt is body-free. The binding can identify the sealed
+	// private compiler handoff, but cannot smuggle a caller replacement into
+	// the later typed physical-plan constructor.
+	if _, err := (DocumentationFactorySourceCompileResult{}).OODProjectionBinding(); err == nil {
+		t.Fatal("unsealed result exposed an OOD projection binding")
+	}
 }
 
 func TestCloudCandidateScaffoldRefusesMissingOrMismatchedBodies(t *testing.T) {

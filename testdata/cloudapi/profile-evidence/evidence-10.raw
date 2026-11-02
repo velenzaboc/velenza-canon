@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>DescribeVolumes - Amazon Elastic Compute Cloud</title><meta name="viewport" content="width=device-width,initial-scale=1" /><meta name="assets_root" content="/assets" /><meta name="target_state" content="API_DescribeVolumes" /><meta name="default_state" content="API_DescribeVolumes" /><link rel="icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="shortcut icon" type="image/ico" href="/assets/images/favicon.ico" /><link rel="canonical" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html" /><link rel="alternate" type="text/markdown" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.md" title="Markdown version" /><meta name="description" content="Describes the specified EBS volumes or all of your EBS volumes." /><meta name="deployment_region" content="IAD" /><meta name="product" content="Amazon Elastic Compute Cloud" /><meta name="guide" content="API Reference" /><meta name="abstract" content="This is the Amazon EC2 API Reference. It provides descriptions, API request parameters, and the XML response for each of the Amazon EC2 Query API actions. Note that the Amazon EC2 API includes actions for Amazon EC2 plus additional services, such as Amazon EBS and Amazon VPC." /><meta name="guide-locale" content="en_us" /><meta name="tocs" content="toc-contents.json" /><link rel="canonical" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="id-id" /><link rel="alternate" href="https://docs.aws.amazon.com/id_id/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="id" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="de-de" /><link rel="alternate" href="https://docs.aws.amazon.com/de_de/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="de" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="en-us" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="en" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="es-es" /><link rel="alternate" href="https://docs.aws.amazon.com/es_es/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="es" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="fr-fr" /><link rel="alternate" href="https://docs.aws.amazon.com/fr_fr/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="fr" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="it-it" /><link rel="alternate" href="https://docs.aws.amazon.com/it_it/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="it" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="ja-jp" /><link rel="alternate" href="https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="ja" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="ko-kr" /><link rel="alternate" href="https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="ko" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="pt-br" /><link rel="alternate" href="https://docs.aws.amazon.com/pt_br/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="pt" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_cn/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="zh-cn" /><link rel="alternate" href="https://docs.aws.amazon.com/zh_tw/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="zh-tw" /><link rel="alternate" href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html" hreflang="x-default" /><meta name="feedback-item" content="EC2" /><meta name="this_doc_product" content="Amazon Elastic Compute Cloud" /><meta name="this_doc_guide" content="API Reference" /><head xmlns="http://www.w3.org/1999/xhtml"> <script defer="" src="/assets/r/awsdocs-doc-page.2.0.0.js"></script><link href="/assets/r/awsdocs-doc-page.2.0.0.css" rel="stylesheet"/></head>
+<script defer="" id="awsc-panorama-bundle" type="text/javascript" src="https://prod.pa.cdn.uis.awsstatic.com/panorama-nav-init.js" data-config="{'appEntity':'aws-documentation','region':'us-east-1','service':'ec2'}"></script><meta id="panorama-serviceSubSection" value="API Reference" /><meta id="panorama-serviceConsolePage" value="DescribeVolumes" /></head><body class="awsdocs awsui"><div class="awsdocs-container"><p><a href="API_DescribeVolumes.md">View a markdown version of this page</a></p><awsdocs-header></awsdocs-header><awsui-app-layout id="app-layout" class="awsui-util-no-gutters" ng-controller="ContentController as $ctrl" header-selector="awsdocs-header" navigation-hide="false" navigation-width="$ctrl.navWidth" navigation-open="$ctrl.navOpen" navigation-change="$ctrl.onNavChange($event)" tools-hide="$ctrl.hideTools" tools-width="$ctrl.toolsWidth" tools-open="$ctrl.toolsOpen" tools-change="$ctrl.onToolsChange($event)"><div id="guide-toc" dom-region="navigation"><awsdocs-toc></awsdocs-toc></div><div id="main-column" dom-region="content" tabindex="-1"><awsdocs-view class="awsdocs-view"><div id="awsdocs-content"><head><title>DescribeVolumes - Amazon Elastic Compute Cloud</title><meta name="pdf" content="/pdfs/AWSEC2/latest/APIReference/ec2-api.pdf#API_DescribeVolumes" /><meta name="forums" content="https://repost.aws/tags/TAO-wqN9fYRoyrpdULLa5y7g" /><meta name="feedback" content="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeVolumes.html" /><meta name="feedback-yes" content="feedbackyes.html?topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeVolumes.html" /><meta name="feedback-no" content="feedbackno.html?topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeVolumes.html" /><meta name="keywords" content="API,requests,DescribeVolumes" /><script type="application/ld+json">
+{
+    "@context" : "https://schema.org",
+    "@type" : "BreadcrumbList",
+    "itemListElement" : [
+      {
+        "@type" : "ListItem",
+        "position" : 1,
+        "name" : "AWS",
+        "item" : "https://aws.amazon.com"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 2,
+        "name" : "Amazon EC2",
+        "item" : "https://docs.aws.amazon.com/ec2/index.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 3,
+        "name" : "API Reference",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/APIReference"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 4,
+        "name" : "Actions",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Operations.html"
+      },
+      {
+        "@type" : "ListItem",
+        "position" : 5,
+        "name" : "DescribeVolumes",
+        "item" : "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Operations.html"
+      }
+    ]
+}
+</script></head><body><div id="main"><div style="display: none"><a href="/pdfs/AWSEC2/latest/APIReference/ec2-api.pdf#API_DescribeVolumes" target="_blank" rel="noopener noreferrer" title="Open PDF"></a></div><div id="breadcrumbs" class="breadcrumb"><a href="/index.html">Documentation</a><a href="/ec2/index.html">Amazon EC2</a><a href="Welcome.html">API Reference</a></div><div id="page-toc-src"><a href="#API_DescribeVolumes_RequestParameters">Request Parameters</a><a href="#API_DescribeVolumes_ResponseElements">Response Elements</a><a href="#API_DescribeVolumes_Errors">Errors</a><a href="#API_DescribeVolumes_Examples">Examples</a><a href="#API_DescribeVolumes_SeeAlso">See Also</a></div><div id="main-content" class="awsui-util-container"><div id="main-col-body"><awsdocs-language-banner data-service="$ctrl.pageService"></awsdocs-language-banner><h1 class="topictitle" id="API_DescribeVolumes">DescribeVolumes</h1><div class="awsdocs-page-header-container"><awsdocs-page-header></awsdocs-page-header><awsdocs-filter-selector id="awsdocs-filter-selector"></awsdocs-filter-selector></div><p>Describes the specified EBS volumes or all of your EBS volumes.</p><p>If you are describing a long list of volumes, we recommend that you paginate the output to make the list
+      more manageable. For more information, see <a href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination">Pagination</a>.</p><p>For more information about EBS volumes, see <a href="https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volumes.html">Amazon EBS volumes</a> in the <em>Amazon EBS User Guide</em>.</p><div class="awsdocs-note awsdocs-important"><div class="awsdocs-note-title"><awsui-icon name="status-warning" variant="error"></awsui-icon><h6>Important</h6></div><div class="awsdocs-note-text"><p>We strongly recommend using only paginated requests. Unpaginated requests are
+        susceptible to throttling and timeouts.</p></div></div><div class="awsdocs-note"><div class="awsdocs-note-title"><awsui-icon name="status-info" variant="link"></awsui-icon><h6>Note</h6></div><div class="awsdocs-note-text"><p>The order of the elements in the response, including those within nested
+        structures, might vary. Applications should not assume the elements appear in a
+        particular order.</p></div></div>
+      <h2 id="API_DescribeVolumes_RequestParameters">Request Parameters</h2>
+      <p>The following parameters are for this specific action. For more information about required and optional parameters that are common to all actions, see <a href="./CommonParameters.html">Common Query Parameters</a>.</p>
+      <div class="variablelist">
+          
+          
+          
+          
+          
+          
+      <dl>
+            <dt><span class="term">
+               <b>DryRun</b>
+            </span></dt>
+            <dd>
+               <p>Checks whether you have the required permissions for the action, without actually making the request, 
+   and provides an error response. If you have the required permissions, the error response is <code class="code">DryRunOperation</code>. 
+   Otherwise, it is <code class="code">UnauthorizedOperation</code>.</p>
+               <p>Type: Boolean</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>Filter.N</b>
+            </span></dt>
+            <dd>
+               <p>The filters.</p>
+               <div class="itemizedlist">
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+               <ul class="itemizedlist"><li class="listitem">
+                     <p>
+                        <code class="code">attachment.attach-time</code> - The time stamp when the attachment
+          initiated.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">attachment.delete-on-termination</code> - Whether the volume is deleted on
+          instance termination.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">attachment.device</code> - The device name specified in the block device mapping
+          (for example, <code class="code">/dev/sda1</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">attachment.instance-id</code> - The ID of the instance the volume is attached
+          to.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">attachment.status</code> - The attachment state (<code class="code">attaching</code> |
+            <code class="code">attached</code> | <code class="code">detaching</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">availability-zone</code> - The Availability Zone in which the volume was
+          created.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">availability-zone-id</code> - The ID of the Availability Zone in which the
+          volume was created.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">create-time</code> - The time stamp when the volume was created.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">encrypted</code> - Indicates whether the volume is encrypted (<code class="code">true</code>
+          | <code class="code">false</code>)</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">fast-restored</code> - Indicates whether the volume was created from a 
+          snapshot that is enabled for fast snapshot restore (<code class="code">true</code> | 
+          <code class="code">false</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">multi-attach-enabled</code> - Indicates whether the volume is enabled for Multi-Attach (<code class="code">true</code>
+    			| <code class="code">false</code>)</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">operator.managed</code> - A Boolean that indicates whether this is a managed
+          volume.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">operator.principal</code> - The principal that manages the volume. Only valid
+          for managed volumes, where <code class="code">managed</code> is <code class="code">true</code>.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">size</code> - The size of the volume, in GiB.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">snapshot-id</code> - The snapshot from which the volume was created.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">status</code> - The state of the volume (<code class="code">creating</code> |
+            <code class="code">available</code> | <code class="code">in-use</code> | <code class="code">deleting</code> |
+            <code class="code">deleted</code> | <code class="code">error</code>).</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">tag</code>:&lt;key&gt; - The key/value combination of a tag assigned to the resource. Use the tag key in the filter name and the tag value as the filter value.
+    For example, to find all resources that have a tag with the key <code class="code">Owner</code> and the value <code class="code">TeamA</code>, specify <code class="code">tag:Owner</code> for the filter name and <code class="code">TeamA</code> for the filter value.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">tag-key</code> - The key of a tag assigned to the resource. Use this filter to find all resources assigned a tag with a specific key, regardless of the tag value.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">volume-id</code> - The volume ID.</p>
+                  </li><li class="listitem">
+                     <p>
+                        <code class="code">volume-type</code> - The Amazon EBS volume type (<code class="code">gp2</code> | <code class="code">gp3</code> | <code class="code">io1</code> | <code class="code">io2</code> | 
+          <code class="code">st1</code> | <code class="code">sc1</code>| <code class="code">standard</code>)</p>
+                  </li></ul></div>
+               <p>Type: Array of <a href="./API_Filter.html">Filter</a> objects</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>IncludeManagedResources</b>
+            </span></dt>
+            <dd>
+               <p>Indicates whether to include managed resources in the output. If this parameter is set to <code class="code">true</code>, the output includes resources that are managed by AWS services, even if managed resource visibility is set to hidden.</p>
+               <p>Type: Boolean</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>MaxResults</b>
+            </span></dt>
+            <dd>
+               <p>The maximum number of items to return for this request.
+	To get the next page of items, make another request with the token returned in the output. 
+	For more information, see <a href="https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Query-Requests.html#api-pagination">Pagination</a>.</p>
+               <p>Type: Integer</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>NextToken</b>
+            </span></dt>
+            <dd>
+               <p>The token returned from a previous paginated request.
+  Pagination continues from the end of the items returned by the previous request.</p>
+               <p>Type: String</p>
+               <p>Required: No</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>VolumeId.N</b>
+            </span></dt>
+            <dd>
+               <p>The volume IDs. If not specified, then all volumes are included in the response.</p>
+               <p>Type: Array of strings</p>
+               <p>Required: No</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_DescribeVolumes_ResponseElements">Response Elements</h2>
+      <p>The following elements are returned by the service.</p>
+      <div class="variablelist">
+          
+          
+          
+      <dl>
+            <dt><span class="term">
+               <b>nextToken</b>
+            </span></dt>
+            <dd>
+               <p>The token to include in another request to get the next page of items. 
+  This value is <code class="code">null</code> when there are no more items to return.</p>
+               <p>Type: String</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>requestId</b>
+            </span></dt>
+            <dd>
+               <p>The ID of the request.</p>
+               <p>Type: String</p>
+            </dd>
+          
+            <dt><span class="term">
+               <b>volumeSet</b>
+            </span></dt>
+            <dd>
+               <p>Information about the volumes.</p>
+               <p>Type: Array of <a href="./API_Volume.html">Volume</a> objects</p>
+            </dd>
+         </dl></div>
+    
+      <h2 id="API_DescribeVolumes_Errors">Errors</h2>
+      <p>For information about the errors that are common to all actions, see <a href="./CommonErrors.html">Common Error Types</a>.</p>
+    
+      <h2 id="API_DescribeVolumes_Examples">Examples</h2>
+       
+         <h3 id="API_DescribeVolumes_Example_1">Example</h3>
+         <p>This example describes all volumes associated with your account.</p>
+          
+            <h4 id="API_DescribeVolumes_Example_1_Request">Sample Request</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="">https://ec2.amazonaws.com/?Action=DescribeVolumes
+&amp;AUTHPARAMS</code></pre>
+          
+          
+            <h4 id="API_DescribeVolumes_Example_1_Response">Sample Response</h4>
+            <pre class="programlisting"><div class="code-btn-container"></div><!--DEBUG: cli ()--><code class="nohighlight">&lt;DescribeVolumesResponse xmlns="http://ec2.amazonaws.com/doc/2016-11-15/"&gt;
+   &lt;requestId&gt;59dbff89-35bd-4eac-99ed-be587EXAMPLE&lt;/requestId&gt; 
+   &lt;volumeSet&gt;
+      &lt;item&gt;
+         &lt;volumeId&gt;vol-1234567890abcdef0&lt;/volumeId&gt;
+         &lt;size&gt;80&lt;/size&gt;
+         &lt;snapshotId/&gt;
+         &lt;availabilityZone&gt;us-east-1a&lt;/availabilityZone&gt;
+         &lt;status&gt;in-use&lt;/status&gt;
+         &lt;createTime&gt;YYYY-MM-DDTHH:MM:SS.SSSZ&lt;/createTime&gt;
+         &lt;attachmentSet&gt;
+            &lt;item&gt;
+               &lt;volumeId&gt;vol-1234567890abcdef0&lt;/volumeId&gt;
+               &lt;instanceId&gt;i-1234567890abcdef0&lt;/instanceId&gt;
+               &lt;device&gt;/dev/sdh&lt;/device&gt;
+               &lt;status&gt;attached&lt;/status&gt;
+               &lt;attachTime&gt;YYYY-MM-DDTHH:MM:SS.SSSZ&lt;/attachTime&gt;
+               &lt;deleteOnTermination&gt;false&lt;/deleteOnTermination&gt;
+            &lt;/item&gt;
+         &lt;/attachmentSet&gt;
+         &lt;volumeType&gt;<code class="code" copy="true">standard</code>&lt;/volumeType&gt;
+         &lt;encrypted&gt;true&lt;/encrypted&gt;
+         &lt;multiAttachEnabled&gt;false&lt;/multiAttachEnabled&gt;
+      &lt;/item&gt;
+   &lt;/volumeSet&gt;
+&lt;/DescribeVolumesResponse&gt;</code></pre>
+          
+       
+    
+      <h2 id="API_DescribeVolumes_SeeAlso">See Also</h2>
+      <p>For more information about using this API in one of the language-specific AWS SDKs, see the following:</p>
+      <div class="itemizedlist">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+      <ul class="itemizedlist"><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/cli2/ec2-2016-11-15/DescribeVolumes">AWS Command Line Interface V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/DotNetSDKV4/ec2-2016-11-15/DescribeVolumes">AWS SDK for .NET V4</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForCpp/ec2-2016-11-15/DescribeVolumes">AWS SDK for C++</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForGoV2/ec2-2016-11-15/DescribeVolumes">AWS SDK for Go v2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaV2/ec2-2016-11-15/DescribeVolumes">AWS SDK for Java V2</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForJavaScriptV3/ec2-2016-11-15/DescribeVolumes">AWS SDK for JavaScript V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForKotlin/ec2-2016-11-15/DescribeVolumes">AWS SDK for Kotlin</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForPHPV3/ec2-2016-11-15/DescribeVolumes">AWS SDK for PHP V3</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/boto3/ec2-2016-11-15/DescribeVolumes">AWS SDK for Python (Boto3)</a>
+            </p>
+         </li><li class="listitem">
+            <p>
+               <a href="https://docs.aws.amazon.com/goto/SdkForRubyV3/ec2-2016-11-15/DescribeVolumes">AWS SDK for Ruby V3</a>
+            </p>
+         </li></ul></div>
+   <awsdocs-copyright class="copyright-print"></awsdocs-copyright><awsdocs-thumb-feedback right-edge="{{$ctrl.thumbFeedbackRightEdge}}"></awsdocs-thumb-feedback></div><noscript><div><div><div><div id="js_error_message"><p><img src="https://d1ge0kk1l5kms0.cloudfront.net/images/G/01/webservices/console/warning.png" alt="Warning" /> <strong>Javascript is disabled or is unavailable in your browser.</strong></p><p>To use the Amazon Web Services Documentation, Javascript must be enabled. Please refer to your browser's Help pages for instructions.</p></div></div></div></div></noscript><div id="main-col-footer" class="awsui-util-font-size-0"><div id="doc-conventions"><a target="_top" href="/general/latest/gr/docconventions.html">Document Conventions</a></div><div class="prev-next"><div id="previous" class="prev-link" accesskey="p" href="./API_DescribeVolumeAttribute.html">DescribeVolumeAttribute</div><div id="next" class="next-link" accesskey="n" href="./API_DescribeVolumesModifications.html">DescribeVolumesModifications</div></div></div><awsdocs-page-utilities></awsdocs-page-utilities></div><div id="quick-feedback-yes" style="display: none;"><div class="title">Did this page help you? - Yes</div><div class="content"><p>Thanks for letting us know we're doing a good job!</p><p>If you've got a moment, please tell us what we did right so we can do more of it.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeVolumes.html"></awsui-button></p></div></div><div id="quick-feedback-no" style="display: none;"><div class="title">Did this page help you? - No</div><div class="content"><p>Thanks for letting us know this page needs work. We're sorry we let you down.</p><p>If you've got a moment, please tell us how we can make the documentation better.</p><p><awsui-button id="fblink" rel="noopener noreferrer" target="_blank" text="Feedback" click="linkClick($event)" href="https://docs.aws.amazon.com/forms/aws-doc-feedback?hidden_service_name=EC2&amp;topic_url=https://docs.aws.amazon.com/en_us/AWSEC2/latest/APIReference/API_DescribeVolumes.html"></awsui-button></p></div></div></div></body></div></awsdocs-view><div class="page-loading-indicator" id="page-loading-indicator"><awsui-spinner size="large"></awsui-spinner></div></div><div id="tools-panel" dom-region="tools"><awsdocs-tools-panel id="awsdocs-tools-panel"></awsdocs-tools-panel></div></awsui-app-layout><awsdocs-cookie-banner class="doc-cookie-banner"></awsdocs-cookie-banner></div></body></html>

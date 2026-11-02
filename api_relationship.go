@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+
+	"github.com/velenzaboc/velenza-canon/internal/oodapi"
 )
 
 // ErrAPIElementRoleEvidenceVerifierUnavailable is deliberate: the maintained
@@ -20,34 +22,12 @@ var ErrAPIElementRoleEvidenceVerifierUnavailable = errors.New("api element role 
 //
 // Keep this registry in lock-step with
 // OOD_GRAPH_PROTOCOL_v1 §4.api_relationship_contract.
-type apiRelationshipEdgeContract struct {
-	SourceRole string
-	TargetRole string
-}
+type apiRelationshipEdgeContract = oodapi.RelationshipContract
 
-var apiRelationshipEdgeContracts = map[string]apiRelationshipEdgeContract{
-	"provider_has_service":                              {"provider", "service"},
-	"service_has_api":                                   {"service", "vendor_api"},
-	"api_has_resource":                                  {"vendor_api", "resource"},
-	"resource_has_operation":                            {"resource", "operation"},
-	"provider_supports_auth_scheme":                     {"provider", "auth_scheme"},
-	"api_has_operation":                                 {"vendor_api", "operation"},
-	"operation_reads_resource":                          {"operation", "resource"},
-	"operation_writes_resource":                         {"operation", "resource"},
-	"operation_requires_auth_scheme":                    {"operation", "auth_scheme"},
-	"operation_emits_webhook_event":                     {"operation", "webhook_event"},
-	"operation_uses_schema":                             {"operation", "schema_element"},
-	"operation_returns_error_shape":                     {"operation", "error_shape"},
-	"operation_has_rate_limit_rule":                     {"operation", "rate_limit_rule"},
-	"operation_uses_pagination_shape":                   {"operation", "pagination_shape"},
-	"operation_uses_request_response_envelope_shape":    {"operation", "request_response_envelope_shape"},
-	"resource_uses_lifecycle_shape":                     {"resource", "lifecycle_shape"},
-	"operation_uses_concurrency_and_idempotency_shape":  {"operation", "concurrency_and_idempotency_shape"},
-	"resource_has_polling_cdc_and_reconciliation_shape": {"resource", "polling_cdc_and_reconciliation_shape"},
-	"schema_uses_exact_numeric_identifier_timestamp_currency_and_string_encoded_numeric_shape": {"schema_element", "exact_value_shape"},
-	"schema_uses_reference_and_discriminated_union_shape":                                      {"schema_element", "reference_and_discriminated_union_shape"},
-	"operation_uses_batch_and_partial_success_shape":                                           {"operation", "batch_and_partial_success_shape"},
-}
+// The reusable verifier owns this closed registry. Keep a local copy only as
+// a read-only compatibility surface for the established graph configuration
+// validators; RelationshipContracts returns a defensive map.
+var apiRelationshipEdgeContracts = oodapi.RelationshipContracts()
 
 var apiElementRoles = func() map[string]struct{} {
 	roles := make(map[string]struct{})
@@ -157,13 +137,7 @@ func validateAPIElementRoleShape(object GraphObject) error {
 		}
 		return nil
 	}
-	if _, ok := apiElementRoles[object.APIElementRole]; !ok {
-		return fmt.Errorf("api_symbol api_element_role %q is not in the OOD role registry", object.APIElementRole)
-	}
-	if err := validateExternalContentHash("sha256", object.APIElementRoleLocatorManifestHash); err != nil {
-		return fmt.Errorf("api_symbol api_element_role_locator_manifest_hash: %w", err)
-	}
-	return nil
+	return oodapi.ValidateRole(object.APIElementRole, object.APIElementRoleLocatorManifestHash)
 }
 
 func validateAPIRelationshipEndpoints(label EdgeLabelDescriptor, source, target GraphObject) error {

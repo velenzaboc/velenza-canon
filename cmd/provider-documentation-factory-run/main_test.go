@@ -17,6 +17,33 @@ import (
 
 type factoryFailWriter struct{ err error }
 
+type factoryBootRefusalProbe struct{ calls int }
+
+func (p *factoryBootRefusalProbe) ResolveDocumentationFactoryProductionSourceVerifier(ctx context.Context) (providerplan.DocumentationFactoryProductionSourceVerifier, error) {
+	p.calls++
+	return nil, errors.New("test protected bootstrap refused")
+}
+
+func TestFactoryCommandSelectsProtectedBootBeforeProductionCompilation(t *testing.T) {
+	probe := &factoryBootRefusalProbe{}
+	var stdout, stderr bytes.Buffer
+	output := filepath.Join(t.TempDir(), "must-not-exist")
+	args := []string{"--source-package", "untrusted.json", "--source-verification-receipt", "untrusted-receipt.json", "--expected-provider", "aws", "--output-root", output}
+	if code := runWithBoot(args, &stdout, &stderr, probe); code == 0 || probe.calls != 1 || stdout.Len() != 0 {
+		t.Fatalf("boot refusal bypassed: code=%d calls=%d output=%q", code, probe.calls, stdout.String())
+	}
+	if _, err := os.Stat(output); !os.IsNotExist(err) {
+		t.Fatal("boot refusal created candidate output")
+	}
+	probe.calls = 0
+	stdout.Reset()
+	stderr.Reset()
+	args = append(args, "--verifier", "caller-selected")
+	if code := runWithBoot(args, &stdout, &stderr, probe); code == 0 || probe.calls != 0 {
+		t.Fatal("caller verifier selector reached protected bootstrap")
+	}
+}
+
 func (w factoryFailWriter) Write([]byte) (int, error) { return 0, w.err }
 
 func completePreparedArguments() []string {
@@ -337,6 +364,26 @@ func TestProductionSourceModeFailsClosedWithoutSelectedOwnerVerifier(t *testing.
 	}
 	if stdout.Len() != 0 || strings.Contains(stderr.String(), "sealed-source.json") || strings.Contains(stderr.String(), "source-owner.receipt.json") {
 		t.Fatalf("unwired production verifier exposed caller paths: stdout=%q stderr=%q", stdout.String(), stderr.String())
+	}
+}
+
+func TestProductionSourceModeCannotSelectOwnerBindingFromCLI(t *testing.T) {
+	operations := successfulFactoryOperations(t)
+	called := false
+	operations.runProductionSource = func(context.Context, providerplan.DocumentationFactoryProductionSourceCompileOptions) (providerplan.DocumentationFactoryProductionSourceRunReceipt, error) {
+		called = true
+		return providerplan.DocumentationFactoryProductionSourceRunReceipt{}, nil
+	}
+	for _, flag := range []string{"--source-owner-id", "--organization-id", "--authenticated-producer-id", "--producer-authentication-binding-ref", "--producer-authentication-binding-sha256"} {
+		t.Run(flag, func(t *testing.T) {
+			var stderr bytes.Buffer
+			if code := runWithOperations([]string{"--source-package", "sealed-source.json", "--output-root", "candidate-output", "--source-verification-receipt", "source-owner.receipt.json", "--expected-provider", "quickbooks_online", flag, "caller-selected"}, &bytes.Buffer{}, &stderr, operations); code != 2 || !strings.Contains(stderr.String(), "invalid command-line arguments") {
+				t.Fatalf("owner binding flag exit/diagnostic=%d/%q", code, stderr.String())
+			}
+		})
+	}
+	if called {
+		t.Fatal("caller-selected owner binding reached production compiler")
 	}
 }
 

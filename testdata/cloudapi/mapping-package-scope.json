@@ -1,0 +1,21 @@
+{
+  "scope_id": "cloud-api-four-service-selected-mappings-v1",
+  "catalogs": [
+    {"provider_id":"aws","service_id":"s3","api_surface_id":"s3","model_source_id":"aws-s3-model"},
+    {"provider_id":"aws","service_id":"ec2","api_surface_id":"ec2","model_source_id":"aws-ec2-model"},
+    {"provider_id":"gcp","service_id":"storage","api_surface_id":"storage","model_source_id":"gcp-storage-model"},
+    {"provider_id":"gcp","service_id":"compute","api_surface_id":"compute","model_source_id":"gcp-compute-model"}
+  ],
+  "targets": [
+    {"provider_id":"aws","service_id":"s3","api_surface_id":"s3","operation_id":"com.amazonaws.s3#ListBuckets","source_object_type":"com.amazonaws.s3#Bucket","record_class_symbol":"storage_container"},
+    {"provider_id":"aws","service_id":"s3","api_surface_id":"s3","operation_id":"com.amazonaws.s3#GetBucketVersioning","source_object_type":"com.amazonaws.s3#Bucket","record_class_symbol":"storage_container"},
+    {"provider_id":"aws","service_id":"s3","api_surface_id":"s3","operation_id":"com.amazonaws.s3#GetBucketEncryption","source_object_type":"com.amazonaws.s3#Bucket","record_class_symbol":"storage_container"},
+    {"provider_id":"aws","service_id":"s3","api_surface_id":"s3","operation_id":"com.amazonaws.s3#GetPublicAccessBlock","source_object_type":"com.amazonaws.s3#Bucket","record_class_symbol":"storage_container"},
+    {"provider_id":"aws","service_id":"ec2","api_surface_id":"ec2","operation_id":"com.amazonaws.ec2#DescribeInstances","source_object_type":"com.amazonaws.ec2#Instance","record_class_symbol":"compute_instance"},
+    {"provider_id":"aws","service_id":"ec2","api_surface_id":"ec2","operation_id":"com.amazonaws.ec2#DescribeVolumes","source_object_type":"com.amazonaws.ec2#Volume","record_class_symbol":"compute_volume"},
+    {"provider_id":"gcp","service_id":"storage","api_surface_id":"storage","operation_id":"storage.buckets.list","source_object_type":"Bucket","record_class_symbol":"storage_container"},
+    {"provider_id":"gcp","service_id":"compute","api_surface_id":"compute","operation_id":"compute.instances.aggregatedList","source_object_type":"Instance","record_class_symbol":"compute_instance"},
+    {"provider_id":"gcp","service_id":"compute","api_surface_id":"compute","operation_id":"compute.disks.aggregatedList","source_object_type":"Disk","record_class_symbol":"compute_volume"}
+  ],
+  "expected_disposition_totals": {"mapped":31,"not_observed":0,"private":24,"unknown":0,"unsupported":200}
+}

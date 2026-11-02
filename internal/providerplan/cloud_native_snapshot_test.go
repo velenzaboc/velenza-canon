@@ -9,7 +9,7 @@ import (
 const cloudNativeSnapshotSchema = "velenza.cloud_native_test_source_snapshots.v1"
 const cloudNativeSnapshotPosture = "offline_exact_bytes_candidate_only_producer_auth_unavailable"
 const cloudNativeSnapshotFormat = "repository_snapshot_exact_bytes_v1"
-const cloudNativeSnapshotCommit = "b9e66e343a5482a7925cd9bc1284d20ff46dd5a3"
+const cloudNativeSnapshotCommit = "cf596aec23349ce43db8d747bdbef8f40788aa88"
 
 func TestCloudNativeSnapshotSidecarPreservesPinnedOrigins(t *testing.T) {
 	raw, err := os.ReadFile("../../testdata/cloudapi/native-source-snapshots.json")

@@ -28,10 +28,10 @@ func TestBuildDocumentationFactorySourcePackageOODNativePropertyRows(t *testing.
 	f := oodtestfixture.Build(context.Background(), t)
 	var object, locator oodpublication.SpannerRow
 	for _, row := range f.ImmutableRows {
-		if row.Table == "OODGraphObjects" && object.Table == "" {
+		if row.Table == "OODGraphObjects" && row.Columns["api_element_role"] == "operation" {
 			object = row
 		}
-		if row.Table == "OODGraphGraphFactEvidenceLocators" {
+		if row.Table == "OODGraphGraphFactEvidenceLocators" && row.Columns["graph_fact_locator_hash"] == f.Locator.LocatorHash {
 			locator = row
 		}
 	}

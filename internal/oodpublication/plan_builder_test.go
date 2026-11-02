@@ -12,8 +12,8 @@ import (
 
 func TestBuildNativePlanConstructsAndVerifiesAllNineRoots(t *testing.T) {
 	f := oodtestfixture.Build(context.Background(), t)
-	rows := planMemberRows(t, f.Closure.Members)
-	out, err := oodpublication.BuildNativePlan(context.Background(), oodpublication.NativePlanBuildInput{OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind, SnapshotID: f.Plan.SnapshotID, RunID: f.Certificate.MaterializationRunID, Certificate: f.Certificate, Members: f.Closure.Members, ImmutableRows: rows, MemberVerifier: f.Closure.MemberVerifier, Attestor: f.Attestor, CreatedAt: time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)})
+	rows := fixturePlanRows(t, f)
+	out, err := oodpublication.BuildNativePlan(context.Background(), oodpublication.NativePlanBuildInput{OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind, SnapshotID: f.Plan.SnapshotID, RunID: f.Certificate.MaterializationRunID, Certificate: f.Certificate, Members: f.Closure.Members, ImmutableRows: rows, AuxiliaryNodes: fixtureAuxiliaryNodes(f), MemberVerifier: f.Closure.MemberVerifier, Attestor: f.Attestor, CreatedAt: time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)})
 	if err != nil {
 		t.Fatalf("construct native plan: %v", err)
 	}
@@ -24,11 +24,11 @@ func TestBuildNativePlanConstructsAndVerifiesAllNineRoots(t *testing.T) {
 
 func TestNativePlanDraftThenFinalizeBindsNewContentBeforeAttestation(t *testing.T) {
 	f := oodtestfixture.Build(context.Background(), t)
-	rows := planMemberRows(t, f.Closure.Members)
+	rows := fixturePlanRows(t, f)
 	now := time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)
 	draft, err := oodpublication.BuildNativePlanDraft(context.Background(), oodpublication.NativePlanDraftInput{
 		OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind,
-		Certificate: f.Certificate, Members: f.Closure.Members, ImmutableRows: rows,
+		Certificate: f.Certificate, Members: f.Closure.Members, ImmutableRows: rows, AuxiliaryNodes: fixtureAuxiliaryNodes(f),
 		MemberVerifier: f.Closure.MemberVerifier, CreatedAt: now,
 	})
 	if err != nil || draft.Certificate.ClosureHash == "" || len(draft.ImmutableRoster) == 0 {
@@ -99,7 +99,7 @@ func TestBuildNativePlanRejectsTamperedTypedMember(t *testing.T) {
 			break
 		}
 	}
-	_, err := oodpublication.BuildNativePlan(context.Background(), oodpublication.NativePlanBuildInput{OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind, SnapshotID: f.Plan.SnapshotID, RunID: f.Certificate.MaterializationRunID, Certificate: f.Certificate, Members: members, ImmutableRows: rows, MemberVerifier: f.Closure.MemberVerifier, Attestor: f.Attestor, CreatedAt: time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)})
+	_, err := oodpublication.BuildNativePlan(context.Background(), oodpublication.NativePlanBuildInput{OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind, SnapshotID: f.Plan.SnapshotID, RunID: f.Certificate.MaterializationRunID, Certificate: f.Certificate, Members: members, ImmutableRows: rows, AuxiliaryNodes: fixtureAuxiliaryNodes(f), MemberVerifier: f.Closure.MemberVerifier, Attestor: f.Attestor, CreatedAt: time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)})
 	if err == nil {
 		t.Fatal("tampered member reached plan construction")
 	}
@@ -196,9 +196,19 @@ func TestBuildNativePlanRejectsRehashedDisconnectedCrossMembers(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		objectHashes := map[string]string{}
+		var oldRoleRoot string
+		for _, m := range members {
+			if m.ManifestKind == "object" && m.Row.Columns["object_class"] == "api_symbol" {
+				oldRoleRoot, _ = m.Row.Columns["api_element_role_locator_manifest_hash"].(string)
+				break
+			}
+		}
+		if oldRoleRoot == "" {
+			t.Fatal("fixture role claim root absent")
+		}
+		var roleLocatorRow oodpublication.SpannerRow
 		for i := range members {
-			if members[i].ManifestKind != "graph_fact_locator" {
+			if members[i].ManifestKind != "graph_fact_locator" || members[i].Row.Columns["graph_fact_locator_hash"] != f.Locator.LocatorHash {
 				continue
 			}
 			members[i].Row.Columns["evidence_archive_record_id"], members[i].Row.Columns["graph_fact_locator_hash"] = foreignArchive, locator.LocatorHash
@@ -206,12 +216,24 @@ func TestBuildNativePlanRejectsRehashedDisconnectedCrossMembers(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			roleLocatorRow = *members[i].Row
 		}
+		if roleLocatorRow.Table == "" {
+			t.Fatal("fixture role locator absent")
+		}
+		claim, err := oodpublication.BuildNativeLocatorManifest(oodpublication.NativeLocatorManifestInput{OrganizationID: f.Certificate.OrganizationID, Locators: []oodpublication.SpannerRow{roleLocatorRow}, CreatedAt: time.Date(2026, time.November, 2, 12, 0, 0, 0, time.UTC)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		objectHashes := map[string]string{}
 		for i := range members {
 			if members[i].ManifestKind != "object" {
 				continue
 			}
-			members[i].Row.Columns["api_element_role_locator_manifest_hash"] = locator.LocatorHash
+			if members[i].Row.Columns["object_class"] != "api_symbol" {
+				continue
+			}
+			members[i].Row.Columns["api_element_role_locator_manifest_hash"] = claim.RootHash
 			members[i].ClaimedHash, err = oodpublication.CanonicalMemberDigestFromPhysicalRow(*members[i].Row)
 			if err != nil {
 				t.Fatal(err)
@@ -225,14 +247,17 @@ func TestBuildNativePlanRejectsRehashedDisconnectedCrossMembers(t *testing.T) {
 				if members[i].EntryKind != "relationship_evidence" {
 					continue
 				}
-				members[i].Row.Columns["graph_fact_locator_manifest_hash"], members[i].Row.Columns["evidence_archive_record_id"] = locator.LocatorHash, foreignArchive
+				if members[i].Row.Columns["edge_label"] == "documents" {
+					continue
+				}
+				members[i].Row.Columns["graph_fact_locator_manifest_hash"], members[i].Row.Columns["evidence_archive_record_id"] = claim.RootHash, foreignArchive
 				members[i].ClaimedHash, err = oodpublication.CanonicalMemberDigestFromPhysicalRow(*members[i].Row)
 				if err != nil {
 					t.Fatal(err)
 				}
 				members[i].Row.Columns["relationship_evidence_hash"] = members[i].ClaimedHash
 			case "api_property":
-				members[i].Row.Columns["graph_fact_locator_manifest_hash"] = locator.LocatorHash
+				members[i].Row.Columns["graph_fact_locator_manifest_hash"] = claim.RootHash
 				members[i].Row.Columns["subject_graph_row_hash"] = objectHashes[members[i].Row.Columns["graph_object_id"].(string)]
 				members[i].ClaimedHash, err = f.Closure.MemberVerifier.CanonicalMemberDigestFromPhysicalRow(context.Background(), *members[i].Row)
 				if err != nil {
@@ -241,7 +266,25 @@ func TestBuildNativePlanRejectsRehashedDisconnectedCrossMembers(t *testing.T) {
 				members[i].Row.Columns["api_property_fact_hash"] = members[i].ClaimedHash
 			}
 		}
-		_, err = oodpublication.BuildNativePlan(context.Background(), oodpublication.NativePlanBuildInput{OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind, SnapshotID: f.Plan.SnapshotID, RunID: f.Certificate.MaterializationRunID, Certificate: f.Certificate, Members: members, ImmutableRows: planMemberRows(t, members), MemberVerifier: f.Closure.MemberVerifier, Attestor: f.Attestor, CreatedAt: time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)})
+		auxiliary := fixtureAuxiliaryNodes(f)
+		kept := auxiliary[:0]
+		for _, n := range auxiliary {
+			if n.Hash != oldRoleRoot {
+				kept = append(kept, n)
+			}
+		}
+		auxiliary = append(kept, claim.Nodes...)
+		rows := planMemberRows(t, members)
+		for _, row := range fixturePlanRows(t, f) {
+			if (row.Table == "OODGraphManifestNodes" || row.Table == "OODGraphManifestEntries") && row.Columns["manifest_node_hash"] == oldRoleRoot {
+				continue
+			}
+			if row.Table == "OODGraphManifestNodes" || row.Table == "OODGraphManifestEntries" {
+				rows = append(rows, row)
+			}
+		}
+		rows = append(rows, claim.ImmutableRows...)
+		_, err = oodpublication.BuildNativePlan(context.Background(), oodpublication.NativePlanBuildInput{OrganizationID: f.Certificate.OrganizationID, SnapshotKind: f.Certificate.SnapshotKind, SnapshotID: f.Plan.SnapshotID, RunID: f.Certificate.MaterializationRunID, Certificate: f.Certificate, Members: members, ImmutableRows: rows, AuxiliaryNodes: auxiliary, MemberVerifier: f.Closure.MemberVerifier, Attestor: f.Attestor, CreatedAt: time.Date(2026, 11, 2, 12, 0, 0, 0, time.UTC)})
 		if err == nil {
 			t.Fatal("coordinated foreign locator archive tuple reached plan construction")
 		}
@@ -282,6 +325,42 @@ func planMemberRows(t *testing.T, members []oodpublication.ManifestMemberV8) []o
 				seen[string(b)] = true
 				rows = append(rows, row)
 			}
+		}
+	}
+	return rows
+}
+
+// fixtureAuxiliaryNodes retains the fixture's claim submanifests separately
+// from the fixed nine certificate roots. The native builder must receive both
+// so relationship/property/documentation claim roots remain traversable.
+func fixtureAuxiliaryNodes(f oodtestfixture.Fixture) []oodpublication.ManifestNodeV8 {
+	root := map[string]bool{}
+	for _, x := range f.Certificate.Roots {
+		root[x.Hash] = true
+	}
+	out := []oodpublication.ManifestNodeV8{}
+	for _, n := range f.Closure.Nodes {
+		if !root[n.Hash] {
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
+func fixturePlanRows(t *testing.T, f oodtestfixture.Fixture) []oodpublication.SpannerRow {
+	t.Helper()
+	rows := planMemberRows(t, f.Closure.Members)
+	aux := map[string]bool{}
+	for _, n := range fixtureAuxiliaryNodes(f) {
+		aux[n.Hash] = true
+	}
+	for _, row := range f.Closure.ImmutableRows {
+		if row.Table != "OODGraphManifestNodes" && row.Table != "OODGraphManifestEntries" {
+			continue
+		}
+		hash, _ := row.Columns["manifest_node_hash"].(string)
+		if aux[hash] {
+			rows = append(rows, row)
 		}
 	}
 	return rows

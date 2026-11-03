@@ -1,0 +1,2359 @@
+{
+  "targets": [
+    {
+      "api_surface_id": "storage",
+      "field_mappings": null,
+      "mapping_contract": {
+        "evidence_bindings": [
+          {
+            "end_byte": 35480,
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "id": "gcp.storage.versioning",
+            "slice_sha256": "9606661d6f88eb97b7b924bb0d03adefbb946d64ff7bf5721f92b42f1d89d7f2",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "start_byte": 35219
+          },
+          {
+            "end_byte": 17059,
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "id": "gcp.storage.encryption-retention",
+            "slice_sha256": "899366ffa3d4a2256c3a394e43796cc3b5d5f08622668b4f89bbecefc553a989",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "start_byte": 13257
+          },
+          {
+            "end_byte": 19474,
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "id": "gcp.storage.public-access",
+            "slice_sha256": "e8614a5f137e578046dc365dde1898455ce47aef88298674aaa0c1a20c10b743",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "start_byte": 19310
+          },
+          {
+            "id": "gcs.v3.acl",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 9911,
+            "end_byte": 10143,
+            "slice_sha256": "5b34ca3152f5fd17cf5e3b845c44510a408939dce9087ea3f2aaab0e534c8751"
+          },
+          {
+            "id": "gcs.v3.defaultObjectAcl",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 13053,
+            "end_byte": 13237,
+            "slice_sha256": "0c731a9b57d56e63b9c8fbe3f2709e02c7db36cf191945690f5e8e31831d426f"
+          },
+          {
+            "id": "gcs.v3.autoclass",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 27737,
+            "end_byte": 28685,
+            "slice_sha256": "0c7d3db537c2bd2985ebb69b8c07dd1bac087595f6b8c1e627d7475522b888b8"
+          },
+          {
+            "id": "gcs.v3.billing",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 10160,
+            "end_byte": 10421,
+            "slice_sha256": "1e40686180188310c784e1a7f69dfca7a595a9daedf82813b216a0226db04f2f"
+          },
+          {
+            "id": "gcs.v3.cors",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 10435,
+            "end_byte": 11690,
+            "slice_sha256": "ec4a3c2864f9e1f0b7301cb5565055657e266fefcf24e1c54ff2b5bdbaaff911"
+          },
+          {
+            "id": "gcs.v3.customPlacementConfig",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 11721,
+            "end_byte": 12061,
+            "slice_sha256": "b8378b4666678dbd73417a0dce014b79b18df45f549d67a5c94073cd2fb488e4"
+          },
+          {
+            "id": "gcs.v3.hierarchicalNamespace",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 17192,
+            "end_byte": 17470,
+            "slice_sha256": "318fa52ff26908236ec43aa297e310126836a3e9da0236fba1093f0fc5d9cd73"
+          },
+          {
+            "id": "gcs.v3.ipFilter",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 19645,
+            "end_byte": 21538,
+            "slice_sha256": "ab0046d19c2dc0a979623aa232828215d21b853c84e131d0b422b0c04aea0504"
+          },
+          {
+            "id": "gcs.v3.lifecycle",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 21950,
+            "end_byte": 27718,
+            "slice_sha256": "7e8ec6affc8ef7f42e4feae380c3ebf8815696bc58217e753e4c5854890a2f95"
+          },
+          {
+            "id": "gcs.v3.logging",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29114,
+            "end_byte": 29591,
+            "slice_sha256": "993c0428383f32ef4f40495993c9b3f7b7a62d303b34ace227d22e5335e60ad7"
+          },
+          {
+            "id": "gcs.v3.objectRetention",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32070,
+            "end_byte": 32314,
+            "slice_sha256": "30e260eb58e55a2f45c55fc5719cad4e4d564209127cc25e7507a41218574b8f"
+          },
+          {
+            "id": "gcs.v3.softDeletePolicy",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32611,
+            "end_byte": 33994,
+            "slice_sha256": "41b5facf24fd7649d7ffcccb7dccfcdd0d49596662762849364cff27bcb54b02"
+          },
+          {
+            "id": "gcs.v3.website",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 35497,
+            "end_byte": 36407,
+            "slice_sha256": "ca5bbbb44ba560e545f6f5b92f05af454f2e55d0aff450527313f3fd9c9bb9b9"
+          },
+          {
+            "id": "gcs.v3.defaultEventBasedHold",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 12092,
+            "end_byte": 13027,
+            "slice_sha256": "d48d6c1022f95f840cfb11fd51a43f055b51000e164ab5f33bc7f68162e9da46"
+          },
+          {
+            "id": "gcs.v3.locationType",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29012,
+            "end_byte": 29097,
+            "slice_sha256": "f14514904f32a28f5d8d5af78d9881de8fe2e28ae47731388d6d8aa06ec22dc1"
+          },
+          {
+            "id": "gcs.v3.rpo",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32327,
+            "end_byte": 32491,
+            "slice_sha256": "066117d617b68bfd16dc2cbe737badb68bca345b85699e0e82edaa726afe6c83"
+          },
+          {
+            "id": "gcs.v3.encryption.customerManagedEncryptionEnforcementConfig.restrictionMode",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 15151,
+            "end_byte": 15605,
+            "slice_sha256": "f069d40c266b2ab2fd0e7e490fdc54a7587b5598a8add0cf13dc26911440851e"
+          },
+          {
+            "id": "gcs.v3.encryption.customerSuppliedEncryptionEnforcementConfig.restrictionMode",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 16314,
+            "end_byte": 16771,
+            "slice_sha256": "ba9acc8585fcb4f544037a0912057958fdae77edffd2638d2f02469c1f5881f8"
+          },
+          {
+            "id": "gcs.v3.encryption.googleManagedEncryptionEnforcementConfig.restrictionMode",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 13996,
+            "end_byte": 14444,
+            "slice_sha256": "bbd446c96d9e9bee68d608eef7b9c6f68c8beb7485ebea4da5de81297bfa4289"
+          },
+          {
+            "id": "gcs.v3.iamConfiguration.uniformBucketLevelAccess.enabled",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18742,
+            "end_byte": 18880,
+            "slice_sha256": "6e69f03ca4f1d689a8ddf13a2317523688f8bfbe234d65c53381a4ee963f5326"
+          },
+          {
+            "id": "gcs.v3.iamConfiguration.bucketPolicyOnly.enabled",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18039,
+            "end_byte": 18177,
+            "slice_sha256": "6e69f03ca4f1d689a8ddf13a2317523688f8bfbe234d65c53381a4ee963f5326"
+          },
+          {
+            "id": "gcs.v3.iamConfiguration.bucketPolicyOnly.lockedTime",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18201,
+            "end_byte": 18539,
+            "slice_sha256": "969b6c0e19aec7bf6118dca03fe809a4ce29c0009b4ffb91cbfa2c25fe1c00c5"
+          },
+          {
+            "id": "v3.gcp-storage.01b7da7631f80a72bb5d",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 34596,
+            "end_byte": 34728,
+            "slice_sha256": "137a4bb92c415b5cb3a12194479adcede349b680bd2365796058962d67b7fa38"
+          },
+          {
+            "id": "v3.gcp-storage.09bdc9296b6ebb78155c",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29012,
+            "end_byte": 29097,
+            "slice_sha256": "f14514904f32a28f5d8d5af78d9881de8fe2e28ae47731388d6d8aa06ec22dc1"
+          },
+          {
+            "id": "v3.gcp-storage.0e9e22d1cc0ade0bb46f",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 35344,
+            "end_byte": 35467,
+            "slice_sha256": "6fa2a3c5ffcfb8b0208ad8541291861c57d85b66a9f457305ee31b0e4d368174"
+          },
+          {
+            "id": "v3.gcp-storage.0ebf8eb8036eb385ad4c",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 13996,
+            "end_byte": 14444,
+            "slice_sha256": "bbd446c96d9e9bee68d608eef7b9c6f68c8beb7485ebea4da5de81297bfa4289"
+          },
+          {
+            "id": "v3.gcp-storage.15e45545670b60d3d938",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 13053,
+            "end_byte": 13237,
+            "slice_sha256": "0c731a9b57d56e63b9c8fbe3f2709e02c7db36cf191945690f5e8e31831d426f"
+          },
+          {
+            "id": "v3.gcp-storage.186f440cff10548ceb13",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 34905,
+            "end_byte": 35040,
+            "slice_sha256": "e6bc1f6d1c0ec31ae836559639182705eb904d1342fb5ba32c5375ed3dbee354"
+          },
+          {
+            "id": "v3.gcp-storage.2997f03e1c4a23fa1f2c",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 16314,
+            "end_byte": 16771,
+            "slice_sha256": "ba9acc8585fcb4f544037a0912057958fdae77edffd2638d2f02469c1f5881f8"
+          },
+          {
+            "id": "v3.gcp-storage.2d6bde4f2bf8e69a4531",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29611,
+            "end_byte": 29718,
+            "slice_sha256": "c64c77530363e11055451866c95d437a442c3c5386c63d7b457ae508fce45511"
+          },
+          {
+            "id": "v3.gcp-storage.34f69b7c2770d5679ef9",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 21552,
+            "end_byte": 21708,
+            "slice_sha256": "92ba7a5d34f17efa219e1f587ac1389230702aaf53fa625df8a9c6dfab6e5012"
+          },
+          {
+            "id": "v3.gcp-storage.3740e43bb777bc4a82a7",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 27737,
+            "end_byte": 28685,
+            "slice_sha256": "0c7d3db537c2bd2985ebb69b8c07dd1bac087595f6b8c1e627d7475522b888b8"
+          },
+          {
+            "id": "v3.gcp-storage.3ba9743962ee74e97ee2",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 17073,
+            "end_byte": 17161,
+            "slice_sha256": "deb622ed58b61e1da5d1cc1286e74423ad533875e8f635f2d3702905b82e4f09"
+          },
+          {
+            "id": "v3.gcp-storage.3f3022046c28863458b9",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 12092,
+            "end_byte": 13027,
+            "slice_sha256": "d48d6c1022f95f840cfb11fd51a43f055b51000e164ab5f33bc7f68162e9da46"
+          },
+          {
+            "id": "v3.gcp-storage.4faf1d0c47a82caa481d",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 30454,
+            "end_byte": 30588,
+            "slice_sha256": "0bbf0b3c88563c8291b4c02a059df488085a4843a5642cb559576f5631789730"
+          },
+          {
+            "id": "v3.gcp-storage.50ad6f83899e458aed5b",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32327,
+            "end_byte": 32491,
+            "slice_sha256": "066117d617b68bfd16dc2cbe737badb68bca345b85699e0e82edaa726afe6c83"
+          },
+          {
+            "id": "v3.gcp-storage.5136a6124c896f38d8c1",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 16798,
+            "end_byte": 17029,
+            "slice_sha256": "c6b45501caba53fe7316d9b37da03a9dfcef91ad3c28cfc5fbfbd691d6829a93"
+          },
+          {
+            "id": "v3.gcp-storage.51e95935f9a93fc15fdc",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 21724,
+            "end_byte": 21931,
+            "slice_sha256": "a1a8017900958b274de76b6c06297d192ab9e5bf016c74a1b84a8a9151e77817"
+          },
+          {
+            "id": "v3.gcp-storage.5252db412328f8c84c74",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29742,
+            "end_byte": 29858,
+            "slice_sha256": "e284d269ca3024932ebd53eb1147f079b2fd73cd8f1d285ca02b1e7b19f4aea5"
+          },
+          {
+            "id": "v3.gcp-storage.53ae86a45af6e7306a49",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 9911,
+            "end_byte": 10143,
+            "slice_sha256": "5b34ca3152f5fd17cf5e3b845c44510a408939dce9087ea3f2aaab0e534c8751"
+          },
+          {
+            "id": "v3.gcp-storage.53d3e7be8a90f1f285b9",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32611,
+            "end_byte": 33994,
+            "slice_sha256": "41b5facf24fd7649d7ffcccb7dccfcdd0d49596662762849364cff27bcb54b02"
+          },
+          {
+            "id": "v3.gcp-storage.550e1870b3b1e877f348",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18039,
+            "end_byte": 18177,
+            "slice_sha256": "6e69f03ca4f1d689a8ddf13a2317523688f8bfbe234d65c53381a4ee963f5326"
+          },
+          {
+            "id": "v3.gcp-storage.59e82bd7642526a591bf",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 19645,
+            "end_byte": 21538,
+            "slice_sha256": "ab0046d19c2dc0a979623aa232828215d21b853c84e131d0b422b0c04aea0504"
+          },
+          {
+            "id": "v3.gcp-storage.5e673fc89a06065e7fae",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 34016,
+            "end_byte": 34575,
+            "slice_sha256": "4d6c03ae6fd17e6edcd43c1cf3d037391c083bfa26f90fbbc92dba2f69a97f3a"
+          },
+          {
+            "id": "v3.gcp-storage.6467f2f952b9846ea36b",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 15151,
+            "end_byte": 15605,
+            "slice_sha256": "f069d40c266b2ab2fd0e7e490fdc54a7587b5598a8add0cf13dc26911440851e"
+          },
+          {
+            "id": "v3.gcp-storage.656636b7f0f98dcf5272",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 34745,
+            "end_byte": 34881,
+            "slice_sha256": "7df863a8dc73ad8feddd24754fdf4fea1d36ab0cd8ffcde045c494417ce45ce4"
+          },
+          {
+            "id": "v3.gcp-storage.65ac6596064473c92466",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 36529,
+            "end_byte": 36607,
+            "slice_sha256": "575f756ac2e4b6509329aec28fd522e021d4f128d87e542f67997b0eb02b4075"
+          },
+          {
+            "id": "v3.gcp-storage.6648724d0ce1ce4c18b1",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 76186,
+            "end_byte": 78871,
+            "slice_sha256": "dc41c130cb9b15cbfb78127d4e2156c4ccf04f1706a4e812bb62d370bcb53870"
+          },
+          {
+            "id": "v3.gcp-storage.671a28e2bd94f8ee40c2",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 31305,
+            "end_byte": 31521,
+            "slice_sha256": "99f60962ed6e57529cc4a840c3ee075bb3f842692b86bb8c8e7afc1555e419c9"
+          },
+          {
+            "id": "v3.gcp-storage.6812a0c77684f141c7e7",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18201,
+            "end_byte": 18539,
+            "slice_sha256": "969b6c0e19aec7bf6118dca03fe809a4ce29c0009b4ffb91cbfa2c25fe1c00c5"
+          },
+          {
+            "id": "v3.gcp-storage.682814514310ef8cf4ec",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 19499,
+            "end_byte": 19627,
+            "slice_sha256": "4ac00ce74461543ccddd9bac5b06112996def0660d55df6314b0da85aad77380"
+          },
+          {
+            "id": "v3.gcp-storage.6969b2b11722c3f3a46d",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 15632,
+            "end_byte": 15863,
+            "slice_sha256": "c6b45501caba53fe7316d9b37da03a9dfcef91ad3c28cfc5fbfbd691d6829a93"
+          },
+          {
+            "id": "v3.gcp-storage.79e9923db6a0692dd4bc",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 36429,
+            "end_byte": 36507,
+            "slice_sha256": "575f756ac2e4b6509329aec28fd522e021d4f128d87e542f67997b0eb02b4075"
+          },
+          {
+            "id": "v3.gcp-storage.7bb5072e82a0d8168ead",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 30053,
+            "end_byte": 30431,
+            "slice_sha256": "c51d4a4db2753e2345a36935f28919b5b728bcda54df419e216cee5b95f1b54c"
+          },
+          {
+            "id": "v3.gcp-storage.7ff691a53cdf4aaacaa2",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18742,
+            "end_byte": 18880,
+            "slice_sha256": "6e69f03ca4f1d689a8ddf13a2317523688f8bfbe234d65c53381a4ee963f5326"
+          },
+          {
+            "id": "v3.gcp-storage.88f463df631c9310dde5",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 42846,
+            "end_byte": 45149,
+            "slice_sha256": "2585365f5e741936be5f1c73066ea05cf3560c082d30107a06164b8f816561d7"
+          },
+          {
+            "id": "v3.gcp-storage.ab4376f2a187e0df71c3",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 19310,
+            "end_byte": 19474,
+            "slice_sha256": "e8614a5f137e578046dc365dde1898455ce47aef88298674aaa0c1a20c10b743"
+          },
+          {
+            "id": "v3.gcp-storage.ad38317db5cea06ed34a",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 31687,
+            "end_byte": 32032,
+            "slice_sha256": "31d48dc628fede8ee8f1e64eb9a13cac95d305e55802268f07a8bf9768830a12"
+          },
+          {
+            "id": "v3.gcp-storage.af7cf5fde5a466d620f9",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 35497,
+            "end_byte": 36407,
+            "slice_sha256": "ca5bbbb44ba560e545f6f5b92f05af454f2e55d0aff450527313f3fd9c9bb9b9"
+          },
+          {
+            "id": "v3.gcp-storage.b04f81035768ead7f58d",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 28703,
+            "end_byte": 28990,
+            "slice_sha256": "79e63bef4fe831e219bdbd0323968f1260ca76f0d15ad3b9830b59fc2b12da59"
+          },
+          {
+            "id": "v3.gcp-storage.b6350f32094b15a19c92",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32070,
+            "end_byte": 32314,
+            "slice_sha256": "30e260eb58e55a2f45c55fc5719cad4e4d564209127cc25e7507a41218574b8f"
+          },
+          {
+            "id": "v3.gcp-storage.b7d426d2a742cc2e1d81",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 17623,
+            "end_byte": 18556,
+            "slice_sha256": "f53550d5144adca0afbb36a69ef0652dcfeab439adb731c47b2ba27e01a68ec0"
+          },
+          {
+            "id": "v3.gcp-storage.ba60767665a78a756d03",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29114,
+            "end_byte": 29591,
+            "slice_sha256": "993c0428383f32ef4f40495993c9b3f7b7a62d303b34ace227d22e5335e60ad7"
+          },
+          {
+            "id": "v3.gcp-storage.c94cd9ab310d9411fdae",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 13392,
+            "end_byte": 13568,
+            "slice_sha256": "73477c1ed5a51c25b8e97487c41be6706b816cdb91bda6525f1d466b816fe9fa"
+          },
+          {
+            "id": "v3.gcp-storage.ce66215fd509a571a865",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 11721,
+            "end_byte": 12061,
+            "slice_sha256": "b8378b4666678dbd73417a0dce014b79b18df45f549d67a5c94073cd2fb488e4"
+          },
+          {
+            "id": "v3.gcp-storage.cf2f3a9300e70fc16cdf",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 10160,
+            "end_byte": 10421,
+            "slice_sha256": "1e40686180188310c784e1a7f69dfca7a595a9daedf82813b216a0226db04f2f"
+          },
+          {
+            "id": "v3.gcp-storage.d0b1cdb0c89bcdefd932",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 14471,
+            "end_byte": 14702,
+            "slice_sha256": "c6b45501caba53fe7316d9b37da03a9dfcef91ad3c28cfc5fbfbd691d6829a93"
+          },
+          {
+            "id": "v3.gcp-storage.d2f5b667fb560d08bd0d",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 10435,
+            "end_byte": 11690,
+            "slice_sha256": "ec4a3c2864f9e1f0b7301cb5565055657e266fefcf24e1c54ff2b5bdbaaff911"
+          },
+          {
+            "id": "v3.gcp-storage.d3fbea1f4094cf15bced",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 32509,
+            "end_byte": 32585,
+            "slice_sha256": "e5b0be8ab9b4ec6d985114b7d46181eba13f9bd648b55a91807f430397dedb9d"
+          },
+          {
+            "id": "v3.gcp-storage.dac70364220344c2206d",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 18904,
+            "end_byte": 19259,
+            "slice_sha256": "ac58ed6c476ca765bf91beabce1fd18ac518547ef9e363d919eaa65386fa6b21"
+          },
+          {
+            "id": "v3.gcp-storage.e1b3123cf47d4d22c279",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 29872,
+            "end_byte": 30038,
+            "slice_sha256": "68966b7ffdd6a6c29e5633ab8e5d04318592866f184a994facfc91f6fb5fc9f3"
+          },
+          {
+            "id": "v3.gcp-storage.e245bbc72df7a3ab60f9",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 31541,
+            "end_byte": 31660,
+            "slice_sha256": "65dee05240a925ac1086d32cd7c70181356c434651c7a0a57d67c029f106efdd"
+          },
+          {
+            "id": "v3.gcp-storage.edd0753b13a07ae3b5dd",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 35064,
+            "end_byte": 35199,
+            "slice_sha256": "8477586cda457f5d505bc74534107c2c58a59fa9016e7664733254d360bb5560"
+          },
+          {
+            "id": "v3.gcp-storage.edeafa6eb3c3f37ca543",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 17192,
+            "end_byte": 17470,
+            "slice_sha256": "318fa52ff26908236ec43aa297e310126836a3e9da0236fba1093f0fc5d9cd73"
+          },
+          {
+            "id": "v3.gcp-storage.f5778bb5a71b6e333851",
+            "source_uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+            "source_path": "official/gcp/storage-v1.discovery.json",
+            "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+            "start_byte": 21950,
+            "end_byte": 27718,
+            "slice_sha256": "7e8ec6affc8ef7f42e4feae380c3ebf8815696bc58217e753e4c5854890a2f95"
+          }
+        ],
+        "fields": [
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "acl",
+            "source_pointer": "/acl",
+            "projection": "typed_structure",
+            "target_field": "access_control_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.access_control_configuration_observation",
+            "semantic_path": "access_control.bucket_acl",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "many",
+            "structured_recipe": {
+              "kind": "list",
+              "item": {
+                "kind": "object",
+                "members": [
+                  {
+                    "source": "bucket",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Bucket name is a private native lookup key."
+                    }
+                  },
+                  {
+                    "source": "domain",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "personal_data",
+                      "rationale": "Principal domain is kept in the identity binding."
+                    }
+                  },
+                  {
+                    "source": "email",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "personal_data",
+                      "rationale": "Principal email resolves through a private identity lookup."
+                    }
+                  },
+                  {
+                    "source": "entity",
+                    "target": "principal_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "entityId",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Provider-local principal identifier duplicates the scoped principal lookup."
+                    }
+                  },
+                  {
+                    "source": "etag",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Opaque ACL concurrency token."
+                    }
+                  },
+                  {
+                    "source": "id",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Vendor ACL row identifier."
+                    }
+                  },
+                  {
+                    "source": "kind",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Wire resource type discriminator."
+                    }
+                  },
+                  {
+                    "source": "projectTeam",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Project/team native identity details are covered by the principal reference."
+                    }
+                  },
+                  {
+                    "source": "role",
+                    "target": "role",
+                    "rule": {
+                      "kind": "enum",
+                      "values": {
+                        "OWNER": "owner",
+                        "READER": "reader",
+                        "WRITER": "writer"
+                      }
+                    }
+                  },
+                  {
+                    "source": "selfLink",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Provider-specific ACL row locator."
+                    }
+                  }
+                ]
+              },
+              "evidence_refs": [
+                "v3.gcp-storage.53ae86a45af6e7306a49",
+                "v3.gcp-storage.88f463df631c9310dde5"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.53ae86a45af6e7306a49",
+              "v3.gcp-storage.88f463df631c9310dde5"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "autoclass",
+            "source_pointer": "/autoclass",
+            "projection": "typed_structure",
+            "target_field": "automatic_storage_class_management_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.automatic_storage_class_management_configuration_observation",
+            "semantic_path": "storage.automatic_class_management",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "enabled",
+                  "target": "enabled",
+                  "rule": {
+                    "kind": "boolean"
+                  }
+                },
+                {
+                  "source": "toggleTime",
+                  "target": "toggle_time",
+                  "rule": {
+                    "kind": "utc_instant"
+                  }
+                },
+                {
+                  "source": "terminalStorageClass",
+                  "target": "reported_terminal_class",
+                  "rule": {
+                    "kind": "string"
+                  }
+                },
+                {
+                  "source": "terminalStorageClassUpdateTime",
+                  "target": "terminal_class_update_time",
+                  "rule": {
+                    "kind": "utc_instant"
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.3740e43bb777bc4a82a7"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.3740e43bb777bc4a82a7"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "billing",
+            "source_pointer": "/billing",
+            "projection": "typed_structure",
+            "target_field": "billing_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.billing_configuration_observation",
+            "semantic_path": "storage.requester_billing",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "requesterPays",
+                  "target": "requester_pays",
+                  "rule": {
+                    "kind": "boolean"
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.cf2f3a9300e70fc16cdf"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.cf2f3a9300e70fc16cdf"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "cors",
+            "source_pointer": "/cors",
+            "projection": "typed_structure",
+            "target_field": "cross_origin_request_policy_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.cross_origin_request_policy_configuration_observation",
+            "semantic_path": "access_control.cross_origin_request_policy",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "many",
+            "structured_recipe": {
+              "kind": "list",
+              "item": {
+                "kind": "object",
+                "members": [
+                  {
+                    "source": "maxAgeSeconds",
+                    "target": "max_age_seconds",
+                    "rule": {
+                      "kind": "integer_decimal"
+                    }
+                  },
+                  {
+                    "source": "method",
+                    "target": "methods",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  {
+                    "source": "origin",
+                    "target": "allowed_origin_references",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "scoped_reference"
+                      }
+                    }
+                  },
+                  {
+                    "source": "responseHeader",
+                    "target": "response_headers",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  }
+                ]
+              },
+              "evidence_refs": [
+                "v3.gcp-storage.d2f5b667fb560d08bd0d"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.d2f5b667fb560d08bd0d"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "customPlacementConfig",
+            "source_pointer": "/customPlacementConfig",
+            "projection": "typed_structure",
+            "target_field": "custom_placement_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.custom_placement_configuration_observation",
+            "semantic_path": "placement.custom_placement",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "dataLocations",
+                  "target": "data_locations",
+                  "rule": {
+                    "kind": "list",
+                    "item": {
+                      "kind": "scoped_reference"
+                    }
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.ce66215fd509a571a865"
+              ]
+            },
+            "target_reference_target": "CloudNeutralScopedBinding",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.ce66215fd509a571a865"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "defaultEventBasedHold",
+            "source_pointer": "/defaultEventBasedHold",
+            "projection": "evidence_closed_scalar",
+            "target_field": "default_event_hold_state",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.default_event_hold_state",
+            "semantic_path": "retention.default_event_hold",
+            "target_value_kind": "boolean_state",
+            "target_cardinality": "one",
+            "value_recipe": {
+              "evidence_refs": [
+                "gcs.v3.defaultEventBasedHold",
+                "v3.gcp-storage.3f3022046c28863458b9"
+              ],
+              "source_to_neutral": {
+                "true": "enabled",
+                "false": "disabled"
+              },
+              "unknown_value_policy": "refuse"
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.3f3022046c28863458b9"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "defaultObjectAcl",
+            "source_pointer": "/defaultObjectAcl",
+            "projection": "typed_structure",
+            "target_field": "default_access_control_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.default_access_control_configuration_observation",
+            "semantic_path": "access_control.default_object_acl",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "many",
+            "structured_recipe": {
+              "kind": "list",
+              "item": {
+                "kind": "object",
+                "members": [
+                  {
+                    "source": "bucket",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Bucket name is a private native lookup key."
+                    }
+                  },
+                  {
+                    "source": "domain",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "personal_data",
+                      "rationale": "Principal domain is kept in the identity binding."
+                    }
+                  },
+                  {
+                    "source": "email",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "personal_data",
+                      "rationale": "Principal email resolves through a private identity lookup."
+                    }
+                  },
+                  {
+                    "source": "entity",
+                    "target": "principal_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "entityId",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Provider-local principal identifier duplicates the scoped principal lookup."
+                    }
+                  },
+                  {
+                    "source": "etag",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Opaque ACL concurrency token."
+                    }
+                  },
+                  {
+                    "source": "id",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Vendor ACL row identifier."
+                    }
+                  },
+                  {
+                    "source": "kind",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Wire resource type discriminator."
+                    }
+                  },
+                  {
+                    "source": "projectTeam",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Project/team native identity details are covered by the principal reference."
+                    }
+                  },
+                  {
+                    "source": "role",
+                    "target": "role",
+                    "rule": {
+                      "kind": "enum",
+                      "values": {
+                        "OWNER": "owner",
+                        "READER": "reader",
+                        "WRITER": "writer"
+                      }
+                    }
+                  },
+                  {
+                    "source": "selfLink",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Provider-specific ACL row locator."
+                    }
+                  },
+                  {
+                    "source": "generation",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Provider object generation is not a neutral ACL identity."
+                    }
+                  },
+                  {
+                    "source": "object",
+                    "rule": {
+                      "kind": "private",
+                      "reason_code": "provider_internal",
+                      "rationale": "Object name is private to the source mapping."
+                    }
+                  }
+                ]
+              },
+              "evidence_refs": [
+                "v3.gcp-storage.15e45545670b60d3d938",
+                "v3.gcp-storage.6648724d0ce1ce4c18b1"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.15e45545670b60d3d938",
+              "v3.gcp-storage.6648724d0ce1ce4c18b1"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "etag",
+            "source_pointer": "/etag",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /etag",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.3ba9743962ee74e97ee2"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "generation",
+            "source_pointer": "/generation",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /generation",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.2d6bde4f2bf8e69a4531"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "hardDeleteTime",
+            "source_pointer": "/hardDeleteTime",
+            "projection": "exact_rfc3339",
+            "target_field": "reported_hard_delete_time",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.reported_hard_delete_time",
+            "semantic_path": "retention.permanent_deletion_time",
+            "target_value_kind": "utc_timestamp",
+            "target_cardinality": "one",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.edd0753b13a07ae3b5dd"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "hierarchicalNamespace",
+            "source_pointer": "/hierarchicalNamespace",
+            "projection": "typed_structure",
+            "target_field": "hierarchical_namespace_configuration",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.hierarchical_namespace_configuration",
+            "semantic_path": "storage.hierarchical_namespace",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "enabled",
+                  "target": "enabled",
+                  "rule": {
+                    "kind": "boolean"
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.edeafa6eb3c3f37ca543"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.edeafa6eb3c3f37ca543"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "id",
+            "source_pointer": "/id",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /id",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.682814514310ef8cf4ec"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "ipFilter",
+            "source_pointer": "/ipFilter",
+            "projection": "typed_structure",
+            "target_field": "network_access_filter_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.network_access_filter_configuration_observation",
+            "semantic_path": "access_control.network_filter",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "mode",
+                  "target": "mode",
+                  "rule": {
+                    "kind": "enum",
+                    "values": {
+                      "Enabled": "enabled",
+                      "Disabled": "disabled"
+                    }
+                  }
+                },
+                {
+                  "source": "publicNetworkSource",
+                  "target": "public_network_source",
+                  "rule": {
+                    "kind": "object",
+                    "members": [
+                      {
+                        "source": "allowedIpCidrRanges",
+                        "target": "allowed_ip_prefix_references",
+                        "rule": {
+                          "kind": "list",
+                          "item": {
+                            "kind": "scoped_reference"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "source": "vpcNetworkSources",
+                  "target": "virtual_network_sources",
+                  "rule": {
+                    "kind": "list",
+                    "item": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "network",
+                          "target": "network_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "allowedIpCidrRanges",
+                          "target": "allowed_ip_prefix_references",
+                          "rule": {
+                            "kind": "list",
+                            "item": {
+                              "kind": "scoped_reference"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "source": "allowCrossOrgVpcs",
+                  "target": "allow_cross_organization_networks",
+                  "rule": {
+                    "kind": "boolean"
+                  }
+                },
+                {
+                  "source": "allowAllServiceAgentAccess",
+                  "target": "allow_all_service_agents",
+                  "rule": {
+                    "kind": "boolean"
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.59e82bd7642526a591bf"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.59e82bd7642526a591bf"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "kind",
+            "source_pointer": "/kind",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /kind",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.34f69b7c2770d5679ef9"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "labels",
+            "source_pointer": "/labels",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /labels",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.51e95935f9a93fc15fdc"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "lifecycle",
+            "source_pointer": "/lifecycle",
+            "projection": "typed_structure",
+            "target_field": "lifecycle_rule_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.lifecycle_rule_configuration_observation",
+            "semantic_path": "storage.object_lifecycle",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "rule",
+                  "target": "rules",
+                  "rule": {
+                    "kind": "list",
+                    "item": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "action",
+                          "target": "action",
+                          "rule": {
+                            "kind": "object",
+                            "members": [
+                              {
+                                "source": "type",
+                                "target": "action_type",
+                                "rule": {
+                                  "kind": "enum",
+                                  "values": {
+                                    "Delete": "delete",
+                                    "SetStorageClass": "change_storage_class",
+                                    "AbortIncompleteMultipartUpload": "abort_incomplete_multipart_upload"
+                                  }
+                                }
+                              },
+                              {
+                                "source": "storageClass",
+                                "target": "target_storage_class_token",
+                                "rule": {
+                                  "kind": "string"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "source": "condition",
+                          "target": "conditions",
+                          "rule": {
+                            "kind": "object",
+                            "members": [
+                              {
+                                "source": "age",
+                                "target": "minimum_age_days",
+                                "rule": {
+                                  "kind": "integer_decimal"
+                                }
+                              },
+                              {
+                                "source": "createdBefore",
+                                "target": "created_before_date",
+                                "rule": {
+                                  "kind": "string"
+                                }
+                              },
+                              {
+                                "source": "customTimeBefore",
+                                "target": "custom_time_before_date",
+                                "rule": {
+                                  "kind": "string"
+                                }
+                              },
+                              {
+                                "source": "daysSinceCustomTime",
+                                "target": "minimum_days_since_custom_time",
+                                "rule": {
+                                  "kind": "integer_decimal"
+                                }
+                              },
+                              {
+                                "source": "daysSinceNoncurrentTime",
+                                "target": "minimum_days_since_noncurrent",
+                                "rule": {
+                                  "kind": "integer_decimal"
+                                }
+                              },
+                              {
+                                "source": "isLive",
+                                "target": "is_current_object_version",
+                                "rule": {
+                                  "kind": "boolean"
+                                }
+                              },
+                              {
+                                "source": "matchesPattern",
+                                "target": "object_name_pattern",
+                                "rule": {
+                                  "kind": "string"
+                                }
+                              },
+                              {
+                                "source": "matchesPrefix",
+                                "target": "object_name_prefixes",
+                                "rule": {
+                                  "kind": "list",
+                                  "item": {
+                                    "kind": "string"
+                                  }
+                                }
+                              },
+                              {
+                                "source": "matchesSuffix",
+                                "target": "object_name_suffixes",
+                                "rule": {
+                                  "kind": "list",
+                                  "item": {
+                                    "kind": "string"
+                                  }
+                                }
+                              },
+                              {
+                                "source": "matchesStorageClass",
+                                "target": "storage_class_tokens",
+                                "rule": {
+                                  "kind": "list",
+                                  "item": {
+                                    "kind": "string"
+                                  }
+                                }
+                              },
+                              {
+                                "source": "noncurrentTimeBefore",
+                                "target": "noncurrent_before_date",
+                                "rule": {
+                                  "kind": "string"
+                                }
+                              },
+                              {
+                                "source": "sizeAboveBytes",
+                                "target": "size_above_bytes",
+                                "rule": {
+                                  "kind": "integer_decimal"
+                                }
+                              },
+                              {
+                                "source": "sizeBelowBytes",
+                                "target": "size_below_bytes",
+                                "rule": {
+                                  "kind": "integer_decimal"
+                                }
+                              },
+                              {
+                                "source": "numNewerVersions",
+                                "target": "minimum_newer_version_count",
+                                "rule": {
+                                  "kind": "integer_decimal"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.f5778bb5a71b6e333851"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.f5778bb5a71b6e333851"
+            ]
+          },
+          {
+            "disposition": "maps_exact_relationship_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "location",
+            "source_pointer": "/location",
+            "projection": "relationship_reference",
+            "target_field": "container_location_relationship",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.container_location_relationship",
+            "semantic_path": "placement.container_location",
+            "target_value_kind": "scope_resolved_opaque_reference",
+            "target_cardinality": "one",
+            "target_reference_target": "CloudNeutralScopedBinding",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.b04f81035768ead7f58d"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "locationType",
+            "source_pointer": "/locationType",
+            "projection": "evidence_closed_scalar",
+            "target_field": "placement_location_type",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.placement_location_type",
+            "semantic_path": "placement.location_type",
+            "target_value_kind": "source_to_neutral_enum",
+            "target_cardinality": "one",
+            "value_recipe": {
+              "evidence_refs": [
+                "gcs.v3.locationType",
+                "v3.gcp-storage.09bdc9296b6ebb78155c"
+              ],
+              "source_to_neutral": {
+                "region": "region",
+                "dual-region": "dual_region",
+                "multi-region": "multi_region"
+              },
+              "unknown_value_policy": "refuse"
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.09bdc9296b6ebb78155c"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "logging",
+            "source_pointer": "/logging",
+            "projection": "typed_structure",
+            "target_field": "logging_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.logging_configuration_observation",
+            "semantic_path": "storage.access_log_delivery",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "logBucket",
+                  "target": "destination_container_reference",
+                  "rule": {
+                    "kind": "scoped_reference"
+                  }
+                },
+                {
+                  "source": "logObjectPrefix",
+                  "target": "object_name_prefix",
+                  "rule": {
+                    "kind": "string"
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.ba60767665a78a756d03"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.ba60767665a78a756d03"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "metageneration",
+            "source_pointer": "/metageneration",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /metageneration",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.5252db412328f8c84c74"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "projection": "exact",
+            "source_field_id": "name",
+            "source_pointer": "/name",
+            "target_field": "display_name",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.display_name",
+            "semantic_path": "inventory.display_name",
+            "target_value_kind": "string",
+            "target_cardinality": "one",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.e1b3123cf47d4d22c279"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "objectRetention",
+            "source_pointer": "/objectRetention",
+            "projection": "typed_structure",
+            "target_field": "object_retention_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.object_retention_configuration_observation",
+            "semantic_path": "retention.object_policy",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "mode",
+                  "target": "mode",
+                  "rule": {
+                    "kind": "enum",
+                    "values": {
+                      "Enabled": "enabled"
+                    }
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.b6350f32094b15a19c92"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.b6350f32094b15a19c92"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "owner",
+            "source_pointer": "/owner",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /owner",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.7bb5072e82a0d8168ead"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "projectNumber",
+            "source_pointer": "/projectNumber",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /projectNumber",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.4faf1d0c47a82caa481d"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "rpo",
+            "source_pointer": "/rpo",
+            "projection": "evidence_closed_scalar",
+            "target_field": "replication_rpo_state",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.replication_rpo_state",
+            "semantic_path": "replication.objective_profile",
+            "target_value_kind": "source_to_neutral_enum",
+            "target_cardinality": "one",
+            "value_recipe": {
+              "evidence_refs": [
+                "gcs.v3.rpo",
+                "v3.gcp-storage.50ad6f83899e458aed5b"
+              ],
+              "source_to_neutral": {
+                "DEFAULT": "default",
+                "ASYNC_TURBO": "accelerated_asynchronous"
+              },
+              "unknown_value_policy": "refuse"
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.50ad6f83899e458aed5b"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "satisfiesPZI",
+            "source_pointer": "/satisfiesPZI",
+            "private_reason_code": "reserved_for_future_use",
+            "private_source_only_rationale": "The retained model explicitly reserves satisfiesPZI for future use and specifies no current interoperability meaning.",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.65ac6596064473c92466"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "satisfiesPZS",
+            "source_pointer": "/satisfiesPZS",
+            "private_reason_code": "reserved_for_future_use",
+            "private_source_only_rationale": "The retained model explicitly reserves satisfiesPZS for future use and specifies no current interoperability meaning.",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.79e9923db6a0692dd4bc"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "selfLink",
+            "source_pointer": "/selfLink",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /selfLink",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.d3fbea1f4094cf15bced"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "softDeletePolicy",
+            "source_pointer": "/softDeletePolicy",
+            "projection": "typed_structure",
+            "target_field": "soft_delete_policy_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.soft_delete_policy_configuration_observation",
+            "semantic_path": "retention.soft_delete_policy",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "retentionDurationSeconds",
+                  "target": "retention_duration_seconds",
+                  "rule": {
+                    "kind": "integer_decimal"
+                  }
+                },
+                {
+                  "source": "effectiveTime",
+                  "target": "effective_time",
+                  "rule": {
+                    "kind": "utc_instant"
+                  }
+                },
+                {
+                  "source": "hardDeletePause",
+                  "target": "hard_delete_pause",
+                  "rule": {
+                    "kind": "object",
+                    "members": [
+                      {
+                        "source": "enabled",
+                        "target": "enabled",
+                        "rule": {
+                          "kind": "boolean"
+                        }
+                      },
+                      {
+                        "source": "effectiveTime",
+                        "target": "effective_time",
+                        "rule": {
+                          "kind": "utc_instant"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.53d3e7be8a90f1f285b9"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.53d3e7be8a90f1f285b9"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "softDeleteTime",
+            "source_pointer": "/softDeleteTime",
+            "projection": "exact_rfc3339",
+            "target_field": "reported_soft_delete_time",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.reported_soft_delete_time",
+            "semantic_path": "retention.soft_deletion_time",
+            "target_value_kind": "utc_timestamp",
+            "target_cardinality": "one",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.186f440cff10548ceb13"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "storageClass",
+            "source_pointer": "/storageClass",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /storageClass",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.5e673fc89a06065e7fae"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_absent",
+            "explicit_null_disposition": "source_private_only",
+            "projection": "exact_rfc3339",
+            "source_field_id": "timeCreated",
+            "source_pointer": "/timeCreated",
+            "target_field": "reported_creation_time",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.reported_creation_time",
+            "semantic_path": "lifecycle.reported_creation_time",
+            "target_value_kind": "utc_timestamp",
+            "target_cardinality": "one",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.01b7da7631f80a72bb5d"
+            ]
+          },
+          {
+            "disposition": "source_private_only",
+            "explicit_absent_disposition": "",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "updated",
+            "source_pointer": "/updated",
+            "private_reason_code": "provider_internal",
+            "private_source_only_rationale": "Historical contract retains this source member privately: /updated",
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.656636b7f0f98dcf5272"
+            ]
+          },
+          {
+            "disposition": "maps_exact_source_fact",
+            "explicit_absent_disposition": "map_to_unknown",
+            "explicit_null_disposition": "source_private_only",
+            "source_field_id": "website",
+            "source_pointer": "/website",
+            "projection": "typed_structure",
+            "target_field": "website_configuration_observation",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.website_configuration_observation",
+            "semantic_path": "storage.website_routing",
+            "target_value_kind": "closed_object",
+            "target_cardinality": "one",
+            "structured_recipe": {
+              "kind": "object",
+              "members": [
+                {
+                  "source": "mainPageSuffix",
+                  "target": "index_document_suffix",
+                  "rule": {
+                    "kind": "string"
+                  }
+                },
+                {
+                  "source": "notFoundPage",
+                  "target": "missing_document_name",
+                  "rule": {
+                    "kind": "string"
+                  }
+                }
+              ],
+              "evidence_refs": [
+                "v3.gcp-storage.af7cf5fde5a466d620f9"
+              ]
+            },
+            "semantic_evidence_refs": [
+              "v3.gcp-storage.af7cf5fde5a466d620f9"
+            ]
+          }
+        ],
+        "nested": [
+          {
+            "fields": [
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_absent",
+                "explicit_null_disposition": "source_private_only",
+                "projection": "evidence_closed_scalar",
+                "source_field_id": "enabled",
+                "source_pointer": "/versioning/enabled",
+                "target_field": "versioning_state",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcp.storage.versioning"
+                  ],
+                  "source_to_neutral": {
+                    "false": "disabled",
+                    "true": "enabled"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "wire_pointer": "/versioning/enabled",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.versioning_state",
+                "semantic_path": "versioning.state",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.0e9e22d1cc0ade0bb46f"
+                ]
+              }
+            ],
+            "parent_pointer": "/versioning",
+            "wire_codec_profile": "discovery_json"
+          },
+          {
+            "fields": [
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "effectiveTime",
+                "source_pointer": "/retentionPolicy/effectiveTime",
+                "wire_pointer": "/retentionPolicy/effectiveTime",
+                "projection": "exact_rfc3339",
+                "target_field": "retention_policy_effective_time",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.retention_policy_effective_time",
+                "semantic_path": "retention.policy_effective_time",
+                "target_value_kind": "utc_timestamp",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.671a28e2bd94f8ee40c2"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_absent",
+                "explicit_null_disposition": "source_private_only",
+                "projection": "evidence_closed_scalar",
+                "source_field_id": "isLocked",
+                "source_pointer": "/retentionPolicy/isLocked",
+                "target_field": "retention_lock_state",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcp.storage.encryption-retention"
+                  ],
+                  "source_to_neutral": {
+                    "false": "unlocked",
+                    "true": "locked"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "wire_pointer": "/retentionPolicy/isLocked",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.retention_lock_state",
+                "semantic_path": "retention.lock_state",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.e245bbc72df7a3ab60f9"
+                ]
+              },
+              {
+                "disposition": "source_private_only",
+                "explicit_absent_disposition": "",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "retentionPeriod",
+                "source_pointer": "/retentionPolicy/retentionPeriod",
+                "wire_pointer": "/retentionPolicy/retentionPeriod",
+                "private_reason_code": "provider_internal",
+                "private_source_only_rationale": "Historical contract retains this source member privately: /retentionPolicy/retentionPeriod",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.ad38317db5cea06ed34a"
+                ]
+              }
+            ],
+            "parent_pointer": "/retentionPolicy",
+            "wire_codec_profile": "discovery_json"
+          },
+          {
+            "fields": [
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_absent",
+                "explicit_null_disposition": "source_private_only",
+                "projection": "present_private_leaf_to_neutral_scalar",
+                "source_field_id": "defaultKmsKeyName",
+                "source_pointer": "/encryption/defaultKmsKeyName",
+                "target_field": "customer_managed_key_configuration_observation",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcp.storage.encryption-retention"
+                  ],
+                  "source_to_neutral": {
+                    "present": "configured"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "wire_pointer": "/encryption/defaultKmsKeyName",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.customer_managed_key_configuration_observation",
+                "semantic_path": "encryption.customer_managed_key_configuration",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.c94cd9ab310d9411fdae"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "effectiveTime",
+                "source_pointer": "/encryption/customerManagedEncryptionEnforcementConfig/effectiveTime",
+                "wire_pointer": "/encryption/customerManagedEncryptionEnforcementConfig/effectiveTime",
+                "projection": "exact_rfc3339",
+                "target_field": "customer_managed_key_upload_restriction_effective_time",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.customer_managed_key_upload_restriction_effective_time",
+                "semantic_path": "encryption.new_uploads.customer_managed_key.effective_time",
+                "target_value_kind": "utc_timestamp",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.6969b2b11722c3f3a46d"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "restrictionMode",
+                "source_pointer": "/encryption/customerManagedEncryptionEnforcementConfig/restrictionMode",
+                "wire_pointer": "/encryption/customerManagedEncryptionEnforcementConfig/restrictionMode",
+                "projection": "evidence_closed_scalar",
+                "target_field": "customer_managed_key_upload_restriction",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.customer_managed_key_upload_restriction",
+                "semantic_path": "encryption.new_uploads.customer_managed_key.restriction",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcs.v3.encryption.customerManagedEncryptionEnforcementConfig.restrictionMode",
+                    "v3.gcp-storage.6467f2f952b9846ea36b"
+                  ],
+                  "source_to_neutral": {
+                    "NotRestricted": "not_restricted",
+                    "FullyRestricted": "fully_restricted"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.6467f2f952b9846ea36b"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "effectiveTime",
+                "source_pointer": "/encryption/customerSuppliedEncryptionEnforcementConfig/effectiveTime",
+                "wire_pointer": "/encryption/customerSuppliedEncryptionEnforcementConfig/effectiveTime",
+                "projection": "exact_rfc3339",
+                "target_field": "customer_supplied_key_upload_restriction_effective_time",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.customer_supplied_key_upload_restriction_effective_time",
+                "semantic_path": "encryption.new_uploads.customer_supplied_key.effective_time",
+                "target_value_kind": "utc_timestamp",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.5136a6124c896f38d8c1"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "restrictionMode",
+                "source_pointer": "/encryption/customerSuppliedEncryptionEnforcementConfig/restrictionMode",
+                "wire_pointer": "/encryption/customerSuppliedEncryptionEnforcementConfig/restrictionMode",
+                "projection": "evidence_closed_scalar",
+                "target_field": "customer_supplied_key_upload_restriction",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.customer_supplied_key_upload_restriction",
+                "semantic_path": "encryption.new_uploads.customer_supplied_key.restriction",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcs.v3.encryption.customerSuppliedEncryptionEnforcementConfig.restrictionMode",
+                    "v3.gcp-storage.2997f03e1c4a23fa1f2c"
+                  ],
+                  "source_to_neutral": {
+                    "NotRestricted": "not_restricted",
+                    "FullyRestricted": "fully_restricted"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.2997f03e1c4a23fa1f2c"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "effectiveTime",
+                "source_pointer": "/encryption/googleManagedEncryptionEnforcementConfig/effectiveTime",
+                "wire_pointer": "/encryption/googleManagedEncryptionEnforcementConfig/effectiveTime",
+                "projection": "exact_rfc3339",
+                "target_field": "service_managed_key_upload_restriction_effective_time",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.service_managed_key_upload_restriction_effective_time",
+                "semantic_path": "encryption.new_uploads.service_managed_key.effective_time",
+                "target_value_kind": "utc_timestamp",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.d0b1cdb0c89bcdefd932"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "restrictionMode",
+                "source_pointer": "/encryption/googleManagedEncryptionEnforcementConfig/restrictionMode",
+                "wire_pointer": "/encryption/googleManagedEncryptionEnforcementConfig/restrictionMode",
+                "projection": "evidence_closed_scalar",
+                "target_field": "service_managed_key_upload_restriction",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.service_managed_key_upload_restriction",
+                "semantic_path": "encryption.new_uploads.service_managed_key.restriction",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcs.v3.encryption.googleManagedEncryptionEnforcementConfig.restrictionMode",
+                    "v3.gcp-storage.0ebf8eb8036eb385ad4c"
+                  ],
+                  "source_to_neutral": {
+                    "NotRestricted": "not_restricted",
+                    "FullyRestricted": "fully_restricted"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.0ebf8eb8036eb385ad4c"
+                ]
+              }
+            ],
+            "parent_pointer": "/encryption",
+            "wire_codec_profile": "discovery_json"
+          },
+          {
+            "fields": [
+              {
+                "disposition": "source_private_only",
+                "explicit_absent_disposition": "",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "enabled",
+                "source_pointer": "/iamConfiguration/bucketPolicyOnly/enabled",
+                "wire_pointer": "/iamConfiguration/bucketPolicyOnly/enabled",
+                "private_reason_code": "provider_internal",
+                "private_source_only_rationale": "Documented backward-compatible mirror of /iamConfiguration/uniformBucketLevelAccess/enabled. Co-observed values must agree.",
+                "source_alias_of": "/iamConfiguration/uniformBucketLevelAccess/enabled",
+                "source_alias_evidence_ref": "v3.gcp-storage.b7d426d2a742cc2e1d81",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.550e1870b3b1e877f348"
+                ]
+              },
+              {
+                "disposition": "source_private_only",
+                "explicit_absent_disposition": "",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "lockedTime",
+                "source_pointer": "/iamConfiguration/bucketPolicyOnly/lockedTime",
+                "wire_pointer": "/iamConfiguration/bucketPolicyOnly/lockedTime",
+                "private_reason_code": "provider_internal",
+                "private_source_only_rationale": "Documented backward-compatible mirror of /iamConfiguration/uniformBucketLevelAccess/lockedTime. Co-observed values must agree.",
+                "source_alias_of": "/iamConfiguration/uniformBucketLevelAccess/lockedTime",
+                "source_alias_evidence_ref": "v3.gcp-storage.b7d426d2a742cc2e1d81",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.6812a0c77684f141c7e7"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_absent",
+                "explicit_null_disposition": "source_private_only",
+                "projection": "evidence_closed_scalar",
+                "source_field_id": "publicAccessPrevention",
+                "source_pointer": "/iamConfiguration/publicAccessPrevention",
+                "target_field": "public_access_prevention_state",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcp.storage.public-access"
+                  ],
+                  "source_to_neutral": {
+                    "enforced": "enforced",
+                    "inherited": "inherited"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "wire_pointer": "/iamConfiguration/publicAccessPrevention",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.public_access_prevention_state",
+                "semantic_path": "access_control.public_access_prevention_state",
+                "target_value_kind": "source_to_neutral_enum",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.ab4376f2a187e0df71c3"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "enabled",
+                "source_pointer": "/iamConfiguration/uniformBucketLevelAccess/enabled",
+                "wire_pointer": "/iamConfiguration/uniformBucketLevelAccess/enabled",
+                "projection": "evidence_closed_scalar",
+                "target_field": "uniform_resource_access_state",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.uniform_resource_access_state",
+                "semantic_path": "access_control.uniform.enabled",
+                "target_value_kind": "boolean_state",
+                "target_cardinality": "one",
+                "value_recipe": {
+                  "evidence_refs": [
+                    "gcs.v3.iamConfiguration.uniformBucketLevelAccess.enabled",
+                    "v3.gcp-storage.7ff691a53cdf4aaacaa2"
+                  ],
+                  "source_to_neutral": {
+                    "true": "enabled",
+                    "false": "disabled"
+                  },
+                  "unknown_value_policy": "refuse"
+                },
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.7ff691a53cdf4aaacaa2"
+                ]
+              },
+              {
+                "disposition": "maps_exact_source_fact",
+                "explicit_absent_disposition": "map_to_unknown",
+                "explicit_null_disposition": "source_private_only",
+                "source_field_id": "lockedTime",
+                "source_pointer": "/iamConfiguration/uniformBucketLevelAccess/lockedTime",
+                "wire_pointer": "/iamConfiguration/uniformBucketLevelAccess/lockedTime",
+                "projection": "exact_rfc3339",
+                "target_field": "uniform_resource_access_lock_time",
+                "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.uniform_resource_access_lock_time",
+                "semantic_path": "access_control.uniform.lockedTime",
+                "target_value_kind": "utc_timestamp",
+                "target_cardinality": "one",
+                "semantic_evidence_refs": [
+                  "v3.gcp-storage.dac70364220344c2206d"
+                ]
+              }
+            ],
+            "parent_pointer": "/iamConfiguration",
+            "wire_codec_profile": "discovery_json"
+          }
+        ],
+        "neutral": {
+          "class_symbol": "",
+          "fields": null,
+          "owner_ref": "",
+          "owner_sha256": "",
+          "validator_profile_ref": "",
+          "validator_profile_sha256": ""
+        },
+        "object_schema_id": "Bucket",
+        "operation_id": "storage.buckets.list"
+      },
+      "operation_id": "storage.buckets.list",
+      "provider_id": "gcp",
+      "record_class_contract_ref": "",
+      "record_class_symbol": "storage_container",
+      "service_id": "storage",
+      "source_fields": null,
+      "source_mapping_version": "storage-neutral-3",
+      "source_object_type": "Bucket",
+      "source_schema_version": "v1",
+      "stable_identity_evidence": [
+        {
+          "locator": {
+            "end_byte": 30038,
+            "evidence_id": "model",
+            "json_pointer": "/schemas/Bucket/properties/name",
+            "start_byte": 29872
+          },
+          "semantic_role": "scoped_native_lookup_key",
+          "source_field_id": "name"
+        }
+      ],
+      "stable_identity_source_fields": [
+        "name"
+      ]
+    }
+  ]
+}

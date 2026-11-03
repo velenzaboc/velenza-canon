@@ -1,0 +1,764 @@
+{
+  "profile_set_id": "cloud_api_profiles_four_service_v1_ce740f987255bec9",
+  "providers": [
+    {
+      "authentication": {
+        "audience_or_signing_scope": "YYYYMMDD/region/service/aws4_request",
+        "credential_carrier": "connector_vault_selected_aws_credential",
+        "eligible_credential_owners": [
+          "connector_vault",
+          "tenant_grant"
+        ],
+        "protocol": "aws_sigv4"
+      },
+      "evidence": [
+        {
+          "byte_count": 27901,
+          "expected_sha256": "cd379706469d56e12f74d3b7f4a26812d82a108603ac81c1997fa878fa8610cc",
+          "local_path": "profile-evidence/evidence-11.raw",
+          "retrieved": "2026-11-02",
+          "stable_coordinate": "sha256:cd379706469d56e12f74d3b7f4a26812d82a108603ac81c1997fa878fa8610cc",
+          "subject": "SigV4 credential scope contains date region service and aws4_request",
+          "uri": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-troubleshooting.html"
+        }
+      ],
+      "profile_id": "aws.sigv4.provider.v1",
+      "profile_version": "1",
+      "provider_id": "aws",
+      "services": [
+        {
+          "api_surface_id": "ec2",
+          "api_version": "2016-11-15",
+          "catalog_model_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+          "endpoint": {
+            "authority_templates": [
+              "ec2.{region}.amazonaws.com"
+            ],
+            "base_url": "https://ec2.{region}.{partition_dns_suffix}",
+            "partition_mode": "aws_partition_resolved",
+            "region_mode": "required",
+            "signing_name": "ec2"
+          },
+          "evidence": [
+            {
+              "byte_count": 78702,
+              "expected_sha256": "0971bc7344c8a2a69737051117f118d58e91dd072dfded275dccd237f1034f93",
+              "local_path": "profile-evidence/evidence-09.raw",
+              "retrieved": "2026-11-02",
+              "stable_coordinate": "sha256:0971bc7344c8a2a69737051117f118d58e91dd072dfded275dccd237f1034f93",
+              "subject": "DescribeInstances supports NextToken pagination",
+              "uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html"
+            }
+          ],
+          "operations": [
+            {
+              "accepted_scopes": [
+                "aws_iam"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 78702,
+                  "expected_sha256": "0971bc7344c8a2a69737051117f118d58e91dd072dfded275dccd237f1034f93",
+                  "local_path": "profile-evidence/evidence-09.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:0971bc7344c8a2a69737051117f118d58e91dd072dfded275dccd237f1034f93",
+                  "subject": "DescribeInstances API",
+                  "uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html"
+                },
+                {
+                  "byte_count": 6808269,
+                  "expected_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+                  "local_path": "official/aws/ec2-2016-11-15.json",
+                  "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 2127148,
+                  "evidence_id": "model",
+                  "json_pointer": "/shapes/com.amazonaws.ec2#DescribeInstances",
+                  "start_byte": 2117884
+                },
+                "selected_range_sha256": "6038cc2295b004b2fbeeff17d39e52ea02396e2f9c13aa5423348702b2e3fa08"
+              },
+              "operation_id": "com.amazonaws.ec2#DescribeInstances",
+              "pagination": {
+                "request_token_field": "NextToken",
+                "request_token_wire_name": "NextToken",
+                "required": true,
+                "response_token_field": "NextToken",
+                "response_token_wire_name": "nextToken"
+              },
+              "required_permissions": [
+                "ec2:DescribeInstances"
+              ],
+              "resource_ids": [
+                "com.amazonaws.ec2#Instance"
+              ],
+              "route": {
+                "authority_template": "ec2.{region}.amazonaws.com",
+                "method": "GET",
+                "path_template": "/",
+                "query_templates": {
+                  "Action": "DescribeInstances",
+                  "Version": "2016-11-15"
+                },
+                "required_selectors": [
+                  "region"
+                ]
+              }
+            },
+            {
+              "accepted_scopes": [
+                "aws_iam"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 27175,
+                  "expected_sha256": "fa144e8ddb1c35e0e7da735a8875a6220e25ca954d85bbc7b4ab436af68da27a",
+                  "local_path": "profile-evidence/evidence-10.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:fa144e8ddb1c35e0e7da735a8875a6220e25ca954d85bbc7b4ab436af68da27a",
+                  "subject": "DescribeVolumes API",
+                  "uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html"
+                },
+                {
+                  "byte_count": 6808269,
+                  "expected_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+                  "local_path": "official/aws/ec2-2016-11-15.json",
+                  "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 2725219,
+                  "evidence_id": "model",
+                  "json_pointer": "/shapes/com.amazonaws.ec2#DescribeVolumes",
+                  "start_byte": 2718870
+                },
+                "selected_range_sha256": "58c6534270fcc7345947496023b86be5fe8d8865c5a3723f96b920094be18c9f"
+              },
+              "operation_id": "com.amazonaws.ec2#DescribeVolumes",
+              "pagination": {
+                "request_token_field": "NextToken",
+                "request_token_wire_name": "NextToken",
+                "required": true,
+                "response_token_field": "NextToken",
+                "response_token_wire_name": "nextToken"
+              },
+              "required_permissions": [
+                "ec2:DescribeVolumes"
+              ],
+              "resource_ids": [
+                "com.amazonaws.ec2#Volume"
+              ],
+              "route": {
+                "authority_template": "ec2.{region}.amazonaws.com",
+                "method": "GET",
+                "path_template": "/",
+                "query_templates": {
+                  "Action": "DescribeVolumes",
+                  "Version": "2016-11-15"
+                },
+                "required_selectors": [
+                  "region"
+                ]
+              }
+            }
+          ],
+          "profile_id": "aws.ec2.query.v1",
+          "profile_version": "1",
+          "provider_profile_ref": {
+            "profile_id": "aws.sigv4.provider.v1",
+            "profile_version": "1",
+            "provider_id": "aws"
+          },
+          "retry": {
+            "classifications": [
+              "client_throttling",
+              "server_transient"
+            ],
+            "idempotent_read": true,
+            "initial_backoff_millis": 250,
+            "jitter": "full",
+            "max_attempts": 4,
+            "max_backoff_millis": 20000
+          },
+          "service_id": "ec2"
+        },
+        {
+          "api_surface_id": "s3",
+          "api_version": "2006-03-01",
+          "catalog_model_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+          "endpoint": {
+            "authority_templates": [
+              "s3.amazonaws.com",
+              "s3.{region}.amazonaws.com"
+            ],
+            "base_url": "https://s3.{region_or_global}.{partition_dns_suffix}",
+            "partition_mode": "aws_partition_resolved",
+            "region_mode": "operation_resolved",
+            "signing_name": "s3"
+          },
+          "evidence": [
+            {
+              "byte_count": 34023,
+              "expected_sha256": "b999eeb1c4794181f399f35f62f40c992514b8c534bee1b3937397759b2edf44",
+              "local_path": "profile-evidence/evidence-08.raw",
+              "retrieved": "2026-11-02",
+              "stable_coordinate": "sha256:b999eeb1c4794181f399f35f62f40c992514b8c534bee1b3937397759b2edf44",
+              "subject": "ListBuckets pagination and general purpose bucket scope",
+              "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html"
+            }
+          ],
+          "operations": [
+            {
+              "accepted_scopes": [
+                "aws_iam"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 27928,
+                  "expected_sha256": "ae11b1148bffb1b407c4485ccc9e5adaa78be75199f652b38438df772a9e3d9f",
+                  "local_path": "profile-evidence/evidence-05.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:ae11b1148bffb1b407c4485ccc9e5adaa78be75199f652b38438df772a9e3d9f",
+                  "subject": "GetBucketEncryption API",
+                  "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketEncryption.html"
+                },
+                {
+                  "byte_count": 2996942,
+                  "expected_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+                  "local_path": "official/aws/s3-2006-03-01.json",
+                  "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 1779181,
+                  "evidence_id": "model",
+                  "json_pointer": "/shapes/com.amazonaws.s3#GetBucketEncryption",
+                  "start_byte": 1774172
+                },
+                "selected_range_sha256": "a289f663008e3ff5a8864fe4951851c9a2c824e450eeaac032d7cdc41a62f957"
+              },
+              "operation_id": "com.amazonaws.s3#GetBucketEncryption",
+              "pagination": {
+                "required": false
+              },
+              "required_permissions": [
+                "s3:GetEncryptionConfiguration"
+              ],
+              "resource_ids": [
+                "com.amazonaws.s3#Bucket"
+              ],
+              "route": {
+                "authority_template": "s3.{region}.amazonaws.com",
+                "method": "GET",
+                "path_template": "/{Bucket}",
+                "query_templates": {
+                  "encryption": ""
+                },
+                "required_selectors": [
+                  "Bucket",
+                  "region"
+                ]
+              }
+            },
+            {
+              "accepted_scopes": [
+                "aws_iam"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 22630,
+                  "expected_sha256": "697011e89b3f7dbddf885b51cded94eed885938b33d3d583da18b80c24817aa4",
+                  "local_path": "profile-evidence/evidence-06.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:697011e89b3f7dbddf885b51cded94eed885938b33d3d583da18b80c24817aa4",
+                  "subject": "GetBucketVersioning API",
+                  "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketVersioning.html"
+                },
+                {
+                  "byte_count": 2996942,
+                  "expected_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+                  "local_path": "official/aws/s3-2006-03-01.json",
+                  "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 1876076,
+                  "evidence_id": "model",
+                  "json_pointer": "/shapes/com.amazonaws.s3#GetBucketVersioning",
+                  "start_byte": 1873600
+                },
+                "selected_range_sha256": "d3bd350f755c82a971f817fb1351eb3203e2ea81f14f5e0c6e35361c1ecc86e0"
+              },
+              "operation_id": "com.amazonaws.s3#GetBucketVersioning",
+              "pagination": {
+                "required": false
+              },
+              "required_permissions": [
+                "s3:GetBucketVersioning"
+              ],
+              "resource_ids": [
+                "com.amazonaws.s3#Bucket"
+              ],
+              "route": {
+                "authority_template": "s3.{region}.amazonaws.com",
+                "method": "GET",
+                "path_template": "/{Bucket}",
+                "query_templates": {
+                  "versioning": ""
+                },
+                "required_selectors": [
+                  "Bucket",
+                  "region"
+                ]
+              }
+            },
+            {
+              "accepted_scopes": [
+                "aws_iam"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 27137,
+                  "expected_sha256": "3fe65b9c9efaa0f7436f85f8b9b2d2046681281f5878e0c2e09fe8b84a5efc1a",
+                  "local_path": "profile-evidence/evidence-07.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:3fe65b9c9efaa0f7436f85f8b9b2d2046681281f5878e0c2e09fe8b84a5efc1a",
+                  "subject": "GetPublicAccessBlock API",
+                  "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html"
+                },
+                {
+                  "byte_count": 2996942,
+                  "expected_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+                  "local_path": "official/aws/s3-2006-03-01.json",
+                  "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 2015799,
+                  "evidence_id": "model",
+                  "json_pointer": "/shapes/com.amazonaws.s3#GetPublicAccessBlock",
+                  "start_byte": 2012259
+                },
+                "selected_range_sha256": "955cb2950ead0c6068b503b79ebbad52c36c95cf07ae92a9b30f0b68f20feaa7"
+              },
+              "operation_id": "com.amazonaws.s3#GetPublicAccessBlock",
+              "pagination": {
+                "required": false
+              },
+              "required_permissions": [
+                "s3:GetBucketPublicAccessBlock"
+              ],
+              "resource_ids": [
+                "com.amazonaws.s3#Bucket"
+              ],
+              "route": {
+                "authority_template": "s3.{region}.amazonaws.com",
+                "method": "GET",
+                "path_template": "/{Bucket}",
+                "query_templates": {
+                  "publicAccessBlock": ""
+                },
+                "required_selectors": [
+                  "Bucket",
+                  "region"
+                ]
+              }
+            },
+            {
+              "accepted_scopes": [
+                "aws_iam"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 34023,
+                  "expected_sha256": "b999eeb1c4794181f399f35f62f40c992514b8c534bee1b3937397759b2edf44",
+                  "local_path": "profile-evidence/evidence-08.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:b999eeb1c4794181f399f35f62f40c992514b8c534bee1b3937397759b2edf44",
+                  "subject": "ListBuckets requires s3:ListAllMyBuckets and uses continuation token",
+                  "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html"
+                },
+                {
+                  "byte_count": 2996942,
+                  "expected_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+                  "local_path": "official/aws/s3-2006-03-01.json",
+                  "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 2175579,
+                  "evidence_id": "model",
+                  "json_pointer": "/shapes/com.amazonaws.s3#ListBuckets",
+                  "start_byte": 2172563
+                },
+                "selected_range_sha256": "69ee38369290dde31977bbad8dcf837b2ec8a03510491ec91b413d5c4267a0e2"
+              },
+              "operation_id": "com.amazonaws.s3#ListBuckets",
+              "pagination": {
+                "request_token_field": "ContinuationToken",
+                "request_token_wire_name": "continuation-token",
+                "required": true,
+                "response_token_field": "ContinuationToken",
+                "response_token_wire_name": "ContinuationToken"
+              },
+              "required_permissions": [
+                "s3:ListAllMyBuckets"
+              ],
+              "resource_ids": [
+                "com.amazonaws.s3#Bucket"
+              ],
+              "route": {
+                "authority_template": "s3.amazonaws.com",
+                "method": "GET",
+                "path_template": "/",
+                "query_templates": {
+                  "x-id": "ListBuckets"
+                },
+                "required_selectors": []
+              }
+            }
+          ],
+          "profile_id": "aws.s3.rest.v1",
+          "profile_version": "1",
+          "provider_profile_ref": {
+            "profile_id": "aws.sigv4.provider.v1",
+            "profile_version": "1",
+            "provider_id": "aws"
+          },
+          "retry": {
+            "classifications": [
+              "client_throttling",
+              "server_transient"
+            ],
+            "idempotent_read": true,
+            "initial_backoff_millis": 250,
+            "jitter": "full",
+            "max_attempts": 4,
+            "max_backoff_millis": 20000
+          },
+          "service_id": "s3"
+        }
+      ]
+    },
+    {
+      "authentication": {
+        "audience_or_signing_scope": "operation_accepted_scope_intersection",
+        "credential_carrier": "connector_vault_selected_google_credential",
+        "eligible_credential_owners": [
+          "connector_vault",
+          "tenant_grant"
+        ],
+        "protocol": "oauth2_bearer"
+      },
+      "evidence": [
+        {
+          "byte_count": 155795,
+          "expected_sha256": "1dcf6961c69c5b783820cc166bc78308a100fa41061bc674996ae6ae6b2cc0c6",
+          "local_path": "profile-evidence/evidence-03.raw",
+          "retrieved": "2026-11-02",
+          "stable_coordinate": "sha256:1dcf6961c69c5b783820cc166bc78308a100fa41061bc674996ae6ae6b2cc0c6",
+          "subject": "Google APIs use credentials and method-specific authorization scopes",
+          "uri": "https://cloud.google.com/docs/authentication"
+        }
+      ],
+      "profile_id": "gcp.oauth2.provider.v1",
+      "profile_version": "1",
+      "provider_id": "gcp",
+      "services": [
+        {
+          "api_surface_id": "compute",
+          "api_version": "v1",
+          "catalog_model_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+          "endpoint": {
+            "authority_templates": [
+              "compute.googleapis.com"
+            ],
+            "base_url": "https://compute.googleapis.com/compute/v1",
+            "partition_mode": "google_public_api",
+            "region_mode": "project_and_aggregated_scope",
+            "signing_name": "oauth2_bearer"
+          },
+          "evidence": [
+            {
+              "byte_count": 2282224,
+              "expected_sha256": "c8a68d7bc76f80e0d39184453d107eb48285cad4e41efbf5d4028fba948a2b59",
+              "local_path": "profile-evidence/evidence-02.raw",
+              "retrieved": "2026-11-02",
+              "stable_coordinate": "sha256:c8a68d7bc76f80e0d39184453d107eb48285cad4e41efbf5d4028fba948a2b59",
+              "subject": "Compute aggregated list pagination scopes and permissions",
+              "uri": "https://cloud.google.com/compute/docs/reference/rest/v1/instances/aggregatedList"
+            }
+          ],
+          "operations": [
+            {
+              "accepted_scopes": [
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/compute",
+                "https://www.googleapis.com/auth/compute.readonly"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 2125066,
+                  "expected_sha256": "536e2fbf38ae967b815ca73ea1ed84b232fa592ae2c36d269373afdb4897d66a",
+                  "local_path": "profile-evidence/evidence-01.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:536e2fbf38ae967b815ca73ea1ed84b232fa592ae2c36d269373afdb4897d66a",
+                  "subject": "aggregated disks list permissions scopes and nextPageToken",
+                  "uri": "https://cloud.google.com/compute/docs/reference/rest/v1/disks/aggregatedList"
+                },
+                {
+                  "byte_count": 6419346,
+                  "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+                  "local_path": "refresh-20261102/compute-v1.discovery.json",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "gcp/compute/v1@sha256:ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 955500,
+                  "evidence_id": "model",
+                  "json_pointer": "/resources/disks/methods/aggregatedList",
+                  "start_byte": 948992
+                },
+                "selected_range_sha256": "685cc18a060c1287124c91e73fe9b65e5cc35e2b8abb127f715140edfd3ea6b9"
+              },
+              "operation_id": "compute.disks.aggregatedList",
+              "pagination": {
+                "request_token_field": "pageToken",
+                "request_token_wire_name": "pageToken",
+                "required": true,
+                "response_token_field": "nextPageToken",
+                "response_token_wire_name": "nextPageToken"
+              },
+              "required_permissions": [
+                "compute.disks.list"
+              ],
+              "resource_ids": [
+                "Disk"
+              ],
+              "route": {
+                "authority_template": "compute.googleapis.com",
+                "method": "GET",
+                "path_template": "/compute/v1/projects/{project}/aggregated/disks",
+                "query_templates": {},
+                "required_selectors": [
+                  "project"
+                ]
+              }
+            },
+            {
+              "accepted_scopes": [
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/compute",
+                "https://www.googleapis.com/auth/compute.readonly"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 2282224,
+                  "expected_sha256": "c8a68d7bc76f80e0d39184453d107eb48285cad4e41efbf5d4028fba948a2b59",
+                  "local_path": "profile-evidence/evidence-02.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:c8a68d7bc76f80e0d39184453d107eb48285cad4e41efbf5d4028fba948a2b59",
+                  "subject": "aggregated instances list permissions scopes and nextPageToken",
+                  "uri": "https://cloud.google.com/compute/docs/reference/rest/v1/instances/aggregatedList"
+                },
+                {
+                  "byte_count": 6419346,
+                  "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+                  "local_path": "refresh-20261102/compute-v1.discovery.json",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "gcp/compute/v1@sha256:ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 2696262,
+                  "evidence_id": "model",
+                  "json_pointer": "/resources/instances/methods/aggregatedList",
+                  "start_byte": 2689561
+                },
+                "selected_range_sha256": "5ebbd75b62e45c09d5b8b11f6b136c7e7cd781569def87da3647ddcc5b153367"
+              },
+              "operation_id": "compute.instances.aggregatedList",
+              "pagination": {
+                "request_token_field": "pageToken",
+                "request_token_wire_name": "pageToken",
+                "required": true,
+                "response_token_field": "nextPageToken",
+                "response_token_wire_name": "nextPageToken"
+              },
+              "required_permissions": [
+                "compute.instances.list"
+              ],
+              "resource_ids": [
+                "Instance"
+              ],
+              "route": {
+                "authority_template": "compute.googleapis.com",
+                "method": "GET",
+                "path_template": "/compute/v1/projects/{project}/aggregated/instances",
+                "query_templates": {},
+                "required_selectors": [
+                  "project"
+                ]
+              }
+            }
+          ],
+          "profile_id": "gcp.compute.rest.v1",
+          "profile_version": "2",
+          "provider_profile_ref": {
+            "profile_id": "gcp.oauth2.provider.v1",
+            "profile_version": "1",
+            "provider_id": "gcp"
+          },
+          "retry": {
+            "classifications": [
+              "client_throttling",
+              "server_transient"
+            ],
+            "idempotent_read": true,
+            "initial_backoff_millis": 250,
+            "jitter": "full",
+            "max_attempts": 4,
+            "max_backoff_millis": 20000
+          },
+          "service_id": "compute"
+        },
+        {
+          "api_surface_id": "storage",
+          "api_version": "v1",
+          "catalog_model_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+          "endpoint": {
+            "authority_templates": [
+              "storage.googleapis.com"
+            ],
+            "base_url": "https://storage.googleapis.com/storage/v1",
+            "partition_mode": "google_public_api",
+            "region_mode": "project_scoped",
+            "signing_name": "oauth2_bearer"
+          },
+          "evidence": [
+            {
+              "byte_count": 200936,
+              "expected_sha256": "581ae3459d85cc89fe7e0e63886c23450981e59bd6ba50753873154bc35bb790",
+              "local_path": "profile-evidence/evidence-04.raw",
+              "retrieved": "2026-11-02",
+              "stable_coordinate": "sha256:581ae3459d85cc89fe7e0e63886c23450981e59bd6ba50753873154bc35bb790",
+              "subject": "Cloud Storage buckets list pagination and authorization",
+              "uri": "https://cloud.google.com/storage/docs/json_api/v1/buckets/list"
+            }
+          ],
+          "operations": [
+            {
+              "accepted_scopes": [
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/cloud-platform.read-only",
+                "https://www.googleapis.com/auth/devstorage.full_control",
+                "https://www.googleapis.com/auth/devstorage.read_only",
+                "https://www.googleapis.com/auth/devstorage.read_write"
+              ],
+              "evidence": [
+                {
+                  "byte_count": 200936,
+                  "expected_sha256": "581ae3459d85cc89fe7e0e63886c23450981e59bd6ba50753873154bc35bb790",
+                  "local_path": "profile-evidence/evidence-04.raw",
+                  "retrieved": "2026-11-02",
+                  "stable_coordinate": "sha256:581ae3459d85cc89fe7e0e63886c23450981e59bd6ba50753873154bc35bb790",
+                  "subject": "Buckets list permissions scopes and nextPageToken",
+                  "uri": "https://cloud.google.com/storage/docs/json_api/v1/buckets/list"
+                },
+                {
+                  "byte_count": 251359,
+                  "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+                  "local_path": "official/gcp/storage-v1.discovery.json",
+                  "stable_coordinate": "gcp/storage/v1",
+                  "subject": "Exact retained operation model; model_evidence selects the byte range",
+                  "uri": "https://storage.googleapis.com/$discovery/rest?version=v1"
+                }
+              ],
+              "model_evidence": {
+                "locator": {
+                  "end_byte": 126262,
+                  "evidence_id": "model",
+                  "json_pointer": "/resources/buckets/methods/list",
+                  "start_byte": 123801
+                },
+                "selected_range_sha256": "c288fc0df81b76bd0c53e3395a3d680a12e6e396167bc35e882bb50b03aeef3d"
+              },
+              "operation_id": "storage.buckets.list",
+              "pagination": {
+                "request_token_field": "pageToken",
+                "request_token_wire_name": "pageToken",
+                "required": true,
+                "response_token_field": "nextPageToken",
+                "response_token_wire_name": "nextPageToken"
+              },
+              "required_permissions": [
+                "storage.buckets.list"
+              ],
+              "resource_ids": [
+                "Bucket"
+              ],
+              "route": {
+                "authority_template": "storage.googleapis.com",
+                "method": "GET",
+                "path_template": "/storage/v1/b",
+                "query_templates": {
+                  "project": "{project}"
+                },
+                "required_selectors": [
+                  "project"
+                ]
+              }
+            }
+          ],
+          "profile_id": "gcp.storage.rest.v1",
+          "profile_version": "1",
+          "provider_profile_ref": {
+            "profile_id": "gcp.oauth2.provider.v1",
+            "profile_version": "1",
+            "provider_id": "gcp"
+          },
+          "retry": {
+            "classifications": [
+              "client_throttling",
+              "server_transient"
+            ],
+            "idempotent_read": true,
+            "initial_backoff_millis": 250,
+            "jitter": "full",
+            "max_attempts": 4,
+            "max_backoff_millis": 20000
+          },
+          "service_id": "storage"
+        }
+      ]
+    }
+  ],
+  "version": "1"
+}

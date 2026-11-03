@@ -1,0 +1,110 @@
+{
+  "catalogs": [
+    {
+      "api_surface_id": "s3",
+      "model_source_id": "aws-s3-model",
+      "provider_id": "aws",
+      "service_id": "s3"
+    },
+    {
+      "api_surface_id": "ec2",
+      "model_source_id": "aws-ec2-model",
+      "provider_id": "aws",
+      "service_id": "ec2"
+    },
+    {
+      "api_surface_id": "storage",
+      "model_source_id": "gcp-storage-model",
+      "provider_id": "gcp",
+      "service_id": "storage"
+    },
+    {
+      "api_surface_id": "compute",
+      "model_source_id": "gcp-compute-model",
+      "provider_id": "gcp",
+      "service_id": "compute"
+    }
+  ],
+  "expected_disposition_totals": {
+    "mapped": 199,
+    "private": 56,
+    "unsupported": 0,
+    "unknown": 0,
+    "not_observed": 0
+  },
+  "scope_id": "cloud-api-four-service-neutral-owner-v3",
+  "targets": [
+    {
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#ListBuckets",
+      "provider_id": "aws",
+      "record_class_symbol": "storage_container",
+      "service_id": "s3",
+      "source_object_type": "com.amazonaws.s3#Bucket"
+    },
+    {
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#GetBucketVersioning",
+      "provider_id": "aws",
+      "record_class_symbol": "storage_container",
+      "service_id": "s3",
+      "source_object_type": "com.amazonaws.s3#Bucket"
+    },
+    {
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#GetBucketEncryption",
+      "provider_id": "aws",
+      "record_class_symbol": "storage_container",
+      "service_id": "s3",
+      "source_object_type": "com.amazonaws.s3#Bucket"
+    },
+    {
+      "api_surface_id": "s3",
+      "operation_id": "com.amazonaws.s3#GetPublicAccessBlock",
+      "provider_id": "aws",
+      "record_class_symbol": "storage_container",
+      "service_id": "s3",
+      "source_object_type": "com.amazonaws.s3#Bucket"
+    },
+    {
+      "api_surface_id": "ec2",
+      "operation_id": "com.amazonaws.ec2#DescribeInstances",
+      "provider_id": "aws",
+      "record_class_symbol": "compute_instance",
+      "service_id": "ec2",
+      "source_object_type": "com.amazonaws.ec2#Instance"
+    },
+    {
+      "api_surface_id": "ec2",
+      "operation_id": "com.amazonaws.ec2#DescribeVolumes",
+      "provider_id": "aws",
+      "record_class_symbol": "compute_volume",
+      "service_id": "ec2",
+      "source_object_type": "com.amazonaws.ec2#Volume"
+    },
+    {
+      "api_surface_id": "storage",
+      "operation_id": "storage.buckets.list",
+      "provider_id": "gcp",
+      "record_class_symbol": "storage_container",
+      "service_id": "storage",
+      "source_object_type": "Bucket"
+    },
+    {
+      "api_surface_id": "compute",
+      "operation_id": "compute.instances.aggregatedList",
+      "provider_id": "gcp",
+      "record_class_symbol": "compute_instance",
+      "service_id": "compute",
+      "source_object_type": "Instance"
+    },
+    {
+      "api_surface_id": "compute",
+      "operation_id": "compute.disks.aggregatedList",
+      "provider_id": "gcp",
+      "record_class_symbol": "compute_volume",
+      "service_id": "compute",
+      "source_object_type": "Disk"
+    }
+  ]
+}

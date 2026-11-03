@@ -29,6 +29,23 @@ are complete accounting for its declared field occurrences only. They are not
 a claim of full semantic coverage: only 31 of the 255 dispositions are mapped,
 while 24 remain private and 200 are explicitly unsupported.
 
+The historical v2 package remains reproducible as historical input. The normal
+four-service successor generator instead binds IRR v3 and has a measured scope
+of six resources, nine operations and 255 occurrences: 199 mapped and 56
+source-private. It resolves 168 of the original 200 unsupported occurrences
+as mapped and retains 32 as intentionally source-private; 55 existing
+occurrences are preserved. These counts describe offline package accounting
+only. They neither qualify source evidence nor establish runtime acceptance,
+admission, acquisition, or OHM publication.
+
+The successor crosswalk is a closure tool, not a semantic acceptance label.
+When a package resolves formerly unsupported occurrences, preserve the prior
+coverage report and use `cloud-coverage-audit --resolve-from` to account for
+each old occurrence exactly once.  A result may be mapped, source-private, or
+remain unsupported only with its own field-level reason.  The report proves
+offline successor accounting against pinned inputs; it does not qualify source
+evidence, admit a package, or publish a customer record.
+
 ## Add or extend a service
 
 1. **Retain the source.** Add the exact model bytes and origin, revision and
@@ -69,6 +86,12 @@ while 24 remain private and 200 are explicitly unsupported.
    inaccessible and malformed values. Test provider-specific lifecycle and
    unit meanings, unknown enums, duplicate identities, ambiguous references
    and partial pagination. Observation gaps never establish deletion.
+
+   For repeated objects, assert that related leaves remain in the same item
+   (for example, disk source, boot state and device name).  For scoped
+   references, test a same-scope binding and rejection of missing, ambiguous
+   and foreign-scope bindings.  Dynamic maps require a closed key/value recipe
+   with sorted entries; arbitrary provider JSON is never a fallback value.
 
 7. **Prepare and verify the complete composition.** Run
    `cloud-factory-prepare` with the candidate input, selection, profiles and
@@ -112,6 +135,57 @@ The checked-in examples are under `testdata/cloudapi`: `candidate-input.json`,
 cases. `cloud-factory-prepare --help` and
 [pre-runtime readiness](pre-runtime-readiness.md) describe the commands.
 
+### Extend a versioned service document
+
+`testdata/cloudapi/candidate-input-v3.json` pins each service's target document
+under `neutral-v3/`. Each document owns the operations of one provider, service
+and API surface. The input resolver checks the complete set of model coordinates,
+the exact document digest and every target's parent. A new mapping generation
+gets a fresh input and service version. The original package can still be
+prepared from its original inputs.
+
+The portable IRR export assigns the target field to a record class and declares
+its value shape, unit, cardinality and presence semantics. Bind that descriptor
+and the provider evidence to the mapping. `cloud-model-audit --model MODEL
+--select SELECTION.json` measures the byte ranges for named JSON pointers.
+The selection contains `source_path`, `source_uri`, `expected_sha256` and
+`selections` with one `id` and `json_pointer` per range. The mapping loader
+reads the pinned bytes again and verifies every individual range.
+
+Use a structured recipe when members belong together. Each interface keeps
+its addresses and network reference in the same item. Declare each source
+member, any private reason, and the owner member it supplies. Set `on_absent`
+and `on_null` when their dispositions differ from the default missing
+observation and null refusal. An explicit `unobserved_members` entry handles
+an owner member supplied by another service. A scoped relationship requires
+an opaque binding in the selected scope. Collection projections preserve item
+association, while key/value collections sort keys and reject duplicate keys.
+
+Run the normal four-service preparation from the Canon repository root:
+
+```sh
+inputs=testdata/cloudapi
+out="$PWD/build/cloud-neutral-v3"
+go run ./cmd/cloud-factory-prepare --input "$inputs/candidate-input-v3.json" \
+  --scope "$inputs/mapping-package-scope-v3.json" --profiles "$inputs/provider-profiles-refreshed.json" \
+  --ingestion-policy "$inputs/ingestion-handoff-policy.json" --output-root "$out"
+go run ./cmd/cloud-factory-prepare --input "$inputs/candidate-input-v3.json" \
+  --scope "$inputs/mapping-package-scope-v3.json" --profiles "$inputs/provider-profiles-refreshed.json" \
+  --ingestion-policy "$inputs/ingestion-handoff-policy.json" --output-root "$out" --verify
+```
+
+Use a new output directory for the coverage audit. Its report pairs each
+formerly unsupported source occurrence with its successor occurrences, exact
+range, disposition and owner. A missing field, changed retained disposition,
+foreign source coordinate or unresolved child fails reconciliation.
+
+```sh
+go run ./cmd/cloud-coverage-audit --input "$inputs/candidate-input-v3.json" \
+  --scope "$inputs/mapping-package-scope-v3.json" --output-root "$PWD/build/cloud-v3-audit" \
+  --resolve-from "$inputs/neutral-v3/previous-coverage.json" \
+  --resolve-from-sha256 906348b967d473a2fa7aa66fdab891ee8d90c3705a14473b4e74cea540dfae47
+```
+
 ## Refresh an API revision
 
 Keep the previous model and generation. `cloud-model-audit` reports changed
@@ -139,10 +213,10 @@ go build ./...
 go test -p 1 -count=1 -timeout 30m ./...
 ```
 
-The four-service native acceptance is independently selectable:
+To run the native four-service verification for the v3 generation on its own:
 
 ```sh
-go test ./internal/providerplan -run '^TestCloudMappingAllTargetsReachRealFactoryVerify$' -count=1 -timeout 30m
+go test ./internal/providerplan -run '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' -count=1 -timeout 30m
 ```
 
 Link each successor's exact source and owner versions to its generated package,

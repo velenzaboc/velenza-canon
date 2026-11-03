@@ -19,21 +19,27 @@ const (
 // CloudCoverageEntry is one selected source occurrence. It contains model and
 // extraction-program coordinates only; it never carries observed customer data.
 type CloudCoverageEntry struct {
-	ProviderID               string                       `json:"provider_id"`
-	ServiceID                string                       `json:"service_id"`
-	APISurfaceID             string                       `json:"api_surface_id"`
-	OperationID              string                       `json:"operation_id"`
-	SourceObjectType         string                       `json:"source_object_type"`
-	RecordClassSymbol        string                       `json:"record_class_symbol"`
-	RecordClassContractRef   string                       `json:"record_class_contract_ref"`
-	AccountableOwnerRef      string                       `json:"accountable_owner_ref"`
-	AccountableOwnerSHA256   string                       `json:"accountable_owner_sha256"`
-	ModelSourceID            string                       `json:"model_source_id"`
-	ModelSHA256              string                       `json:"model_sha256"`
-	SourceFieldID            string                       `json:"source_field_id"`
-	SourcePointer            string                       `json:"source_pointer"`
-	Disposition              CloudSourceFieldDisposition  `json:"disposition"`
-	DispositionReason        string                       `json:"disposition_reason"`
+	ProviderID             string                      `json:"provider_id"`
+	ServiceID              string                      `json:"service_id"`
+	APISurfaceID           string                      `json:"api_surface_id"`
+	OperationID            string                      `json:"operation_id"`
+	SourceObjectType       string                      `json:"source_object_type"`
+	RecordClassSymbol      string                      `json:"record_class_symbol"`
+	RecordClassContractRef string                      `json:"record_class_contract_ref"`
+	AccountableOwnerRef    string                      `json:"accountable_owner_ref"`
+	AccountableOwnerSHA256 string                      `json:"accountable_owner_sha256"`
+	ModelSourceID          string                      `json:"model_source_id"`
+	ModelSHA256            string                      `json:"model_sha256"`
+	SourceFieldID          string                      `json:"source_field_id"`
+	SourcePointer          string                      `json:"source_pointer"`
+	Disposition            CloudSourceFieldDisposition `json:"disposition"`
+	DispositionReason      string                      `json:"disposition_reason"`
+	// v3-only semantic coordinates make the coverage ledger reviewable at
+	// field granularity while preserving exact v1/v2 bytes when absent.
+	SemanticOwnerRef         string                       `json:"semantic_owner_ref,omitempty"`
+	TargetField              string                       `json:"target_field,omitempty"`
+	PrivateReasonCode        string                       `json:"private_reason_code,omitempty"`
+	UnsupportedReasonCode    string                       `json:"unsupported_reason_code,omitempty"`
 	NextOwnerAction          string                       `json:"next_owner_action"`
 	DerivationProfileID      string                       `json:"derivation_profile_id,omitempty"`
 	DerivationProfileVersion string                       `json:"derivation_profile_version,omitempty"`
@@ -113,6 +119,15 @@ func buildCloudCoverageBacklogFromValidatedPackage(pkg CloudMappingPackage, scop
 					SourceFieldID: field.SourceFieldID, SourcePointer: field.SourcePointer, Disposition: field.Disposition,
 				}
 				entry.DispositionReason, entry.NextOwnerAction = cloudCoverageDispositionBoundary(field.Disposition)
+				if field.SemanticOwnerRef != "" || field.PrivateReasonCode != "" || field.UnsupportedReasonCode != "" {
+					entry.SemanticOwnerRef, entry.TargetField = field.SemanticOwnerRef, field.TargetField
+					entry.PrivateReasonCode, entry.UnsupportedReasonCode = field.PrivateReasonCode, field.UnsupportedReasonCode
+				}
+				if field.PrivateReasonCode != "" {
+					entry.DispositionReason += "; private_reason_code=" + field.PrivateReasonCode
+				} else if field.UnsupportedReasonCode != "" {
+					entry.DispositionReason += "; unsupported_reason_code=" + field.UnsupportedReasonCode
+				}
 				if program, ok := byPointer[field.SourcePointer]; ok {
 					locator := program.Locator
 					entry.DerivationProfileID, entry.DerivationProfileVersion, entry.DerivationProgramSHA256 = program.ProfileID, program.ProfileVersion, program.ProgramSHA256

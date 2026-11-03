@@ -112,6 +112,7 @@ type CloudSourceCandidateInput struct {
 	NeutralSchemaExportPath   string                           `json:"neutral_schema_export_path"`
 	NeutralSchemaExportSHA256 string                           `json:"neutral_schema_export_sha256"`
 	Targets                   []CloudSourceObjectTarget        `json:"targets"`
+	TargetDocuments           []CloudServiceTargetReference    `json:"target_documents,omitempty"`
 }
 
 type CloudSourceCandidateModelInput struct {
@@ -126,13 +127,9 @@ func LoadCloudSourceCandidateInput(path string, parser CloudCatalogParser) (Clou
 	if parser == nil {
 		return CloudSourceCandidateRequest{}, fmt.Errorf("cloud catalog parser is nil")
 	}
-	raw, err := os.ReadFile(path)
+	input, err := readCloudCandidateInput(path)
 	if err != nil {
 		return CloudSourceCandidateRequest{}, err
-	}
-	var input CloudSourceCandidateInput
-	if err := strictUnmarshal(raw, &input); err != nil {
-		return CloudSourceCandidateRequest{}, fmt.Errorf("decode cloud candidate input: %w", err)
 	}
 	return loadCloudSourceCandidateInputAt(filepath.Dir(path), input, parser)
 }

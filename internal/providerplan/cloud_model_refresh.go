@@ -44,12 +44,8 @@ func LoadCloudModelRefreshOptions(path string) (CloudModelRefreshOptions, error)
 func BuildCloudModelRefreshBundle(inputPath, profilesPath string, scope CloudMappingPackageScope, policy CloudIngestionHandoffPolicy, options CloudModelRefreshOptions) (CloudFactoryPreparation, error) {
 	var empty CloudFactoryPreparation
 	base := filepath.Dir(inputPath)
-	inputRaw, err := os.ReadFile(inputPath)
+	input, err := readCloudCandidateInput(inputPath)
 	if err != nil {
-		return empty, err
-	}
-	var input CloudSourceCandidateInput
-	if err := strictUnmarshal(inputRaw, &input); err != nil {
 		return empty, err
 	}
 	oldRequest, err := loadCloudSourceCandidateInputAt(base, input, NewCloudCatalogParser())
@@ -210,6 +206,9 @@ func BuildCloudModelRefreshBundle(inputPath, profilesPath string, scope CloudMap
 func RefreshCloudModelCandidates(input CloudSourceCandidateInput, profiles CloudAPIProfileDocument, oldRaw, newRaw []byte, options CloudModelRefreshOptions) (CloudSourceCandidateInput, CloudAPIProfileDocument, CloudModelRevisionAudit, error) {
 	fail := func(err error) (CloudSourceCandidateInput, CloudAPIProfileDocument, CloudModelRevisionAudit, error) {
 		return CloudSourceCandidateInput{}, CloudAPIProfileDocument{}, CloudModelRevisionAudit{}, err
+	}
+	if len(input.TargetDocuments) != 0 {
+		return fail(fmt.Errorf("refresh requires resolved service target documents"))
 	}
 	if options.ModelID == "" || options.ModelPath == "" || path.Clean(options.ModelPath) != options.ModelPath || strings.ContainsAny(options.ModelPath, "\\:") || strings.HasPrefix(options.ModelPath, "/") || options.ModelPath == "." || options.ModelPath == ".." || strings.HasPrefix(options.ModelPath, "../") || options.MappingVersion == "" || options.ServiceProfileVersion == "" || options.Retrieved == "" || options.Source.ID != options.ModelID || options.Source.URI == "" || options.Source.StableCoordinate == "" || options.Source.FormatRevision == "" || sha256Hex(newRaw) != options.ExpectedSHA256 {
 		return fail(fmt.Errorf("refresh requires exact new model pin and independent successor coordinates"))

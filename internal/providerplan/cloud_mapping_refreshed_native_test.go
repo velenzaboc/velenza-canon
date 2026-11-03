@@ -2,6 +2,17 @@ package providerplan
 
 import "testing"
 
+func refreshedComputeSnapshotSource(t *testing.T, model PinnedCloudModel) CloudCatalogSourceIdentity {
+	t.Helper()
+	const pin = "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37"
+	if model.ExpectedSHA256 != pin || sha256Hex(model.Raw) != pin || model.Source.ID != "gcp-compute-model" {
+		t.Fatal("unrecognized native Compute source generation")
+	}
+	const commit = "5e43bed3fb663cac2656af984daf34194e250f6b"
+	const path = "testdata/cloudapi/refresh-20261102/compute-v1.discovery.json"
+	return CloudCatalogSourceIdentity{ID: "velenza-snapshot-refreshed-compute", URI: "https://raw.githubusercontent.com/velenzaboc/velenza-canon/" + commit + "/" + path, StableCoordinate: "velenza-canon@" + commit + "/" + path, FormatRevision: cloudNativeSnapshotFormat}
+}
+
 // A refresh cannot inherit a prior model's native proof. Rebuild the two
 // affected operation packages using the successor bytes and rebased recipes;
 // the other three models are byte-identical and covered by the all-nine test.
@@ -19,8 +30,6 @@ func TestCloudMappingRefreshedComputeTargetsReachRealFactoryVerify(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	const commit = "5e43bed3fb663cac2656af984daf34194e250f6b"
-	const path = "testdata/cloudapi/refresh-20261102/compute-v1.discovery.json"
 	var model PinnedCloudModel
 	request.Catalogs = nil
 	for i := range request.retainedModels {
@@ -29,7 +38,7 @@ func TestCloudMappingRefreshedComputeTargetsReachRealFactoryVerify(t *testing.T)
 			if m.Source != options.Source || m.ExpectedSHA256 != options.ExpectedSHA256 || sha256Hex(m.Raw) != options.ExpectedSHA256 {
 				t.Fatal("successor lost exact origin or bytes")
 			}
-			m.Source = CloudCatalogSourceIdentity{ID: "velenza-snapshot-refreshed-compute", URI: "https://raw.githubusercontent.com/velenzaboc/velenza-canon/" + commit + "/" + path, StableCoordinate: "velenza-canon@" + commit + "/" + path, FormatRevision: cloudNativeSnapshotFormat}
+			m.Source = refreshedComputeSnapshotSource(t, *m)
 			model = *m
 			for j := range scope.Catalogs {
 				if scope.Catalogs[j].ModelSourceID == options.ModelID {

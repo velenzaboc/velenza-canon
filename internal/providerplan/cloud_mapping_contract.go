@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"regexp"
 	"sort"
 	"strings"
@@ -26,20 +27,42 @@ type CloudNeutralFieldSchema struct {
 	WireSchema     json.RawMessage `json:"wire_schema,omitempty"`
 }
 
+// CloudSemanticOwnerFieldSpec is the source-neutral exact shape named by a
+// v3 mapping.  It is carried only by the same sealed owner export as the
+// record schema; it is not an independently selectable authority.
+type CloudSemanticOwnerFieldSpec struct {
+	OwnerRef        string `json:"owner_ref"`
+	SemanticPath    string `json:"semantic_path"`
+	ValueKind       string `json:"value_kind"`
+	Cardinality     string `json:"cardinality"`
+	Nullable        bool   `json:"nullable"`
+	UnitDimension   string `json:"unit_dimension,omitempty"`
+	ReferenceTarget string `json:"reference_target,omitempty"`
+}
+
+type CloudSemanticOwnerField struct {
+	CloudSemanticOwnerFieldSpec
+	TargetField             string   `json:"target_field"`
+	ApplicableRecordClasses []string `json:"applicable_record_classes,omitempty"`
+}
+
 // CloudNeutralRecordSchema is a pinned projection of the domain owner's
 // machine-readable schema.  OwnerRef and OwnerSHA256 prevent a candidate from
 // silently binding a same-named field in a successor or unrelated contract.
 type CloudNeutralRecordSchema struct {
-	OwnerRef               string                    `json:"owner_ref"`
-	OwnerSHA256            string                    `json:"owner_sha256"`
-	ClassSymbol            string                    `json:"class_symbol"`
-	ValidatorProfileRef    string                    `json:"validator_profile_ref"`
-	ValidatorProfileSHA256 string                    `json:"validator_profile_sha256"`
-	Fields                 []CloudNeutralFieldSchema `json:"fields"`
-	definitions            map[string]json.RawMessage
-	recordDefinition       json.RawMessage
-	loadedFromExactOwner   bool
-	sealedFieldsSHA256     string
+	OwnerRef                        string                    `json:"owner_ref"`
+	OwnerSHA256                     string                    `json:"owner_sha256"`
+	ClassSymbol                     string                    `json:"class_symbol"`
+	ValidatorProfileRef             string                    `json:"validator_profile_ref"`
+	ValidatorProfileSHA256          string                    `json:"validator_profile_sha256"`
+	Fields                          []CloudNeutralFieldSchema `json:"fields"`
+	definitions                     map[string]json.RawMessage
+	recordDefinition                json.RawMessage
+	loadedFromExactOwner            bool
+	sealedFieldsSHA256              string
+	semanticOwnerFields             []CloudSemanticOwnerField
+	sealedSemanticOwnerFieldsSHA256 string
+	ownerProfileID                  string
 }
 
 const cloudInfrastructureRecordOwnerID = "1729172e-44a9-48bb-b833-9591cd105516"
@@ -50,6 +73,66 @@ const cloudInfrastructureSchemaFragmentSHA256 = "19646e19bf0bf947a2ce059060b64ee
 const cloudInfrastructureValidatorProfileSymbol = "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.required_validator_profile"
 const cloudInfrastructureValidatorProfileSHA256 = "7b92a5c6321ed25917c495857a3d3eeabf366611f112179c99bdbba39297ac4c"
 
+// cloudNeutralOwnerProfile is a deliberately finite compatibility table.  A
+// caller may supply the expected export digest to detect stale packages, but
+// may not select an arbitrary owner, profile, or digest at runtime.
+type cloudNeutralOwnerProfile struct {
+	id                          string
+	exportVersion               int
+	ownerVersion                int
+	ownerSHA256                 string
+	exportSHA256                string
+	schemaFragmentSHA256        string
+	validatorProfileSymbol      string
+	validatorProfileSHA256      string
+	requiredAssertionKeywords   []string
+	requiresSemanticOwnerFields bool
+	sourceOwnerHasCommit        bool
+}
+
+var cloudNeutralOwnerProfiles = []cloudNeutralOwnerProfile{
+	{
+		id:            "infrastructure-resource-record-v2",
+		exportVersion: 1, ownerVersion: cloudInfrastructureRecordOwnerVersion,
+		ownerSHA256:               cloudInfrastructureRecordOwnerSHA256,
+		exportSHA256:              cloudInfrastructureSchemaExportSHA256,
+		schemaFragmentSHA256:      cloudInfrastructureSchemaFragmentSHA256,
+		validatorProfileSymbol:    cloudInfrastructureValidatorProfileSymbol,
+		validatorProfileSHA256:    cloudInfrastructureValidatorProfileSHA256,
+		requiredAssertionKeywords: []string{"type", "minLength", "maxLength", "pattern", "enum", "const", "required", "additionalProperties", "format", "items", "minItems", "maxItems", "uniqueItems"},
+		sourceOwnerHasCommit:      true,
+	},
+	{
+		id:            "infrastructure-resource-record-v3",
+		exportVersion: 3, ownerVersion: 3,
+		ownerSHA256:                 "e81dc2eaac1967abef5f9ab7a9f676e8388dfc6fe5b6dd5af0662ceb7da11931",
+		exportSHA256:                "18c5c6ef9de9bf1e9aa9fb1aa0a602c2627d04875660f8c892d4b53344b1ede5",
+		schemaFragmentSHA256:        "201ebfbdd455f49b7b6c7220ffab83acda4934b80cb0f85a3fb9850137227e08",
+		validatorProfileSymbol:      cloudInfrastructureValidatorProfileSymbol,
+		validatorProfileSHA256:      "93c8e84f882aa66a92f66a84793ce897063af8a0284c54c4d9fa9d9c92e0f91f",
+		requiredAssertionKeywords:   []string{"type", "minLength", "maxLength", "pattern", "enum", "const", "required", "additionalProperties", "format", "items", "minItems", "maxItems", "uniqueItems", "oneOf", "$ref"},
+		requiresSemanticOwnerFields: true,
+	},
+}
+
+func cloudNeutralOwnerProfileForExport(version int, ownerVersion int, ownerSHA256, exportSHA256 string) (cloudNeutralOwnerProfile, bool) {
+	for _, profile := range cloudNeutralOwnerProfiles {
+		if profile.exportVersion == version && profile.ownerVersion == ownerVersion && profile.ownerSHA256 == ownerSHA256 && profile.exportSHA256 == exportSHA256 {
+			return profile, true
+		}
+	}
+	return cloudNeutralOwnerProfile{}, false
+}
+
+func cloudNeutralOwnerProfileForSchema(schema CloudNeutralRecordSchema) (cloudNeutralOwnerProfile, bool) {
+	for _, profile := range cloudNeutralOwnerProfiles {
+		if schema.ownerProfileID == profile.id && schema.OwnerSHA256 == profile.ownerSHA256 && schema.ValidatorProfileRef == profile.validatorProfileSymbol && schema.ValidatorProfileSHA256 == profile.validatorProfileSHA256 {
+			return profile, true
+		}
+	}
+	return cloudNeutralOwnerProfile{}, false
+}
+
 // LoadCloudNeutralRecordSchema extracts a class definition from the exact
 // machine-readable schema published by the Infrastructure Resource Record
 // owner.  This keeps generated candidates tied to that owner's bytes rather
@@ -58,7 +141,8 @@ func LoadCloudNeutralRecordSchema(exportRaw []byte, expectedExportSHA256, classS
 	if len(exportRaw) == 0 || len(exportRaw) > 4<<20 || requireValidUTF8("neutral schema export", exportRaw) != nil || rejectDuplicateJSONKeys(exportRaw) != nil {
 		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema export is not bounded strict JSON")
 	}
-	if expectedExportSHA256 != cloudInfrastructureSchemaExportSHA256 || sha256Hex(exportRaw) != expectedExportSHA256 {
+	actualExportSHA256 := sha256Hex(exportRaw)
+	if !isLowerSHA256(expectedExportSHA256) || actualExportSHA256 != expectedExportSHA256 {
 		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema export bytes do not equal expected_sha256")
 	}
 	var root map[string]json.RawMessage
@@ -71,29 +155,45 @@ func LoadCloudNeutralRecordSchema(exportRaw []byte, expectedExportSHA256, classS
 	if err := requireCloudProfileString(root, "export_kind", "infrastructure_resource_record_mapping_schema_export"); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	if err := requireCloudProfileInteger(root, "export_version", 1); err != nil {
-		return CloudNeutralRecordSchema{}, err
-	}
 	provenance, err := rawObject(root["source_owner"])
 	if err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	if err := requireCloudExactKeys(provenance, "doc_id", "version", "canonical_owner_sha256", "canonical_owner_commit", "machine_schema_json_pointer", "machine_schema_fragment_sha256", "export_not_full_owner_bytes"); err != nil {
+	var exportVersion, ownerVersion int
+	var ownerSHA256 string
+	if err := json.Unmarshal(root["export_version"], &exportVersion); err != nil {
+		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema export_version is invalid")
+	}
+	if err := json.Unmarshal(provenance["version"], &ownerVersion); err != nil {
+		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema owner version is invalid")
+	}
+	if err := json.Unmarshal(provenance["canonical_owner_sha256"], &ownerSHA256); err != nil {
+		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema owner hash is invalid")
+	}
+	profile, supported := cloudNeutralOwnerProfileForExport(exportVersion, ownerVersion, ownerSHA256, actualExportSHA256)
+	if !supported {
+		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema export does not equal a supported exact owner profile")
+	}
+	provenanceKeys := []string{"doc_id", "version", "canonical_owner_sha256", "machine_schema_json_pointer", "machine_schema_fragment_sha256", "export_not_full_owner_bytes"}
+	if profile.sourceOwnerHasCommit {
+		provenanceKeys = append(provenanceKeys, "canonical_owner_commit")
+	}
+	if err := requireCloudExactKeys(provenance, provenanceKeys...); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
 	if err := requireCloudProfileString(provenance, "doc_id", cloudInfrastructureRecordOwnerID); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	if err := requireCloudProfileInteger(provenance, "version", cloudInfrastructureRecordOwnerVersion); err != nil {
+	if err := requireCloudProfileInteger(provenance, "version", profile.ownerVersion); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	if err := requireCloudProfileString(provenance, "canonical_owner_sha256", cloudInfrastructureRecordOwnerSHA256); err != nil {
+	if err := requireCloudProfileString(provenance, "canonical_owner_sha256", profile.ownerSHA256); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
 	if err := requireCloudProfileString(provenance, "machine_schema_json_pointer", "/sections/s3_semantic_schema_and_relationships/type_and_presence_closure/machine_readable_target_schema"); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	if err := requireCloudProfileString(provenance, "machine_schema_fragment_sha256", cloudInfrastructureSchemaFragmentSHA256); err != nil {
+	if err := requireCloudProfileString(provenance, "machine_schema_fragment_sha256", profile.schemaFragmentSHA256); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
 	var notFull bool
@@ -105,7 +205,7 @@ func LoadCloudNeutralRecordSchema(exportRaw []byte, expectedExportSHA256, classS
 		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema export lacks machine schema")
 	}
 	canonicalSchema, err := canonicalizeCandidateJSON(schemaRaw)
-	if err != nil || sha256Hex(canonicalSchema) != cloudInfrastructureSchemaFragmentSHA256 {
+	if err != nil || sha256Hex(canonicalSchema) != profile.schemaFragmentSHA256 {
 		return CloudNeutralRecordSchema{}, fmt.Errorf("neutral schema export fragment does not equal pinned canonical fragment")
 	}
 	schema, err := rawObject(schemaRaw)
@@ -123,7 +223,11 @@ func LoadCloudNeutralRecordSchema(exportRaw []byte, expectedExportSHA256, classS
 	if err := validateCloudNeutralVocabulary(schema["$vocabulary"]); err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	if err := validateCloudNeutralValidatorProfile(schema, binding); err != nil {
+	if err := validateCloudNeutralValidatorProfile(schema, binding, profile); err != nil {
+		return CloudNeutralRecordSchema{}, err
+	}
+	semanticFields, err := loadCloudEmbeddedSemanticOwnerFields(mappingRequirements["semantic_owner_fields"], profile.requiresSemanticOwnerFields)
+	if err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
 	definitions, err := rawObject(schema["record_class_definitions"])
@@ -164,18 +268,66 @@ func LoadCloudNeutralRecordSchema(exportRaw []byte, expectedExportSHA256, classS
 	if err != nil {
 		return CloudNeutralRecordSchema{}, err
 	}
-	return CloudNeutralRecordSchema{OwnerRef: cloudInfrastructureRecordOwnerID + "#sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.record_class_definitions." + classSymbol, OwnerSHA256: cloudInfrastructureRecordOwnerSHA256, ClassSymbol: classSymbol, ValidatorProfileRef: cloudInfrastructureValidatorProfileSymbol, ValidatorProfileSHA256: cloudInfrastructureValidatorProfileSHA256, Fields: fields, definitions: schemaDefinitions, recordDefinition: bytes.Clone(definition), loadedFromExactOwner: true, sealedFieldsSHA256: sha256Hex(fieldsRaw)}, nil
+	semanticFieldsRaw, err := canonicalFactoryJSON(semanticFields)
+	if err != nil {
+		return CloudNeutralRecordSchema{}, err
+	}
+	return CloudNeutralRecordSchema{OwnerRef: cloudInfrastructureRecordOwnerID + "#sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.record_class_definitions." + classSymbol, OwnerSHA256: profile.ownerSHA256, ClassSymbol: classSymbol, ValidatorProfileRef: profile.validatorProfileSymbol, ValidatorProfileSHA256: profile.validatorProfileSHA256, Fields: fields, definitions: schemaDefinitions, recordDefinition: bytes.Clone(definition), loadedFromExactOwner: true, sealedFieldsSHA256: sha256Hex(fieldsRaw), semanticOwnerFields: semanticFields, sealedSemanticOwnerFieldsSHA256: sha256Hex(semanticFieldsRaw), ownerProfileID: profile.id}, nil
+}
+
+func loadCloudEmbeddedSemanticOwnerFields(raw json.RawMessage, required bool) ([]CloudSemanticOwnerField, error) {
+	if len(raw) == 0 {
+		if required {
+			return nil, fmt.Errorf("semantic_owner_fields is required by this owner profile")
+		}
+		return nil, nil
+	}
+	var entries []json.RawMessage
+	if json.Unmarshal(raw, &entries) != nil || len(entries) == 0 {
+		return nil, fmt.Errorf("semantic_owner_fields must be a nonempty array")
+	}
+	fields := make([]CloudSemanticOwnerField, 0, len(entries))
+	seen := map[string]bool{}
+	previous := ""
+	for _, entry := range entries {
+		object, err := rawObject(entry)
+		if err != nil {
+			return nil, fmt.Errorf("semantic_owner_fields entry: %w", err)
+		}
+		for _, key := range []string{"owner_ref", "semantic_path", "target_field", "value_kind", "cardinality", "nullable"} {
+			if _, ok := object[key]; !ok {
+				return nil, fmt.Errorf("semantic_owner_fields entry misses required field %q", key)
+			}
+		}
+		var field CloudSemanticOwnerField
+		if err := json.Unmarshal(entry, &field); err != nil {
+			return nil, err
+		}
+		if required {
+			if _, ok := object["applicable_record_classes"]; !ok || !sortedUniqueCloudValues(field.ApplicableRecordClasses) || len(field.ApplicableRecordClasses) == 0 {
+				return nil, fmt.Errorf("semantic_owner_fields entry has no closed applicable_record_classes")
+			}
+		}
+		key := field.OwnerRef + "\x00" + field.SemanticPath
+		if field.OwnerRef == "" || field.SemanticPath == "" || field.ValueKind == "" || field.TargetField == "" || !validCloudCardinality(field.Cardinality) || seen[key] || (previous != "" && previous >= key) {
+			return nil, fmt.Errorf("semantic_owner_fields has an incomplete or duplicate field")
+		}
+		seen[key] = true
+		previous = key
+		fields = append(fields, field)
+	}
+	return fields, nil
 }
 
 // validateCloudNeutralValidatorProfile binds evaluation to the owner's exact
 // profile. Declaring a vocabulary alone is not proof that its assertions run.
-func validateCloudNeutralValidatorProfile(schema, binding map[string]json.RawMessage) error {
+func validateCloudNeutralValidatorProfile(schema, binding map[string]json.RawMessage, supported cloudNeutralOwnerProfile) error {
 	profileRaw, ok := schema["required_validator_profile"]
 	if !ok {
 		return fmt.Errorf("neutral schema has no required validator profile")
 	}
 	canonical, err := canonicalizeCandidateJSON(profileRaw)
-	if err != nil || sha256Hex(canonical) != cloudInfrastructureValidatorProfileSHA256 {
+	if err != nil || sha256Hex(canonical) != supported.validatorProfileSHA256 {
 		return fmt.Errorf("neutral validator profile does not equal supported exact profile")
 	}
 	profile, err := rawObject(profileRaw)
@@ -185,10 +337,10 @@ func validateCloudNeutralValidatorProfile(schema, binding map[string]json.RawMes
 	if err := requireCloudProfileString(profile, "owner_doc_id", cloudInfrastructureRecordOwnerID); err != nil {
 		return err
 	}
-	if err := requireCloudProfileInteger(profile, "owner_version", cloudInfrastructureRecordOwnerVersion); err != nil {
+	if err := requireCloudProfileInteger(profile, "owner_version", supported.ownerVersion); err != nil {
 		return err
 	}
-	if err := requireCloudProfileString(profile, "owner_symbol", cloudInfrastructureValidatorProfileSymbol); err != nil {
+	if err := requireCloudProfileString(profile, "owner_symbol", supported.validatorProfileSymbol); err != nil {
 		return err
 	}
 	if err := requireCloudProfileString(profile, "required_dialect", "https://json-schema.org/draft/2020-12/schema"); err != nil {
@@ -200,23 +352,23 @@ func validateCloudNeutralValidatorProfile(schema, binding map[string]json.RawMes
 	if err := requireCloudProfileSet(profile, "asserted_formats", []string{"date-time"}); err != nil {
 		return err
 	}
-	if err := requireCloudProfileSet(profile, "required_assertion_keywords", []string{"type", "minLength", "maxLength", "pattern", "enum", "const", "required", "additionalProperties", "format", "items", "minItems", "maxItems", "uniqueItems"}); err != nil {
+	if err := requireCloudProfileSet(profile, "required_assertion_keywords", supported.requiredAssertionKeywords); err != nil {
 		return err
 	}
 	var declaredHash string
-	if err := json.Unmarshal(schema["required_validator_profile_sha256"], &declaredHash); err != nil || declaredHash != cloudInfrastructureValidatorProfileSHA256 {
+	if err := json.Unmarshal(schema["required_validator_profile_sha256"], &declaredHash); err != nil || declaredHash != supported.validatorProfileSHA256 {
 		return fmt.Errorf("neutral validator profile hash binding is absent or wrong")
 	}
 	if err := requireCloudProfileString(binding, "owner_doc_id", cloudInfrastructureRecordOwnerID); err != nil {
 		return err
 	}
-	if err := requireCloudProfileInteger(binding, "owner_version", cloudInfrastructureRecordOwnerVersion); err != nil {
+	if err := requireCloudProfileInteger(binding, "owner_version", supported.ownerVersion); err != nil {
 		return err
 	}
-	if err := requireCloudProfileString(binding, "owner_symbol", cloudInfrastructureValidatorProfileSymbol); err != nil {
+	if err := requireCloudProfileString(binding, "owner_symbol", supported.validatorProfileSymbol); err != nil {
 		return err
 	}
-	return requireCloudProfileString(binding, "profile_sha256", cloudInfrastructureValidatorProfileSHA256)
+	return requireCloudProfileString(binding, "profile_sha256", supported.validatorProfileSHA256)
 }
 
 func requireCloudProfileString(object map[string]json.RawMessage, key, expected string) error {
@@ -268,8 +420,11 @@ func requireCloudExactKeys(object map[string]json.RawMessage, keys ...string) er
 // used by the owner's current wire schema. It intentionally refuses unknown
 // assertion keywords instead of silently treating them as annotations.
 func ValidateCloudNeutralRecordValue(schema CloudNeutralRecordSchema, raw []byte) error {
-	if !schema.loadedFromExactOwner || schema.OwnerSHA256 != cloudInfrastructureRecordOwnerSHA256 || schema.ValidatorProfileRef != cloudInfrastructureValidatorProfileSymbol || schema.ValidatorProfileSHA256 != cloudInfrastructureValidatorProfileSHA256 || len(schema.recordDefinition) == 0 || len(schema.definitions) == 0 {
+	if !schema.loadedFromExactOwner || len(schema.recordDefinition) == 0 || len(schema.definitions) == 0 {
 		return fmt.Errorf("neutral schema was not loaded from exact owner bytes")
+	}
+	if _, ok := cloudNeutralOwnerProfileForSchema(schema); !ok {
+		return fmt.Errorf("neutral schema does not retain a supported exact owner profile")
 	}
 	fieldsRaw, err := canonicalFactoryJSON(schema.Fields)
 	if err != nil || sha256Hex(fieldsRaw) != schema.sealedFieldsSHA256 {
@@ -278,9 +433,14 @@ func ValidateCloudNeutralRecordValue(schema CloudNeutralRecordSchema, raw []byte
 	if err := requireValidUTF8("neutral record", raw); err != nil || rejectDuplicateJSONKeys(raw) != nil {
 		return fmt.Errorf("neutral record is not strict JSON")
 	}
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
 	var value any
-	if err := json.Unmarshal(raw, &value); err != nil {
+	if err := decoder.Decode(&value); err != nil {
 		return err
+	}
+	if decoder.More() {
+		return fmt.Errorf("neutral record has trailing JSON values")
 	}
 	return validateCloudJSONSchema(schema.recordDefinition, schema.definitions, value, map[string]bool{})
 }
@@ -347,6 +507,24 @@ func validateCloudJSONSchema(raw json.RawMessage, definitions map[string]json.Ra
 		case "array":
 			if _, ok := value.([]any); !ok {
 				return fmt.Errorf("want array")
+			}
+		case "boolean":
+			if _, ok := value.(bool); !ok {
+				return fmt.Errorf("want boolean")
+			}
+		case "integer":
+			number, ok := value.(json.Number)
+			if !ok || !validCloudExactInteger(string(number)) {
+				return fmt.Errorf("want exact integer")
+			}
+		case "number":
+			number, ok := value.(json.Number)
+			if !ok || !validCloudExactNumber(string(number)) {
+				return fmt.Errorf("want exact number")
+			}
+		case "null":
+			if value != nil {
+				return fmt.Errorf("want null")
 			}
 		default:
 			return fmt.Errorf("unsupported schema type %q", typ)
@@ -426,6 +604,22 @@ func validateCloudJSONSchema(raw json.RawMessage, definitions map[string]json.Ra
 		}
 	}
 	return nil
+}
+
+func validCloudExactInteger(value string) bool {
+	if value == "" || strings.ContainsAny(value, ".eE") {
+		return false
+	}
+	_, ok := new(big.Int).SetString(value, 10)
+	return ok
+}
+
+func validCloudExactNumber(value string) bool {
+	if value == "" {
+		return false
+	}
+	_, ok := new(big.Rat).SetString(value)
+	return ok
 }
 
 func validateCloudStringAssertions(schema map[string]json.RawMessage, value string) error {
@@ -541,12 +735,18 @@ const (
 	CloudMappingProjectionRelationship                     CloudMappingProjection = "relationship_reference"
 	CloudMappingProjectionGiBToBytes                       CloudMappingProjection = "binary_gib_to_bytes"
 	CloudMappingProjectionCheckedPositiveIntegerGiBToBytes CloudMappingProjection = "checked_positive_integer_gib_to_bytes"
-	CloudMappingProjectionBoundedZeroOrOneRelationship     CloudMappingProjection = "bounded_zero_or_one_relationship_reference"
-	CloudMappingProjectionExactRFC3339                     CloudMappingProjection = "exact_rfc3339"
-	CloudMappingProjectionEvidenceClosedScalar             CloudMappingProjection = "evidence_closed_scalar"
-	CloudMappingProjectionBoundedOneEvidenceScalar         CloudMappingProjection = "bounded_one_evidence_closed_scalar"
-	CloudMappingProjectionManyRelationship                 CloudMappingProjection = "many_relationship_references"
-	CloudMappingProjectionPresentPrivateLeaf               CloudMappingProjection = "present_private_leaf_to_neutral_scalar"
+	CloudMappingProjectionMiBPerSecondToBytesPerSecond     CloudMappingProjection = "mebibytes_per_second_to_bytes_per_second"
+	// CloudMappingProjectionIntegerToCanonicalDecimal turns a source JSON
+	// integer or a source-declared int64 decimal string into the owner wire
+	// representation (canonical unsigned decimal text plus the owner unit).
+	CloudMappingProjectionIntegerToCanonicalDecimal    CloudMappingProjection = "integer_to_canonical_decimal"
+	CloudMappingProjectionQualifiedIntegerMeasurement  CloudMappingProjection = "qualified_integer_measurement"
+	CloudMappingProjectionBoundedZeroOrOneRelationship CloudMappingProjection = "bounded_zero_or_one_relationship_reference"
+	CloudMappingProjectionExactRFC3339                 CloudMappingProjection = "exact_rfc3339"
+	CloudMappingProjectionEvidenceClosedScalar         CloudMappingProjection = "evidence_closed_scalar"
+	CloudMappingProjectionBoundedOneEvidenceScalar     CloudMappingProjection = "bounded_one_evidence_closed_scalar"
+	CloudMappingProjectionManyRelationship             CloudMappingProjection = "many_relationship_references"
+	CloudMappingProjectionPresentPrivateLeaf           CloudMappingProjection = "present_private_leaf_to_neutral_scalar"
 )
 
 type CloudExplicitNullDisposition string
@@ -561,9 +761,10 @@ const (
 type CloudExplicitAbsentDisposition string
 
 const (
-	CloudAbsentRefuse    CloudExplicitAbsentDisposition = "refuse"
-	CloudAbsentToAbsent  CloudExplicitAbsentDisposition = "map_to_absent"
-	CloudAbsentToUnknown CloudExplicitAbsentDisposition = "map_to_unknown"
+	CloudAbsentRefuse        CloudExplicitAbsentDisposition = "refuse"
+	CloudAbsentToAbsent      CloudExplicitAbsentDisposition = "map_to_absent"
+	CloudAbsentToUnknown     CloudExplicitAbsentDisposition = "map_to_unknown"
+	CloudAbsentToNotObserved CloudExplicitAbsentDisposition = "map_to_not_observed"
 )
 
 // CloudEvidenceValueRecipe is a closed evidence-bound scalar translation;
@@ -575,19 +776,46 @@ type CloudEvidenceValueRecipe struct {
 	UnsupportedSourceValues []string          `json:"unsupported_source_values,omitempty"`
 }
 
+type CloudQualifiedIntegerMeasurementRecipe struct {
+	DiscriminatorPointer string            `json:"discriminator_pointer"`
+	BasisByDiscriminator map[string]string `json:"basis_by_discriminator"`
+	Unit                 string            `json:"unit"`
+	EvidenceRefs         []string          `json:"evidence_refs"`
+}
+
 type CloudMappingContractField struct {
-	SourcePointer             string                         `json:"source_pointer"`
-	WirePointer               string                         `json:"wire_pointer,omitempty"`
-	SourceFieldID             string                         `json:"source_field_id"`
-	Disposition               CloudSourceFieldDisposition    `json:"disposition"`
-	TargetField               string                         `json:"target_field,omitempty"`
-	Projection                CloudMappingProjection         `json:"projection,omitempty"`
-	SourceUnit                string                         `json:"source_unit,omitempty"`
-	UnitEvidenceRef           string                         `json:"unit_evidence_ref,omitempty"`
-	ExplicitNullDisposition   CloudExplicitNullDisposition   `json:"explicit_null_disposition"`
-	ExplicitAbsentDisposition CloudExplicitAbsentDisposition `json:"explicit_absent_disposition"`
-	LifecycleRecipe           *CloudLifecycleEnumRecipe      `json:"lifecycle_recipe,omitempty"`
-	ValueRecipe               *CloudEvidenceValueRecipe      `json:"value_recipe,omitempty"`
+	SourceAliasComparison      string                                  `json:"source_alias_comparison,omitempty"`
+	SemanticEvidenceRefs       []string                                `json:"semantic_evidence_refs,omitempty"`
+	SourceAliasOf              string                                  `json:"source_alias_of,omitempty"`
+	SourceAliasEvidenceRef     string                                  `json:"source_alias_evidence_ref,omitempty"`
+	StructuredRecipe           *CloudStructuredRule                    `json:"structured_recipe,omitempty"`
+	SourcePointer              string                                  `json:"source_pointer"`
+	WirePointer                string                                  `json:"wire_pointer,omitempty"`
+	SourceFieldID              string                                  `json:"source_field_id"`
+	Disposition                CloudSourceFieldDisposition             `json:"disposition"`
+	TargetField                string                                  `json:"target_field,omitempty"`
+	Projection                 CloudMappingProjection                  `json:"projection,omitempty"`
+	SourceUnit                 string                                  `json:"source_unit,omitempty"`
+	SourceNumericMaximum       string                                  `json:"source_numeric_maximum,omitempty"`
+	UnitEvidenceRef            string                                  `json:"unit_evidence_ref,omitempty"`
+	ExplicitNullDisposition    CloudExplicitNullDisposition            `json:"explicit_null_disposition"`
+	ExplicitAbsentDisposition  CloudExplicitAbsentDisposition          `json:"explicit_absent_disposition"`
+	LifecycleRecipe            *CloudLifecycleEnumRecipe               `json:"lifecycle_recipe,omitempty"`
+	ValueRecipe                *CloudEvidenceValueRecipe               `json:"value_recipe,omitempty"`
+	QualifiedMeasurementRecipe *CloudQualifiedIntegerMeasurementRecipe `json:"qualified_measurement_recipe,omitempty"`
+	// SemanticOwnerRef is the portable canonical-owner coordinate for a
+	// mapped neutral field. Legacy v2 packages omit it; typed recursive v3
+	// fragments require it before execution.
+	SemanticOwnerRef           string `json:"semantic_owner_ref,omitempty"`
+	SemanticPath               string `json:"semantic_path,omitempty"`
+	TargetValueKind            string `json:"target_value_kind,omitempty"`
+	TargetCardinality          string `json:"target_cardinality,omitempty"`
+	TargetNullable             bool   `json:"target_nullable,omitempty"`
+	TargetUnitDimension        string `json:"target_unit_dimension,omitempty"`
+	TargetReferenceTarget      string `json:"target_reference_target,omitempty"`
+	PrivateSourceOnlyRationale string `json:"private_source_only_rationale,omitempty"`
+	PrivateReasonCode          string `json:"private_reason_code,omitempty"`
+	UnsupportedReasonCode      string `json:"unsupported_reason_code,omitempty"`
 }
 
 // CloudLifecycleEnumRecipe is data carried by the same mapping contract the
@@ -630,6 +858,7 @@ type cloudResolvedField struct {
 	WirePointer     string
 	InlineSchema    json.RawMessage
 	KnownEnumValues []string
+	NumericMaximum  string
 }
 
 // ValidateCloudMappingContract validates a complete mapping roster.  Every
@@ -661,8 +890,17 @@ func ValidateCloudMappingContract(catalog CloudCatalog, contract CloudMappingCon
 	if err != nil {
 		return err
 	}
+	if err := validateCloudEmbeddedSemanticOwnerFields(contract); err != nil {
+		return err
+	}
 	source, err := cloudCatalogObjectFields(catalog, contract.ObjectSchemaID)
 	if err != nil {
+		return err
+	}
+	if _, err := compileCloudStructuredFields(catalog, contract, source); err != nil {
+		return err
+	}
+	if err := validateCloudSourceAliases(catalog, contract); err != nil {
 		return err
 	}
 	decomposed, err := validateCloudNestedDecompositions(catalog, contract, neutral, source)
@@ -690,10 +928,13 @@ func ValidateCloudMappingContract(catalog CloudCatalog, contract CloudMappingCon
 		}
 		seen[mapping.SourcePointer] = struct{}{}
 		if err := validateCloudNullDisposition(mapping, field, neutral); err != nil {
-			return err
+			return fmt.Errorf("mapping %s -> %s null disposition: %w", mapping.SourcePointer, mapping.TargetField, err)
 		}
 		if err := validateCloudMappingField(mapping, field, neutral); err != nil {
-			return err
+			return fmt.Errorf("mapping %s -> %s: %w", mapping.SourcePointer, mapping.TargetField, err)
+		}
+		if err := validateCloudQualifiedIntegerMeasurement(mapping, field, source, neutral, mappingEvidenceIDs(contract)); err != nil {
+			return fmt.Errorf("mapping %s -> %s qualified measurement: %w", mapping.SourcePointer, mapping.TargetField, err)
 		}
 	}
 	for pointer := range source {
@@ -719,10 +960,110 @@ func ValidateCloudMappingContract(catalog CloudCatalog, contract CloudMappingCon
 	return nil
 }
 
+func validateCloudQualifiedIntegerMeasurement(mapping CloudMappingContractField, sourceField cloudResolvedField, source map[string]cloudResolvedField, neutral map[string]CloudNeutralFieldSchema, evidence map[string]struct{}) error {
+	if mapping.Projection != CloudMappingProjectionQualifiedIntegerMeasurement {
+		if mapping.QualifiedMeasurementRecipe != nil {
+			return fmt.Errorf("qualified measurement recipe is detached from its projection")
+		}
+		return nil
+	}
+	recipe := mapping.QualifiedMeasurementRecipe
+	target, ok := neutral[mapping.TargetField]
+	if recipe == nil || !ok || mapping.Disposition != CloudSourceMapsExactSourceFact || sourceField.Cardinality != "one" || sourceField.NumericMaximum == "" || target.ValueType != "closed_object" || target.Cardinality != "one" || recipe.Unit == "" || recipe.Unit != mapping.SourceUnit || mapping.UnitEvidenceRef == "" || mapping.SourceNumericMaximum != sourceField.NumericMaximum {
+		return fmt.Errorf("qualified integer measurement %q has incompatible type, unit, or numeric bound", sourceField.ID)
+	}
+	discriminator, ok := source[recipe.DiscriminatorPointer]
+	if !ok || recipe.DiscriminatorPointer == mapping.SourcePointer || discriminator.ValueType != "string" || discriminator.Cardinality != "one" || len(recipe.BasisByDiscriminator) == 0 || len(recipe.EvidenceRefs) == 0 {
+		return fmt.Errorf("qualified integer measurement %q has no retained string discriminator", sourceField.ID)
+	}
+	for value, basis := range recipe.BasisByDiscriminator {
+		if value == "" || (basis != "baseline" && basis != "provisioned") {
+			return fmt.Errorf("qualified integer measurement %q has an invalid basis classification", sourceField.ID)
+		}
+	}
+	for _, ref := range recipe.EvidenceRefs {
+		if _, ok := evidence[ref]; !ok {
+			return fmt.Errorf("qualified integer measurement %q has unbound evidence %q", sourceField.ID, ref)
+		}
+	}
+	return nil
+}
+
+func validateCloudEmbeddedSemanticOwnerFields(contract CloudMappingContract) error {
+	usesV3 := false
+	for _, field := range cloudMappingContractAllFields(contract) {
+		usesV3 = usesV3 || len(field.SemanticEvidenceRefs) != 0
+		usesV3 = usesV3 || field.SemanticOwnerRef != "" || field.SemanticPath != "" || field.TargetValueKind != "" || field.TargetCardinality != "" || field.TargetNullable || field.TargetUnitDimension != "" || field.TargetReferenceTarget != "" || field.PrivateReasonCode != "" || field.UnsupportedReasonCode != "" || field.PrivateSourceOnlyRationale != "" || field.StructuredRecipe != nil || field.SourceAliasOf != ""
+	}
+	profile, ok := cloudNeutralOwnerProfileForSchema(contract.Neutral)
+	if !ok || !profile.requiresSemanticOwnerFields {
+		if !usesV3 {
+			return nil
+		}
+		return fmt.Errorf("v3 mapping attributes require a v3 exact owner profile")
+	}
+	if len(contract.Neutral.semanticOwnerFields) == 0 {
+		return fmt.Errorf("v3 mapping attributes require the canonical embedded semantic_owner_fields dictionary")
+	}
+	sealed, err := canonicalFactoryJSON(contract.Neutral.semanticOwnerFields)
+	if err != nil || contract.Neutral.sealedSemanticOwnerFieldsSHA256 == "" || sha256Hex(sealed) != contract.Neutral.sealedSemanticOwnerFieldsSHA256 {
+		return fmt.Errorf("embedded semantic_owner_fields dictionary was mutated after owner load")
+	}
+	writers := map[string]string{}
+	for _, field := range cloudMappingContractAllFields(contract) {
+		if len(field.SemanticEvidenceRefs) == 0 {
+			return fmt.Errorf("source %s lacks its pinned semantic evidence selections", field.SourcePointer)
+		}
+		switch field.Disposition {
+		case CloudSourceMapsExactSourceFact, CloudSourceMapsExactLifecycleFact, CloudSourceMapsExactRelationshipFact:
+			if previous, exists := writers[field.TargetField]; exists {
+				return fmt.Errorf("source fields %s and %s both write %s", previous, field.SourcePointer, field.TargetField)
+			}
+			writers[field.TargetField] = field.SourcePointer
+			want := CloudSemanticOwnerFieldSpec{OwnerRef: field.SemanticOwnerRef, SemanticPath: field.SemanticPath, ValueKind: field.TargetValueKind, Cardinality: field.TargetCardinality, Nullable: field.TargetNullable, UnitDimension: field.TargetUnitDimension, ReferenceTarget: field.TargetReferenceTarget}
+			found := false
+			for _, owner := range contract.Neutral.semanticOwnerFields {
+				if owner.CloudSemanticOwnerFieldSpec == want && owner.TargetField == field.TargetField && cloudSemanticOwnerAppliesToClass(owner, contract.Neutral.ClassSymbol) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("mapped source %q does not equal an embedded semantic owner field", field.SourcePointer)
+			}
+		case CloudSourcePrivateOnly:
+			if field.SemanticOwnerRef != "" || field.TargetField != "" || field.Projection != "" || !cloudSemanticPrivateReasons[field.PrivateReasonCode] || strings.TrimSpace(field.PrivateSourceOnlyRationale) == "" {
+				return fmt.Errorf("private source %q v3 disposition is incomplete", field.SourcePointer)
+			}
+		case CloudSourceUnsupported:
+			if field.SemanticOwnerRef != "" || field.TargetField != "" || field.Projection != "" || !cloudSemanticUnsupportedReasons[field.UnsupportedReasonCode] {
+				return fmt.Errorf("unsupported source %q v3 disposition is incomplete", field.SourcePointer)
+			}
+		}
+	}
+	return nil
+}
+
+func cloudSemanticOwnerAppliesToClass(owner CloudSemanticOwnerField, classSymbol string) bool {
+	for _, candidate := range owner.ApplicableRecordClasses {
+		if candidate == classSymbol {
+			return true
+		}
+	}
+	return false
+}
+
 func validateCloudMappingEvidenceReferences(contract CloudMappingContract) error {
 	ids := mappingEvidenceIDs(contract)
 	check := func(fields []CloudMappingContractField) error {
 		for _, f := range fields {
+			seen := map[string]bool{}
+			for _, ref := range f.SemanticEvidenceRefs {
+				if _, ok := ids[ref]; !ok || seen[ref] {
+					return fmt.Errorf("semantic evidence reference %q is unbound or repeated", ref)
+				}
+				seen[ref] = true
+			}
 			if f.UnitEvidenceRef != "" {
 				if _, ok := ids[f.UnitEvidenceRef]; !ok {
 					return fmt.Errorf("unit evidence ref %q is unbound", f.UnitEvidenceRef)
@@ -739,6 +1080,13 @@ func validateCloudMappingEvidenceReferences(contract CloudMappingContract) error
 				for _, ref := range f.ValueRecipe.EvidenceRefs {
 					if _, ok := ids[ref]; !ok {
 						return fmt.Errorf("value evidence ref %q is unbound", ref)
+					}
+				}
+			}
+			if f.QualifiedMeasurementRecipe != nil {
+				for _, ref := range f.QualifiedMeasurementRecipe.EvidenceRefs {
+					if _, ok := ids[ref]; !ok {
+						return fmt.Errorf("qualified measurement evidence ref %q is unbound", ref)
 					}
 				}
 			}
@@ -884,8 +1232,11 @@ func cloudShapeReferenceTargets(raw json.RawMessage) ([]string, error) {
 }
 
 func cloudNeutralFieldMap(schema CloudNeutralRecordSchema) (map[string]CloudNeutralFieldSchema, error) {
-	if !schema.loadedFromExactOwner || schema.OwnerSHA256 != cloudInfrastructureRecordOwnerSHA256 || schema.ValidatorProfileRef != cloudInfrastructureValidatorProfileSymbol || schema.ValidatorProfileSHA256 != cloudInfrastructureValidatorProfileSHA256 || strings.TrimSpace(schema.ClassSymbol) == "" || len(schema.Fields) == 0 {
+	if !schema.loadedFromExactOwner || strings.TrimSpace(schema.ClassSymbol) == "" || len(schema.Fields) == 0 {
 		return nil, fmt.Errorf("neutral schema must pin owner ref, hash, class symbol and fields")
+	}
+	if _, ok := cloudNeutralOwnerProfileForSchema(schema); !ok {
+		return nil, fmt.Errorf("neutral schema does not retain a supported exact owner profile")
 	}
 	expectedOwnerRef := cloudInfrastructureRecordOwnerID + "#sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.record_class_definitions." + schema.ClassSymbol
 	if schema.OwnerRef != expectedOwnerRef {
@@ -1131,7 +1482,20 @@ func inferCloudNeutralWireType(raw json.RawMessage, definitions map[string]json.
 		if err == nil && json.Unmarshal(item["$ref"], &ref) == nil && ref == "#/$defs/semantic_record_instance_identity" {
 			return CloudNeutralFieldSchema{ValueType: "semantic_reference", Cardinality: "many"}, nil
 		}
-		return CloudNeutralFieldSchema{}, fmt.Errorf("target array requires an exact semantic identity item schema")
+		if err != nil || len(item) == 0 {
+			return CloudNeutralFieldSchema{}, fmt.Errorf("target array lacks an item schema")
+		}
+		// A non-reference array is still an exact owner-defined closed value
+		// when it occurs inside a present/absent/unknown envelope. Its nested
+		// members are compiled separately; do not pretend it is a scalar or a
+		// semantic identity merely because its outer field is mappable.
+		return CloudNeutralFieldSchema{ValueType: "closed_object", Cardinality: "many"}, nil
+	}
+	if valueType == "boolean" {
+		return CloudNeutralFieldSchema{ValueType: "boolean", Cardinality: "one"}, nil
+	}
+	if valueType == "object" {
+		return CloudNeutralFieldSchema{ValueType: "closed_object", Cardinality: "one"}, nil
 	}
 	if valueType != "string" {
 		return CloudNeutralFieldSchema{}, fmt.Errorf("unsupported target value type %q", valueType)
@@ -1141,8 +1505,8 @@ func inferCloudNeutralWireType(raw json.RawMessage, definitions map[string]json.
 		if err == nil {
 			var constant string
 			_ = json.Unmarshal(unitObject["const"], &constant)
-			if constant == "bytes" {
-				return CloudNeutralFieldSchema{ValueType: "unsigned_integer", Cardinality: "one", Unit: "bytes"}, nil
+			if constant != "" {
+				return CloudNeutralFieldSchema{ValueType: "unsigned_integer", Cardinality: "one", Unit: constant}, nil
 			}
 		}
 	}
@@ -1190,6 +1554,9 @@ func cloudHasPresenceState(target CloudNeutralFieldSchema, state string) bool {
 }
 
 func validateCloudMappingField(mapping CloudMappingContractField, source cloudResolvedField, neutral map[string]CloudNeutralFieldSchema) error {
+	if (mapping.Projection == cloudProjectionStructured) != (mapping.StructuredRecipe != nil) {
+		return fmt.Errorf("field %q has a detached structured recipe", source.ID)
+	}
 	switch mapping.Disposition {
 	case CloudSourceNotObserved, CloudSourceUnsupported, CloudSourceUnknown, CloudSourcePrivateOnly:
 		if mapping.TargetField != "" || mapping.Projection != "" || mapping.SourceUnit != "" || mapping.ValueRecipe != nil || mapping.LifecycleRecipe != nil || mapping.ExplicitAbsentDisposition != "" {
@@ -1229,6 +1596,11 @@ func validateCloudMappingField(mapping CloudMappingContractField, source cloudRe
 		mapping.Projection = CloudMappingProjectionExact
 	}
 	switch mapping.Projection {
+	case cloudProjectionStructured:
+		scopedRelationship := mapping.Disposition == CloudSourceMapsExactRelationshipFact && mapping.StructuredRecipe.containsOnlyReferences()
+		if mapping.StructuredRecipe == nil || (mapping.Disposition != CloudSourceMapsExactSourceFact && !scopedRelationship) || mapping.SemanticOwnerRef == "" || mapping.SourceUnit != "" || mapping.ValueRecipe != nil || mapping.LifecycleRecipe != nil {
+			return fmt.Errorf("structured field %q requires a pinned exact neutral observation", source.ID)
+		}
 	case CloudMappingProjectionExact:
 		if target.Unit != "" && mapping.UnitEvidenceRef == "" {
 			return fmt.Errorf("exact unit mapping %q lacks unit evidence", source.ID)
@@ -1254,6 +1626,16 @@ func validateCloudMappingField(mapping CloudMappingContractField, source cloudRe
 		if (source.ValueType != "signed_integer" && source.ValueType != "integer_string") || source.Cardinality != "one" || mapping.SourceUnit != "gib" || target.ValueType != "unsigned_integer" || target.Cardinality != "one" || target.Unit != "bytes" {
 			return fmt.Errorf("checked_positive_integer_gib_to_bytes mapping %q is incompatible", source.ID)
 		}
+	case CloudMappingProjectionMiBPerSecondToBytesPerSecond:
+		if mapping.UnitEvidenceRef == "" || source.NumericMaximum == "" || (source.ValueType != "unsigned_integer" && source.ValueType != "signed_integer" && source.ValueType != "integer_string") || source.Cardinality != "one" || mapping.SourceUnit != "mib_per_second" || mapping.SourceNumericMaximum != source.NumericMaximum || target.ValueType != "unsigned_integer" || target.Cardinality != "one" || target.Unit != "bytes_per_second" {
+			return fmt.Errorf("mebibytes_per_second_to_bytes_per_second mapping %q is incompatible or lacks unit evidence", source.ID)
+		}
+	case CloudMappingProjectionIntegerToCanonicalDecimal:
+		if mapping.UnitEvidenceRef == "" || source.Cardinality != "one" || source.NumericMaximum == "" || target.ValueType != "unsigned_integer" || target.Cardinality != "one" || target.Unit == "" || mapping.SourceUnit != target.Unit || mapping.SourceNumericMaximum != source.NumericMaximum {
+			return fmt.Errorf("integer_to_canonical_decimal mapping %q requires a bounded source integer, exact owner unit, and unit evidence", source.ID)
+		}
+	case CloudMappingProjectionQualifiedIntegerMeasurement:
+		// Cross-field validation runs with the complete selected source object.
 	case CloudMappingProjectionBoundedZeroOrOneRelationship:
 		if mapping.Disposition != CloudSourceMapsExactRelationshipFact || source.ValueType != "string" || source.Cardinality != "many" || target.ValueType != "semantic_reference" || target.Cardinality != "one" {
 			return fmt.Errorf("bounded_zero_or_one_relationship_reference mapping %q is incompatible", source.ID)
@@ -1390,7 +1772,7 @@ func cloudSmithyObjectFields(catalog CloudCatalog, members json.RawMessage) (map
 			return nil, fmt.Errorf("Smithy member %q: %w", name, err)
 		}
 		pointer := "/" + cloudCatalogEscapePointer(name)
-		result[pointer] = cloudResolvedField{ID: name, Pointer: pointer, WirePointer: "/" + cloudCatalogEscapePointer(cloudSmithyWireMemberName(name, member.Traits)), ValueType: valueType, Cardinality: cardinality, Nullable: member.Nullable, ShapeID: member.Target, KnownEnumValues: cloudSmithyEnumValues(target.RawJSON)}
+		result[pointer] = cloudResolvedField{ID: name, Pointer: pointer, WirePointer: "/" + cloudCatalogEscapePointer(cloudSmithyWireMemberName(name, member.Traits)), ValueType: valueType, Cardinality: cardinality, Nullable: member.Nullable, ShapeID: member.Target, KnownEnumValues: cloudSmithyEnumValues(target.RawJSON), NumericMaximum: cloudSmithyNumericMaximum(target.RawJSON)}
 	}
 	return result, nil
 }
@@ -1480,7 +1862,7 @@ func cloudDiscoveryObjectFields(properties json.RawMessage) (map[string]cloudRes
 			shapeID = item.Ref
 		}
 		pointer := "/" + cloudCatalogEscapePointer(name)
-		result[pointer] = cloudResolvedField{ID: name, Pointer: pointer, WirePointer: pointer, ValueType: valueType, Cardinality: cardinality, Nullable: property.Nullable, ShapeID: shapeID, InlineSchema: bytes.Clone(values[name]), KnownEnumValues: cloudDiscoveryEnumValues(values[name])}
+		result[pointer] = cloudResolvedField{ID: name, Pointer: pointer, WirePointer: pointer, ValueType: valueType, Cardinality: cardinality, Nullable: property.Nullable, ShapeID: shapeID, InlineSchema: bytes.Clone(values[name]), KnownEnumValues: cloudDiscoveryEnumValues(values[name]), NumericMaximum: cloudDiscoveryNumericMaximum(property.Type, property.Format)}
 	}
 	return result, nil
 }
@@ -1528,6 +1910,42 @@ func cloudScalarType(kind string) (string, string, error) {
 		return "boolean", "one", nil
 	default:
 		return "opaque_scalar", "one", nil
+	}
+}
+
+func cloudSmithyNumericMaximum(raw json.RawMessage) string {
+	var shape struct {
+		Type string `json:"type"`
+	}
+	if json.Unmarshal(raw, &shape) != nil {
+		return ""
+	}
+	switch shape.Type {
+	case "byte":
+		return "127"
+	case "short":
+		return "32767"
+	case "integer":
+		return "2147483647"
+	case "long":
+		return "9223372036854775807"
+	default:
+		return ""
+	}
+}
+
+func cloudDiscoveryNumericMaximum(kind, format string) string {
+	switch strings.TrimSpace(kind + ":" + format) {
+	case "integer:uint32", "string:uint32":
+		return "4294967295"
+	case "integer:uint64", "string:uint64":
+		return "18446744073709551615"
+	case "integer:int32", "string:int32":
+		return "2147483647"
+	case "integer:int64", "string:int64":
+		return "9223372036854775807"
+	default:
+		return ""
 	}
 }
 

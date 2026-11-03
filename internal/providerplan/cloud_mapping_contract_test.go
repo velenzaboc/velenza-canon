@@ -26,6 +26,37 @@ func TestLoadCloudNeutralRecordSchemaFromPinnedSemanticOwnerSnapshot(t *testing.
 	}
 }
 
+func TestLoadCloudNeutralRecordSchemaV3UsesOnlyPinnedOwnerProfile(t *testing.T) {
+	raw, err := os.ReadFile("../../testdata/cloudapi/semantic-owner/infrastructure-resource-record-v3-mapping-schema.export.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputRaw, err := os.ReadFile("../../testdata/cloudapi/candidate-input-v3.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var input CloudSourceCandidateInput
+	if err := strictUnmarshal(inputRaw, &input); err != nil {
+		t.Fatal(err)
+	}
+	expected := input.NeutralSchemaExportSHA256
+	if got := sha256Hex(raw); got != expected {
+		t.Fatalf("v3 semantic-owner export sha = %s, want %s", got, expected)
+	}
+	schema, err := LoadCloudNeutralRecordSchema(raw, expected, "compute_instance")
+	if err != nil {
+		t.Fatalf("load v3 exact owner profile: %v", err)
+	}
+	if schema.ownerProfileID != "infrastructure-resource-record-v3" || len(schema.semanticOwnerFields) == 0 || schema.sealedSemanticOwnerFieldsSHA256 == "" {
+		t.Fatal("v3 schema did not retain its sealed embedded semantic owner dictionary")
+	}
+	tampered := append([]byte(nil), raw...)
+	tampered[len(tampered)-2] ^= 1
+	if _, err := LoadCloudNeutralRecordSchema(tampered, expected, "compute_instance"); err == nil {
+		t.Fatal("tampered v3 owner export accepted")
+	}
+}
+
 func TestValidateCloudNeutralRecordValueAndFormatAssertions(t *testing.T) {
 	export, err := os.ReadFile("../../testdata/cloudapi/semantic-owner/infrastructure-resource-record-mapping-schema.export.json")
 	if err != nil {
@@ -63,7 +94,7 @@ func TestValidateCloudMappingContractRequiresCompleteClosedSchemas(t *testing.T)
 	}
 	contract := CloudMappingContract{
 		OperationID: "instances.list", ObjectSchemaID: "Instance",
-		Neutral: CloudNeutralRecordSchema{OwnerRef: cloudInfrastructureRecordOwnerID + "#sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.record_class_definitions.compute_volume", OwnerSHA256: cloudInfrastructureRecordOwnerSHA256, ClassSymbol: "compute_volume", ValidatorProfileRef: cloudInfrastructureValidatorProfileSymbol, ValidatorProfileSHA256: cloudInfrastructureValidatorProfileSHA256, loadedFromExactOwner: true, Fields: []CloudNeutralFieldSchema{
+		Neutral: CloudNeutralRecordSchema{OwnerRef: cloudInfrastructureRecordOwnerID + "#sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.record_class_definitions.compute_volume", OwnerSHA256: cloudInfrastructureRecordOwnerSHA256, ClassSymbol: "compute_volume", ValidatorProfileRef: cloudInfrastructureValidatorProfileSymbol, ValidatorProfileSHA256: cloudInfrastructureValidatorProfileSHA256, loadedFromExactOwner: true, ownerProfileID: "infrastructure-resource-record-v2", Fields: []CloudNeutralFieldSchema{
 			{ID: "native_identifier", ValueType: "string", Cardinality: "one"}, {ID: "capacity_bytes", ValueType: "unsigned_integer", Cardinality: "one", Unit: "bytes"}, {ID: "lifecycle_configuration", ValueType: "string", Cardinality: "one", AllowedValues: []string{"configured", "not_configured"}},
 		}},
 		Fields: []CloudMappingContractField{
@@ -184,5 +215,62 @@ func TestValidateCloudMappingContractRefusesUnresolvedOperationsAndUnsupportedSh
 	base.Operations[0].AssociationStatus = cloudCatalogAssociationAsserted
 	if err := ValidateCloudMappingContract(base, contract); err == nil {
 		t.Fatal("uninterpreted map shape was accepted")
+	}
+}
+
+func TestIntegerToCanonicalDecimalRequiresExactUnitEvidenceAndCompatibleInteger(t *testing.T) {
+	source := cloudResolvedField{ID: "iops", ValueType: "integer_string", Cardinality: "one", NumericMaximum: "9223372036854775807"}
+	target := CloudNeutralFieldSchema{ID: "provisioned_iops", ValueType: "unsigned_integer", Cardinality: "one", Unit: "iops"}
+	mapping := CloudMappingContractField{SourceFieldID: "iops", Disposition: CloudSourceMapsExactSourceFact, TargetField: target.ID, Projection: CloudMappingProjectionIntegerToCanonicalDecimal, SourceUnit: "iops", SourceNumericMaximum: "9223372036854775807", UnitEvidenceRef: "provider-model"}
+	if err := validateCloudMappingField(mapping, source, map[string]CloudNeutralFieldSchema{target.ID: target}); err != nil {
+		t.Fatalf("valid canonical integer projection refused: %v", err)
+	}
+	for _, mutate := range []func(*CloudMappingContractField){
+		func(field *CloudMappingContractField) { field.UnitEvidenceRef = "" },
+		func(field *CloudMappingContractField) { field.SourceUnit = "bytes" },
+		func(field *CloudMappingContractField) { field.SourceNumericMaximum = "18446744073709551615" },
+	} {
+		bad := mapping
+		mutate(&bad)
+		if err := validateCloudMappingField(bad, source, map[string]CloudNeutralFieldSchema{target.ID: target}); err == nil {
+			t.Fatal("canonical integer projection accepted missing evidence or wrong unit")
+		}
+	}
+	if err := validateCloudMappingField(mapping, cloudResolvedField{ID: "iops", ValueType: "string", Cardinality: "one"}, map[string]CloudNeutralFieldSchema{target.ID: target}); err == nil {
+		t.Fatal("canonical integer projection accepted an unbounded string source")
+	}
+}
+
+func TestQualifiedIntegerMeasurementRequiresPinnedDiscriminatorAndEvidence(t *testing.T) {
+	source := map[string]cloudResolvedField{
+		"/Iops":       {ID: "Iops", Pointer: "/Iops", ValueType: "signed_integer", Cardinality: "one", NumericMaximum: "2147483647"},
+		"/VolumeType": {ID: "VolumeType", Pointer: "/VolumeType", ValueType: "string", Cardinality: "one"},
+	}
+	target := CloudNeutralFieldSchema{ID: "reported_volume_io_rate", ValueType: "closed_object", Cardinality: "one"}
+	mapping := CloudMappingContractField{SourcePointer: "/Iops", SourceFieldID: "Iops", Disposition: CloudSourceMapsExactSourceFact, TargetField: target.ID, Projection: CloudMappingProjectionQualifiedIntegerMeasurement, SourceUnit: "iops", SourceNumericMaximum: "2147483647", UnitEvidenceRef: "model", QualifiedMeasurementRecipe: &CloudQualifiedIntegerMeasurementRecipe{DiscriminatorPointer: "/VolumeType", BasisByDiscriminator: map[string]string{"gp2": "baseline", "gp3": "provisioned"}, Unit: "iops", EvidenceRefs: []string{"model", "documentation"}}}
+	if err := validateCloudQualifiedIntegerMeasurement(mapping, source["/Iops"], source, map[string]CloudNeutralFieldSchema{target.ID: target}, map[string]struct{}{"model": {}, "documentation": {}}); err != nil {
+		t.Fatalf("valid qualified measurement refused: %v", err)
+	}
+	bad := mapping
+	bad.QualifiedMeasurementRecipe = &CloudQualifiedIntegerMeasurementRecipe{DiscriminatorPointer: "/VolumeType", BasisByDiscriminator: map[string]string{"gp2": "not-a-basis"}, Unit: "iops", EvidenceRefs: []string{"model"}}
+	if err := validateCloudQualifiedIntegerMeasurement(bad, source["/Iops"], source, map[string]CloudNeutralFieldSchema{target.ID: target}, map[string]struct{}{"model": {}}); err == nil {
+		t.Fatal("invalid qualified measurement basis accepted")
+	}
+}
+
+func TestCloudResolvedNumericMaximumPreservesSourceWidth(t *testing.T) {
+	for _, test := range []struct{ raw, want string }{
+		{`{"type":"byte"}`, "127"}, {`{"type":"short"}`, "32767"}, {`{"type":"integer"}`, "2147483647"}, {`{"type":"long"}`, "9223372036854775807"},
+	} {
+		if got := cloudSmithyNumericMaximum(json.RawMessage(test.raw)); got != test.want {
+			t.Fatalf("Smithy %s maximum=%q want %q", test.raw, got, test.want)
+		}
+	}
+	for _, test := range []struct{ kind, format, want string }{
+		{"integer", "int32", "2147483647"}, {"string", "int64", "9223372036854775807"}, {"integer", "uint32", "4294967295"}, {"string", "uint64", "18446744073709551615"},
+	} {
+		if got := cloudDiscoveryNumericMaximum(test.kind, test.format); got != test.want {
+			t.Fatalf("Discovery %s:%s maximum=%q want %q", test.kind, test.format, got, test.want)
+		}
 	}
 }

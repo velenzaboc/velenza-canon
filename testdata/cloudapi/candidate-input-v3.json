@@ -222,7 +222,7 @@
     }
   ],
   "neutral_schema_export_path": "semantic-owner/infrastructure-resource-record-v3-mapping-schema.export.json",
-  "neutral_schema_export_sha256": "c350ccadcc7dc2d510b3b21f237618f38b0313a50a1756c620c0e91c55f614ed",
+  "neutral_schema_export_sha256": "18c5c6ef9de9bf1e9aa9fb1aa0a602c2627d04875660f8c892d4b53344b1ede5",
   "target_documents": [
     {
       "provider_id": "aws",
@@ -236,7 +236,7 @@
       "service_id": "ec2",
       "api_surface_id": "ec2",
       "path": "neutral-v3/aws-ec2.json",
-      "sha256": "7fed6a18d5491e33f7018fbc84615f713bd78823a3454c91ba488b7b8208232a"
+      "sha256": "de63d20f5abee3e0021ace9137ab10ac91976c17b8e1f7c4387b4a01775f5288"
     },
     {
       "provider_id": "gcp",
@@ -250,7 +250,7 @@
       "service_id": "compute",
       "api_surface_id": "compute",
       "path": "neutral-v3/gcp-compute.json",
-      "sha256": "fc18fe0a6eca89b964550b74f2faed5de7784ed84c1d8386d3ca8373ca3815a2"
+      "sha256": "5dc3af070415f16a8fd7715800c45907c6c9dcc71442bd5b1fe96a55717daaeb"
     }
   ]
 }

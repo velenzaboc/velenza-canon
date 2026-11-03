@@ -4,6 +4,21 @@ This path prepares connection candidates and checks their offline conformance in
 
 The goal is reusable machinery: pinned model parsing, evidence-bound API relationships, shared provider and protocol profiles, complete source-field dispositions and owner-bound semantic mappings. Service-specific facts belong in declarative inputs. The four cases exercise the machinery; they are not a claim of complete cloud or CNAPP coverage.
 
+## Evidence attribution and offline status
+
+Official source snapshots remain local evidence with their own source URI,
+path, whole-body SHA-256 and selected byte ranges.  The Compute successor uses
+the retained Google Cloud Hyperdisk throughput documentation for unit meaning
+and the retained AWS EC2 billing-information documentation for its independent
+field evidence; neither is copied into neutral output.  A pinned snapshot is
+evidence integrity, not provider authorization or semantic admission.
+
+Preparation, `--verify`, native factory verification and the 200-occurrence
+successor crosswalk are offline generation checks.  They establish only the
+measured result for the exact pinned inputs and command run.  They do not
+claim qualified evidence acceptance, customer access, artifact admission or
+OHM publication.  Those boundaries remain separately owned.
+
 Use [Extending the factory](extending-the-factory.md) for the repeatable service,
 resource, operation and API-revision workflow, including its validation and
 owner handoffs.
@@ -16,13 +31,29 @@ owner handoffs.
 | Candidate generation and verification stages | Canon factory |
 | Shared provider authentication requirements and service residuals | Reusable profiles; actual grants and secrets remain Connector Vault responsibilities |
 | Source identity, source schemas, mapping generations and publication | OHM |
-| Source-neutral infrastructure record meanings | Infrastructure Resource Record, owner `1729172e-44a9-48bb-b833-9591cd105516` version 2, under Business Record Class Contract |
+| Source-neutral infrastructure record meanings | Infrastructure Resource Record, owner `1729172e-44a9-48bb-b833-9591cd105516` version 3 for the four-service successor cases; version 2 is preserved historical input under the Business Record Class Contract |
 | Implementation references and work evidence | Cambium and Trellis |
 | Effective posture, findings and policy/control assessment | Their domain owners and Canopy |
 
 The API hierarchy is provider → service → API surface/version → resource → operation. It is a graph: operations can involve several resources and shared definitions are referenced rather than copied. API/model revisions belong to catalog and mapping lineage; they do not create new customer source identities.
 
-The portable neutral schema export binds the exact canonical owner bytes, version and validation profile. Its version-2 attachment-set migration and all uncertainty arms are part of the contract, not provider-specific conventions.
+The portable neutral schema export binds the exact canonical owner bytes, version and validation profile. The normal four-service successor proof uses IRR v3; the version-2 attachment-set migration and historical package remain preserved rather than rewritten. All uncertainty arms are part of the contract, not provider-specific conventions.
+
+## Four-service successor scope
+
+The checked offline successor scope is six resources across nine operations and
+255 field occurrences. It accounts for 199 mapped and 56 source-private
+occurrences. Of the historical 200 unsupported occurrences, 168 are mapped
+and 32 are intentionally source-private with field-level boundaries; 55 prior
+occurrences are preserved. These are measured package-accounting results for
+the exact manifest scope and generator inputs, not a claim of qualification,
+runtime acquisition, admission, or publication.
+
+The pinned scope, service documents and generator inputs are under
+`testdata/cloudapi/`, notably `candidate-input-v3.json`,
+`mapping-package-scope-v3.json`, `neutral-v3/`, and the coverage audit's
+preserved predecessor report. Run the generator and audit commands in
+[Extending the factory](extending-the-factory.md) against those exact files.
 
 The offline compiler cannot grant customer access, qualify its own evidence, admit an artifact, allocate an OHM semantic identity or publish customer records. Those boundaries remain explicit dependencies. Graph storage compatibility does not itself qualify or publish a candidate graph.
 

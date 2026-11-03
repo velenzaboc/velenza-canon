@@ -177,6 +177,15 @@
             "slice_sha256": "4aeebd73127ddc053b3f1d64fe0885d8864e8379fc77f8535b4733d8601765bc"
           },
           {
+            "id": "v3.gcp-compute.2e24d17a3e6841627053",
+            "source_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+            "source_path": "refresh-20261102/compute-v1.discovery.json",
+            "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+            "start_byte": 3163323,
+            "end_byte": 3164457,
+            "slice_sha256": "37589f71c53db10eec2f161282544c3396745f7f6fd3974537d4d198a01a032f"
+          },
+          {
             "id": "v3.gcp-compute.2e282e9f76dbac4b8422",
             "source_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
             "source_path": "refresh-20261102/compute-v1.discovery.json",
@@ -1085,7 +1094,8 @@
                     "rule": {
                       "kind": "object",
                       "evidence_refs": [
-                        "gcp.compute.disk.diskEncryptionKey"
+                        "v3.gcp-compute.2e24d17a3e6841627053",
+                        "v3.gcp-compute.d3de18cd41b2b84c5f98"
                       ],
                       "members": [
                         {
@@ -1222,7 +1232,10 @@
                     }
                   }
                 ],
-                "kind": "object"
+                "kind": "object",
+                "unobserved_members": [
+                  "block_volume_attachment"
+                ]
               },
               "kind": "list",
               "evidence_refs": [
@@ -1565,18 +1578,19 @@
           {
             "source_pointer": "/machineType",
             "source_field_id": "machineType",
-            "disposition": "maps_exact_source_fact",
+            "disposition": "maps_exact_relationship_fact",
             "explicit_null_disposition": "source_private_only",
-            "target_field": "machine_shape_token",
-            "projection": "exact",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.machine_shape_token",
+            "target_field": "compute_product_type_relationship",
+            "projection": "relationship_reference",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.compute_product_type_relationship",
             "explicit_absent_disposition": "map_to_unknown",
             "semantic_evidence_refs": [
               "v3.gcp-compute.40210913cba3a6940d58"
             ],
-            "semantic_path": "compute.machine_shape_token",
-            "target_value_kind": "exact_token",
-            "target_cardinality": "one"
+            "semantic_path": "catalog.compute_product_type",
+            "target_value_kind": "scope_resolved_opaque_reference",
+            "target_cardinality": "one",
+            "target_reference_target": "CloudNeutralScopedBinding"
           },
           {
             "source_pointer": "/metadata",
@@ -2006,7 +2020,26 @@
                     }
                   }
                 ],
-                "kind": "object"
+                "kind": "object",
+                "unobserved_members": [
+                  "attachment_observation",
+                  "connection_tracking_configuration",
+                  "description",
+                  "interface_reference",
+                  "ipv4_prefixes",
+                  "ipv6_addresses",
+                  "ipv6_prefixes",
+                  "link_layer_address",
+                  "management_observation",
+                  "owner_reference",
+                  "private_address_observations",
+                  "private_dns_name",
+                  "public_address_association",
+                  "reported_state",
+                  "security_group_memberships",
+                  "source_destination_check_enabled",
+                  "subnet_reference"
+                ]
               },
               "kind": "list",
               "evidence_refs": [
@@ -2049,6 +2082,9 @@
                     "kind": "string"
                   }
                 }
+              ],
+              "unobserved_members": [
+                "bandwidth_weighting"
               ]
             },
             "explicit_absent_disposition": "map_to_unknown",
@@ -2075,16 +2111,27 @@
             "source_field_id": "privateIpv6GoogleAccess",
             "disposition": "maps_exact_source_fact",
             "explicit_null_disposition": "source_private_only",
-            "target_field": "private_ipv6_google_access_token",
-            "projection": "exact",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.private_ipv6_google_access_token",
+            "target_field": "private_ipv6_provider_service_access_mode",
+            "projection": "evidence_closed_scalar",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.private_ipv6_provider_service_access_mode",
             "explicit_absent_disposition": "map_to_unknown",
             "semantic_evidence_refs": [
               "v3.gcp-compute.34e2d0605b6cbe5dfb1d"
             ],
-            "semantic_path": "network.private_ipv6_google_access_token",
-            "target_value_kind": "exact_token",
-            "target_cardinality": "one"
+            "semantic_path": "network.private_ipv6_provider_service_access",
+            "target_value_kind": "source_to_neutral_enum",
+            "target_cardinality": "one",
+            "value_recipe": {
+              "evidence_refs": [
+                "v3.gcp-compute.34e2d0605b6cbe5dfb1d"
+              ],
+              "source_to_neutral": {
+                "ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE": "bidirectional",
+                "ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE": "outbound",
+                "INHERIT_FROM_SUBNETWORK": "inherit_per_interface_subnet"
+              },
+              "unknown_value_policy": "refuse"
+            }
           },
           {
             "source_pointer": "/reservationAffinity",
@@ -2839,26 +2886,26 @@
             "target_cardinality": "many",
             "structured_recipe": {
               "item": {
+                "kind": "object",
                 "members": [
                   {
                     "source": "email",
-                    "target": "email",
+                    "target": "principal_reference",
                     "rule": {
-                      "kind": "string"
+                      "kind": "scoped_reference"
                     }
                   },
                   {
                     "source": "scopes",
-                    "target": "scopes",
+                    "target": "authorization_scope_references",
                     "rule": {
+                      "kind": "list",
                       "item": {
-                        "kind": "string"
-                      },
-                      "kind": "list"
+                        "kind": "scoped_reference"
+                      }
                     }
                   }
-                ],
-                "kind": "object"
+                ]
               },
               "kind": "list",
               "evidence_refs": [
@@ -3283,6 +3330,33 @@
             "source_path": "official/units/gcp-compute-resize-persistent-disk.html",
             "source_uri": "https://docs.cloud.google.com/compute/docs/disks/resize-persistent-disk",
             "start_byte": 355261
+          },
+          {
+            "id": "gcp.hyperdisk.provisioned_throughput_mib_per_second",
+            "source_uri": "https://docs.cloud.google.com/compute/docs/disks/add-hyperdisk",
+            "source_path": "official/units/gcp-hyperdisk-throughput.html",
+            "expected_sha256": "e8cd53d1c36ac694e2fb2e60d6cba3f50ae87dd6f12dbe985fd0cf1c2c3ebc85",
+            "start_byte": 354067,
+            "end_byte": 354338,
+            "slice_sha256": "bc88e50d112b094e6400c718989a35ee1d81490a9cbd0b6c6dfbc8230f37f2f0"
+          },
+          {
+            "id": "gcp.compute.disk.unit.physicalBlockSizeBytes",
+            "source_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+            "source_path": "refresh-20261102/compute-v1.discovery.json",
+            "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+            "start_byte": 5838241,
+            "end_byte": 5838640,
+            "slice_sha256": "3026fa701547f63ad916b22bfdfd1986922279d707b4367dac1938b914dfb231"
+          },
+          {
+            "id": "gcp.compute.disk.unit.provisionedIops",
+            "source_uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+            "source_path": "refresh-20261102/compute-v1.discovery.json",
+            "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+            "start_byte": 5830523,
+            "end_byte": 5830855,
+            "slice_sha256": "5f8291f4ba59fe3c7b0d80d046adfd1d519afc0e7932b084b5e57b83150f1b06"
           },
           {
             "id": "v3.gcp-compute.076277336c82e1e03c68",
@@ -3804,25 +3878,26 @@
             "source_field_id": "accessMode",
             "disposition": "maps_exact_source_fact",
             "explicit_null_disposition": "source_private_only",
-            "target_field": "multi_attach_state",
+            "target_field": "permitted_volume_access_mode",
             "projection": "evidence_closed_scalar",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.multi_attach_state",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.permitted_volume_access_mode",
             "value_recipe": {
-              "source_to_neutral": {
-                "READ_WRITE": "disabled",
-                "READ_WRITE_MANY": "enabled"
-              },
               "evidence_refs": [
                 "v3.gcp-compute.181481ad8586c06a9761"
               ],
+              "source_to_neutral": {
+                "READ_WRITE_SINGLE": "single_read_write",
+                "READ_WRITE_MANY": "multiple_read_write",
+                "READ_ONLY_MANY": "multiple_read_only"
+              },
               "unknown_value_policy": "refuse"
             },
             "explicit_absent_disposition": "map_to_unknown",
             "semantic_evidence_refs": [
               "v3.gcp-compute.181481ad8586c06a9761"
             ],
-            "semantic_path": "storage.multi_attach_state",
-            "target_value_kind": "boolean_state",
+            "semantic_path": "attachment.permitted_access_mode",
+            "target_value_kind": "source_to_neutral_enum",
             "target_cardinality": "one"
           },
           {
@@ -3835,14 +3910,16 @@
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.processor_architecture",
             "value_recipe": {
               "source_to_neutral": {
-                "I386": "i386",
                 "ARM64": "arm64",
                 "X86_64": "x86_64"
               },
               "evidence_refs": [
                 "v3.gcp-compute.14a5b0ebce6561084b1f"
               ],
-              "unknown_value_policy": "refuse"
+              "unknown_value_policy": "refuse",
+              "unsupported_source_values": [
+                "ARCHITECTURE_UNSPECIFIED"
+              ]
             },
             "explicit_absent_disposition": "map_to_unknown",
             "semantic_evidence_refs": [
@@ -3930,13 +4007,46 @@
                 "members": [
                   {
                     "source": "asyncReplicationDisk",
-                    "target": "async_replication_disk_reference",
+                    "target": "replication_disk",
                     "rule": {
-                      "kind": "scoped_reference"
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "consistencyGroupPolicy",
+                          "target": "consistency_group_policy_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "consistencyGroupPolicyId",
+                          "rule": {
+                            "kind": "private",
+                            "reason_code": "provider_internal",
+                            "rationale": "Provider numeric policy identifier duplicates the scoped policy relationship."
+                          }
+                        },
+                        {
+                          "source": "disk",
+                          "target": "source_disk_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "diskId",
+                          "rule": {
+                            "kind": "private",
+                            "reason_code": "provider_internal",
+                            "rationale": "Provider numeric disk identifier is not a neutral relationship."
+                          }
+                        }
+                      ]
                     }
                   }
                 ]
-              }
+              },
+              "key_kind": "scoped_reference"
             },
             "semantic_evidence_refs": [
               "v3.gcp-compute.67c5a11ca68e4c90c32c",
@@ -3944,7 +4054,7 @@
               "v3.gcp-compute.eb88fdce5347cfa774a3"
             ],
             "target_value_kind": "closed_observation",
-            "target_cardinality": "one"
+            "target_cardinality": "many"
           },
           {
             "disposition": "maps_exact_source_fact",
@@ -4177,7 +4287,7 @@
             "semantic_evidence_refs": [
               "v3.gcp-compute.e680b7740bdcf3fc008f"
             ],
-            "target_value_kind": "closed_observation",
+            "target_value_kind": "utc_timestamp",
             "target_cardinality": "one"
           },
           {
@@ -4193,7 +4303,7 @@
             "semantic_evidence_refs": [
               "v3.gcp-compute.204dcbb0220a45ab2da2"
             ],
-            "target_value_kind": "closed_observation",
+            "target_value_kind": "utc_timestamp",
             "target_cardinality": "one"
           },
           {
@@ -4230,7 +4340,7 @@
             ],
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.license_references",
             "target_value_kind": "closed_observation",
-            "target_cardinality": "one"
+            "target_cardinality": "many"
           },
           {
             "source_pointer": "/locationHint",
@@ -4288,7 +4398,7 @@
             "disposition": "maps_exact_source_fact",
             "explicit_null_disposition": "source_private_only",
             "target_field": "physical_block_size_bytes",
-            "projection": "exact",
+            "projection": "integer_to_canonical_decimal",
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.physical_block_size_bytes",
             "semantic_path": "storage.physical_block_size_bytes",
             "source_unit": "bytes",
@@ -4298,7 +4408,9 @@
             ],
             "target_value_kind": "canonical_integer",
             "target_cardinality": "one",
-            "target_unit_dimension": "bytes"
+            "target_unit_dimension": "bytes",
+            "source_numeric_maximum": "9223372036854775807",
+            "unit_evidence_ref": "gcp.compute.disk.unit.physicalBlockSizeBytes"
           },
           {
             "source_pointer": "/provisionedIops",
@@ -4306,7 +4418,7 @@
             "disposition": "maps_exact_source_fact",
             "explicit_null_disposition": "source_private_only",
             "target_field": "provisioned_iops",
-            "projection": "exact",
+            "projection": "integer_to_canonical_decimal",
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.provisioned_iops",
             "semantic_path": "storage.provisioned_iops",
             "explicit_absent_disposition": "map_to_unknown",
@@ -4315,23 +4427,30 @@
             ],
             "target_value_kind": "canonical_integer",
             "target_cardinality": "one",
-            "target_unit_dimension": "iops"
+            "target_unit_dimension": "iops",
+            "source_unit": "iops",
+            "source_numeric_maximum": "9223372036854775807",
+            "unit_evidence_ref": "gcp.compute.disk.unit.provisionedIops"
           },
           {
             "source_pointer": "/provisionedThroughput",
             "source_field_id": "provisionedThroughput",
             "disposition": "maps_exact_source_fact",
             "explicit_null_disposition": "source_private_only",
-            "target_field": "provisioned_throughput",
-            "projection": "exact",
-            "semantic_path": "storage.provisioned_throughput",
+            "target_field": "provisioned_throughput_bytes_per_second",
+            "projection": "mebibytes_per_second_to_bytes_per_second",
+            "semantic_path": "storage.provisioned_throughput_bytes_per_second",
             "explicit_absent_disposition": "map_to_unknown",
             "semantic_evidence_refs": [
               "v3.gcp-compute.e97359d8a64efc80bb5e"
             ],
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.provisioned_throughput",
-            "target_value_kind": "closed_observation",
-            "target_cardinality": "one"
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.provisioned_throughput_bytes_per_second",
+            "target_value_kind": "canonical_integer",
+            "target_cardinality": "one",
+            "source_unit": "mib_per_second",
+            "unit_evidence_ref": "gcp.hyperdisk.provisioned_throughput_mib_per_second",
+            "target_unit_dimension": "bytes_per_second",
+            "source_numeric_maximum": "9223372036854775807"
           },
           {
             "source_pointer": "/region",
@@ -4373,7 +4492,7 @@
             ],
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.replica_zone_relationships",
             "target_value_kind": "scope_resolved_opaque_reference",
-            "target_cardinality": "one",
+            "target_cardinality": "many",
             "target_reference_target": "CloudNeutralScopedBinding"
           },
           {
@@ -4399,7 +4518,7 @@
             ],
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.resource_policy_relationships",
             "target_value_kind": "scope_resolved_opaque_reference",
-            "target_cardinality": "one",
+            "target_cardinality": "many",
             "target_reference_target": "CloudNeutralScopedBinding"
           },
           {
@@ -4450,7 +4569,8 @@
                           }
                         }
                       ]
-                    }
+                    },
+                    "key_kind": "scoped_reference"
                   }
                 }
               ]
@@ -4852,18 +4972,19 @@
           {
             "source_pointer": "/type",
             "source_field_id": "type",
-            "disposition": "maps_exact_source_fact",
+            "disposition": "maps_exact_relationship_fact",
             "explicit_null_disposition": "source_private_only",
-            "target_field": "storage_performance_class",
-            "projection": "exact",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.storage_performance_class",
+            "target_field": "volume_product_type_relationship",
+            "projection": "relationship_reference",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.volume_product_type_relationship",
             "explicit_absent_disposition": "map_to_unknown",
             "semantic_evidence_refs": [
               "v3.gcp-compute.e9e718626c9dc3795db1"
             ],
-            "semantic_path": "storage.reported_performance_class",
-            "target_value_kind": "exact_token",
-            "target_cardinality": "one"
+            "semantic_path": "catalog.volume_product_type",
+            "target_value_kind": "scope_resolved_opaque_reference",
+            "target_cardinality": "one",
+            "target_reference_target": "CloudNeutralScopedBinding"
           },
           {
             "source_pointer": "/zone",

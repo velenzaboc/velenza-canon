@@ -1,0 +1,12 @@
+{
+  "list_buckets_page": {
+    "object_pointer": "/ListAllMyBucketsResult/Buckets/Bucket",
+    "identity_source_pointer": "/Name",
+    "identity_source_field_id": "Name",
+    "continuation_pointer": "/ListAllMyBucketsResult/ContinuationToken",
+    "observation_state": "incomplete",
+    "coverage": "partial_page",
+    "creation_date_is_not_incarnation_evidence": true,
+    "general_purpose_list_buckets_does_not_require_or_emit_bucket_arn": true
+  }
+}

@@ -45,6 +45,8 @@ func validateCloudAbsentDisposition(mapping CloudMappingContractField, target Cl
 		state = "absent"
 	case CloudAbsentToUnknown:
 		state = "unknown"
+	case CloudAbsentToNotObserved:
+		state = "not_observed"
 	default:
 		return fmt.Errorf("unknown absent disposition for %q", mapping.SourceFieldID)
 	}

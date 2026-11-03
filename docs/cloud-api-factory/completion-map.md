@@ -15,15 +15,24 @@ The first three boxes can be prepared in Arbor before the runtime is ready. The 
 
 ## Reuse and decomposition
 
+The current four-service candidate uses Infrastructure Resource Record v3.
+Its [scope](../../testdata/cloudapi/mapping-package-scope-v3.json) selects six
+resources and nine operations. Of the original 200 unsupported occurrences,
+the successor maps 4 in S3, 72 in EC2, 28 in Cloud Storage and 64 in Compute.
+The remaining 1, 4, 4 and 23 respectively have explicit source-private decisions.
+The 55 previously accepted dispositions retain their recipes. Reconstruct the
+package and its occurrence-level crosswalk with the
+[factory verification commands](extending-the-factory.md).
+
 The composition is provider → service → API surface/version → resource → operation. A resource may participate in several operations and an operation may concern several resources, so these are typed graph references, not duplicated nested documents.
 
 The provider owns common authentication requirements and common profile definitions. A service composition references those definitions and carries its signing-service name, endpoint rules, API version, wire protocol, paging and permission residuals. It cannot widen another service's credential grant. The customer source identity is distinct from the provider catalog identity; updating a model or mapping does not create another customer source.
 
-Each selected response object has a complete source field roster derived from its retained model. Each direct field, or every leaf of an explicitly decomposed parent, receives a checked disposition. A private or unsupported disposition is visible unfinished semantic coverage, not a successful translation. Nested selection preserves source cardinality and documented wire names. Service-specific lifecycle translations and unit evidence are data consumed by shared machinery.
+Each selected response object has a complete source field roster derived from its retained model. Each direct field, or every leaf of an explicitly decomposed parent, receives a checked disposition. A private disposition records why the source fact stays within its owner boundary. An unsupported disposition records an open mapping gap. Nested selection preserves source cardinality and documented wire names. Service-specific lifecycle translations and unit evidence are data consumed by shared machinery.
 
 ## What the source-neutral owner covers
 
-Infrastructure Resource Record version 2 declares scope, storage container, compute instance and compute volume. Its machine-readable target schema is a closed contract, bound to the exact canonical owner and validator profile. The portable export keeps those hashes and coordinates separate from its own byte hash.
+Infrastructure Resource Record v3 retains the four v2 classes for scope, storage container, compute instance and compute volume. It adds the neutral field dictionary used by the four-service successor. Its machine-readable target schema is a closed contract, bound to the exact canonical owner and validator profile. The portable export keeps those hashes and coordinates separate from its own byte hash.
 
 The contract covers opaque identity, explicit scope references, labels, selected observed configuration, lifecycle, timestamps, exact byte capacities and bounded attachment relationships. Presence is explicit: present, absent, not observed, unsupported, unknown, inaccessible, redacted and permitted null are distinct. Required fields may carry a legal uncertainty arm; a missing provider fact cannot become a fabricated positive fact.
 

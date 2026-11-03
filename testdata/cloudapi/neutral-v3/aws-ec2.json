@@ -43,7 +43,7 @@
             "source_field_id": "AmiLaunchIndex",
             "disposition": "maps_exact_source_fact",
             "target_field": "launch_index",
-            "projection": "exact",
+            "projection": "integer_to_canonical_decimal",
             "semantic_path": "inventory.launch_index",
             "explicit_null_disposition": "map_to_absent",
             "explicit_absent_disposition": "map_to_absent",
@@ -53,8 +53,12 @@
               "v3.aws-ec2.e8edb116cd39acb405ec"
             ],
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.launch_index",
-            "target_value_kind": "exact_token",
-            "target_cardinality": "one"
+            "target_value_kind": "canonical_integer",
+            "target_cardinality": "one",
+            "source_unit": "index",
+            "source_numeric_maximum": "2147483647",
+            "unit_evidence_ref": "v3.aws-ec2.1550830c6e159d2f495f",
+            "target_unit_dimension": "index"
           },
           {
             "source_pointer": "/Architecture",
@@ -76,18 +80,17 @@
               "source_to_neutral": {
                 "i386": "i386",
                 "x86_64": "x86_64",
-                "arm64": "arm64"
+                "arm64": "arm64",
+                "x86_64_mac": "x86_64",
+                "arm64_mac": "arm64"
               },
-              "unsupported_source_values": [
-                "x86_64_mac",
-                "arm64_mac"
-              ],
               "unknown_value_policy": "refuse"
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.595e7e523da1485baa9e",
               "v3.aws-ec2.a4255a9988093f3de6d9"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/BlockDeviceMappings",
@@ -102,6 +105,126 @@
             "target_cardinality": "many",
             "structured_recipe": {
               "kind": "list",
+              "item": {
+                "kind": "object",
+                "members": [
+                  {
+                    "source": "DeviceName",
+                    "target": "device_name",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "Ebs",
+                    "target": "block_volume_attachment",
+                    "rule": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "AttachTime",
+                          "target": "attachment_time",
+                          "rule": {
+                            "kind": "utc_instant"
+                          }
+                        },
+                        {
+                          "source": "DeleteOnTermination",
+                          "target": "delete_on_termination",
+                          "rule": {
+                            "kind": "boolean"
+                          }
+                        },
+                        {
+                          "source": "Status",
+                          "target": "reported_state",
+                          "rule": {
+                            "kind": "enum",
+                            "values": {
+                              "attaching": "attaching",
+                              "attached": "attached",
+                              "detaching": "detaching",
+                              "detached": "detached"
+                            }
+                          }
+                        },
+                        {
+                          "source": "VolumeId",
+                          "target": "volume_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "AssociatedResource",
+                          "target": "associated_resource_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "VolumeOwnerId",
+                          "target": "volume_owner_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "Operator",
+                          "target": "management_observation",
+                          "rule": {
+                            "kind": "object",
+                            "members": [
+                              {
+                                "source": "Managed",
+                                "target": "is_managed",
+                                "rule": {
+                                  "kind": "boolean"
+                                }
+                              },
+                              {
+                                "source": "Principal",
+                                "target": "principal_reference",
+                                "rule": {
+                                  "kind": "scoped_reference"
+                                }
+                              },
+                              {
+                                "source": "HiddenByDefault",
+                                "target": "hidden_by_default",
+                                "rule": {
+                                  "kind": "boolean"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "source": "EbsCardIndex",
+                          "target": "storage_card_index",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "unobserved_members": [
+                  "attachment_mode",
+                  "attachment_persistence_type",
+                  "auto_delete_state",
+                  "boot_state",
+                  "device_index",
+                  "guest_features",
+                  "interface_type",
+                  "key_configuration",
+                  "license_references",
+                  "local_storage_saved_state",
+                  "processor_architecture",
+                  "source_resource_reference"
+                ]
+              },
               "evidence_refs": [
                 "v3.aws-ec2.59ef36fd8aa4961eeb21",
                 "v3.aws-ec2.7aaf8be24c9d95057fda",
@@ -113,34 +236,7 @@
                 "v3.aws-ec2.e8edb116cd39acb405ec",
                 "v3.aws-ec2.f0bac2e2a878174bb108",
                 "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ],
-              "item": {
-                "kind": "object",
-                "unobserved_members": [
-                  "boot_state",
-                  "auto_delete_state",
-                  "attachment_mode",
-                  "interface_type",
-                  "device_index"
-                ],
-                "members": [
-                  {
-                    "source": "DeviceName",
-                    "target": "device_name",
-                    "rule": {
-                      "kind": "string"
-                    }
-                  },
-                  {
-                    "source": "Ebs",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  }
-                ]
-              }
+              ]
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.59ef36fd8aa4961eeb21",
@@ -153,7 +249,8 @@
               "v3.aws-ec2.e8edb116cd39acb405ec",
               "v3.aws-ec2.f0bac2e2a878174bb108",
               "v3.aws-ec2.5f57b08a24c8cf791ea2"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/BootMode",
@@ -182,7 +279,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.083dd741185e3deb9253",
               "v3.aws-ec2.f5f7b77aada3875924f5"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/CapacityBlockId",
@@ -257,10 +355,25 @@
                 {
                   "source": "CapacityReservationTarget",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Raw reservation and group identifiers require a scoped resolver."
-                  }
+                    "kind": "object",
+                    "members": [
+                      {
+                        "source": "CapacityReservationId",
+                        "target": "reservation_reference",
+                        "rule": {
+                          "kind": "scoped_reference"
+                        }
+                      },
+                      {
+                        "source": "CapacityReservationResourceGroupArn",
+                        "target": "reservation_group_reference",
+                        "rule": {
+                          "kind": "scoped_reference"
+                        }
+                      }
+                    ]
+                  },
+                  "target": "requested_reservation_target"
                 }
               ]
             },
@@ -322,18 +435,24 @@
                 {
                   "source": "AmdSevSnp",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific selector."
-                  }
+                    "kind": "enum",
+                    "values": {
+                      "enabled": "enabled",
+                      "disabled": "disabled"
+                    }
+                  },
+                  "target": "secure_nested_paging_setting"
                 },
                 {
                   "source": "NestedVirtualization",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific virtualization selector."
-                  }
+                    "kind": "enum",
+                    "values": {
+                      "enabled": "enabled",
+                      "disabled": "disabled"
+                    }
+                  },
+                  "target": "nested_virtualization_setting"
                 }
               ]
             },
@@ -343,7 +462,8 @@
               "v3.aws-ec2.896de77e35d8164da5a2",
               "v3.aws-ec2.e8edb116cd39acb405ec",
               "v3.aws-ec2.3837b7388b9b01c4f265"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/CurrentInstanceBootMode",
@@ -364,24 +484,24 @@
               ],
               "source_to_neutral": {
                 "legacy-bios": "legacy_bios",
-                "uefi": "uefi",
-                "uefi-preferred": "uefi_preferred"
+                "uefi": "uefi"
               },
               "unknown_value_policy": "refuse"
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.f81390462bff9f8221ec",
               "v3.aws-ec2.fca58ef2e6337d0c444b"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/EbsOptimized",
             "source_field_id": "EbsOptimized",
             "disposition": "maps_exact_source_fact",
-            "target_field": "ebs_optimized_state",
+            "target_field": "block_storage_io_optimization_state",
             "projection": "evidence_closed_scalar",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.ebs_optimized_state",
-            "semantic_path": "compute.ebs_optimized_state",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.block_storage_io_optimization_state",
+            "semantic_path": "compute.block_storage_io_optimization",
             "target_value_kind": "boolean_state",
             "target_cardinality": "one",
             "explicit_null_disposition": "map_to_absent",
@@ -400,7 +520,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.7aaf8be24c9d95057fda",
               "v3.aws-ec2.7814bf44a95bd7dbd7c2"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/ElasticGpuAssociations",
@@ -429,18 +550,16 @@
                   {
                     "source": "ElasticGpuId",
                     "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Raw accelerator identifier is lookup-only."
-                    }
+                      "kind": "scoped_reference"
+                    },
+                    "target": "accelerator_reference"
                   },
                   {
                     "source": "ElasticGpuAssociationId",
                     "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Raw association identifier."
-                    }
+                      "kind": "scoped_reference"
+                    },
+                    "target": "association_reference"
                   },
                   {
                     "source": "ElasticGpuAssociationState",
@@ -494,18 +613,16 @@
                   {
                     "source": "ElasticInferenceAcceleratorArn",
                     "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Raw provider ARN."
-                    }
+                      "kind": "scoped_reference"
+                    },
+                    "target": "accelerator_reference"
                   },
                   {
                     "source": "ElasticInferenceAcceleratorAssociationId",
                     "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Raw association identifier."
-                    }
+                      "kind": "scoped_reference"
+                    },
+                    "target": "association_reference"
                   },
                   {
                     "source": "ElasticInferenceAcceleratorAssociationState",
@@ -558,7 +675,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.7aaf8be24c9d95057fda",
               "v3.aws-ec2.aa6c34bbf92f50ae4453"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_field_id": "Hypervisor",
@@ -624,15 +742,8 @@
             "source_field_id": "ImageId",
             "disposition": "maps_exact_relationship_fact",
             "target_field": "image_relationship",
-            "projection": "typed_structure",
+            "projection": "relationship_reference",
             "semantic_path": "lineage.image",
-            "structured_recipe": {
-              "kind": "scoped_reference",
-              "evidence_refs": [
-                "v3.aws-ec2.80c6757ccc15d83b8598",
-                "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ]
-            },
             "explicit_null_disposition": "map_to_absent",
             "explicit_absent_disposition": "map_to_absent",
             "source_pointer": "/ImageId",
@@ -680,20 +791,21 @@
           },
           {
             "source_field_id": "InstanceType",
-            "disposition": "maps_exact_source_fact",
-            "target_field": "machine_type_observation",
-            "projection": "exact",
-            "semantic_path": "compute.machine_type",
-            "explicit_null_disposition": "map_to_absent",
-            "explicit_absent_disposition": "map_to_absent",
+            "disposition": "maps_exact_relationship_fact",
+            "target_field": "compute_product_type_relationship",
+            "projection": "relationship_reference",
+            "semantic_path": "catalog.compute_product_type",
+            "explicit_null_disposition": "source_private_only",
+            "explicit_absent_disposition": "map_to_unknown",
             "source_pointer": "/InstanceType",
             "semantic_evidence_refs": [
               "v3.aws-ec2.d80f0baa32674d9b9e0a",
               "v3.aws-ec2.caf5ccf1f84f3d1ef6d8"
             ],
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.machine_type_observation",
-            "target_value_kind": "exact_token",
-            "target_cardinality": "one"
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.compute_product_type_relationship",
+            "target_value_kind": "scope_resolved_opaque_reference",
+            "target_cardinality": "one",
+            "target_reference_target": "CloudNeutralScopedBinding"
           },
           {
             "source_pointer": "/Ipv6Address",
@@ -716,15 +828,8 @@
             "source_field_id": "KernelId",
             "disposition": "maps_exact_relationship_fact",
             "target_field": "kernel_relationship",
-            "projection": "typed_structure",
+            "projection": "relationship_reference",
             "semantic_path": "compute.kernel",
-            "structured_recipe": {
-              "kind": "scoped_reference",
-              "evidence_refs": [
-                "v3.aws-ec2.0dd0d737155ebc7bdc97",
-                "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ]
-            },
             "explicit_null_disposition": "map_to_absent",
             "explicit_absent_disposition": "map_to_absent",
             "source_pointer": "/KernelId",
@@ -740,15 +845,8 @@
             "source_field_id": "KeyName",
             "disposition": "maps_exact_relationship_fact",
             "target_field": "key_pair_relationship",
-            "projection": "typed_structure",
+            "projection": "relationship_reference",
             "semantic_path": "access.key_pair",
-            "structured_recipe": {
-              "kind": "scoped_reference",
-              "evidence_refs": [
-                "v3.aws-ec2.f6904e2c2b79544b0689",
-                "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ]
-            },
             "explicit_null_disposition": "map_to_absent",
             "explicit_absent_disposition": "map_to_absent",
             "source_pointer": "/KeyName",
@@ -896,10 +994,13 @@
                 {
                   "source": "State",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Transition state is not effective configuration."
-                  }
+                    "kind": "enum",
+                    "values": {
+                      "pending": "pending",
+                      "applied": "applied"
+                    }
+                  },
+                  "target": "configuration_application_state"
                 },
                 {
                   "source": "HttpTokens",
@@ -963,7 +1064,8 @@
               "v3.aws-ec2.742de070f6bfc1bb308f",
               "v3.aws-ec2.bab98f9b095d2b993a2c",
               "v3.aws-ec2.e8edb116cd39acb405ec"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/NetworkInterfaces",
@@ -978,6 +1080,480 @@
             "target_cardinality": "many",
             "structured_recipe": {
               "kind": "list",
+              "item": {
+                "kind": "object",
+                "members": [
+                  {
+                    "source": "Association",
+                    "target": "public_address_association",
+                    "rule": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "CarrierIp",
+                          "target": "carrier_address",
+                          "rule": {
+                            "kind": "string"
+                          }
+                        },
+                        {
+                          "source": "CustomerOwnedIp",
+                          "target": "customer_owned_address",
+                          "rule": {
+                            "kind": "string"
+                          }
+                        },
+                        {
+                          "source": "IpOwnerId",
+                          "target": "address_owner_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "PublicDnsName",
+                          "target": "public_dns_name",
+                          "rule": {
+                            "kind": "string"
+                          }
+                        },
+                        {
+                          "source": "PublicIp",
+                          "target": "public_address",
+                          "rule": {
+                            "kind": "string"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "source": "Attachment",
+                    "target": "attachment_observation",
+                    "rule": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "AttachTime",
+                          "target": "attachment_time",
+                          "rule": {
+                            "kind": "utc_instant"
+                          }
+                        },
+                        {
+                          "source": "AttachmentId",
+                          "target": "attachment_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "DeleteOnTermination",
+                          "target": "delete_on_termination",
+                          "rule": {
+                            "kind": "boolean"
+                          }
+                        },
+                        {
+                          "source": "DeviceIndex",
+                          "target": "device_index",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        },
+                        {
+                          "source": "Status",
+                          "target": "reported_state",
+                          "rule": {
+                            "kind": "enum",
+                            "values": {
+                              "attaching": "attaching",
+                              "attached": "attached",
+                              "detaching": "detaching",
+                              "detached": "detached"
+                            }
+                          }
+                        },
+                        {
+                          "source": "NetworkCardIndex",
+                          "target": "network_card_index",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        },
+                        {
+                          "source": "EnaSrdSpecification",
+                          "target": "scalable_reliable_datagram_configuration",
+                          "rule": {
+                            "kind": "object",
+                            "members": [
+                              {
+                                "source": "EnaSrdEnabled",
+                                "target": "enabled",
+                                "rule": {
+                                  "kind": "boolean"
+                                }
+                              },
+                              {
+                                "source": "EnaSrdUdpSpecification",
+                                "target": "udp_configuration",
+                                "rule": {
+                                  "kind": "object",
+                                  "members": [
+                                    {
+                                      "source": "EnaSrdUdpEnabled",
+                                      "target": "enabled",
+                                      "rule": {
+                                        "kind": "boolean"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "source": "EnaQueueCount",
+                          "target": "network_adapter_queue_count",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "source": "Description",
+                    "target": "description",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "Groups",
+                    "target": "security_group_memberships",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "object",
+                        "members": [
+                          {
+                            "source": "GroupId",
+                            "target": "security_group_reference",
+                            "rule": {
+                              "kind": "scoped_reference"
+                            }
+                          },
+                          {
+                            "source": "GroupName",
+                            "target": "display_name",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "source": "Ipv6Addresses",
+                    "target": "ipv6_addresses",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "object",
+                        "members": [
+                          {
+                            "source": "Ipv6Address",
+                            "target": "address",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          },
+                          {
+                            "source": "IsPrimaryIpv6",
+                            "target": "is_primary",
+                            "rule": {
+                              "kind": "boolean"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "source": "MacAddress",
+                    "target": "link_layer_address",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "NetworkInterfaceId",
+                    "target": "interface_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "OwnerId",
+                    "target": "owner_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "PrivateDnsName",
+                    "target": "private_dns_name",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "PrivateIpAddress",
+                    "target": "private_address",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "PrivateIpAddresses",
+                    "target": "private_address_observations",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "object",
+                        "members": [
+                          {
+                            "source": "Association",
+                            "target": "public_address_association",
+                            "rule": {
+                              "kind": "object",
+                              "members": [
+                                {
+                                  "source": "CarrierIp",
+                                  "target": "carrier_address",
+                                  "rule": {
+                                    "kind": "string"
+                                  }
+                                },
+                                {
+                                  "source": "CustomerOwnedIp",
+                                  "target": "customer_owned_address",
+                                  "rule": {
+                                    "kind": "string"
+                                  }
+                                },
+                                {
+                                  "source": "IpOwnerId",
+                                  "target": "address_owner_reference",
+                                  "rule": {
+                                    "kind": "scoped_reference"
+                                  }
+                                },
+                                {
+                                  "source": "PublicDnsName",
+                                  "target": "public_dns_name",
+                                  "rule": {
+                                    "kind": "string"
+                                  }
+                                },
+                                {
+                                  "source": "PublicIp",
+                                  "target": "public_address",
+                                  "rule": {
+                                    "kind": "string"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "source": "Primary",
+                            "target": "is_primary",
+                            "rule": {
+                              "kind": "boolean"
+                            }
+                          },
+                          {
+                            "source": "PrivateDnsName",
+                            "target": "private_dns_name",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          },
+                          {
+                            "source": "PrivateIpAddress",
+                            "target": "private_address",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "source": "SourceDestCheck",
+                    "target": "source_destination_check_enabled",
+                    "rule": {
+                      "kind": "boolean"
+                    }
+                  },
+                  {
+                    "source": "Status",
+                    "target": "reported_state",
+                    "rule": {
+                      "kind": "enum",
+                      "values": {
+                        "available": "available",
+                        "associated": "associated",
+                        "attaching": "attaching",
+                        "in-use": "in_use",
+                        "detaching": "detaching"
+                      }
+                    }
+                  },
+                  {
+                    "source": "SubnetId",
+                    "target": "subnet_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "VpcId",
+                    "target": "network_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "InterfaceType",
+                    "target": "interface_type",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "Ipv4Prefixes",
+                    "target": "ipv4_prefixes",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "object",
+                        "members": [
+                          {
+                            "source": "Ipv4Prefix",
+                            "target": "prefix",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "source": "Ipv6Prefixes",
+                    "target": "ipv6_prefixes",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "object",
+                        "members": [
+                          {
+                            "source": "Ipv6Prefix",
+                            "target": "prefix",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "source": "ConnectionTrackingConfiguration",
+                    "target": "connection_tracking_configuration",
+                    "rule": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "TcpEstablishedTimeout",
+                          "target": "established_tcp_idle_timeout_seconds",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        },
+                        {
+                          "source": "UdpStreamTimeout",
+                          "target": "bidirectional_udp_idle_timeout_seconds",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        },
+                        {
+                          "source": "UdpTimeout",
+                          "target": "unidirectional_udp_idle_timeout_seconds",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "source": "Operator",
+                    "target": "management_observation",
+                    "rule": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "Managed",
+                          "target": "is_managed",
+                          "rule": {
+                            "kind": "boolean"
+                          }
+                        },
+                        {
+                          "source": "Principal",
+                          "target": "principal_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "HiddenByDefault",
+                          "target": "hidden_by_default",
+                          "rule": {
+                            "kind": "boolean"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "unobserved_members": [
+                  "access_configurations",
+                  "alias_ipv4_ranges",
+                  "alias_ipv6_ranges",
+                  "interface_name",
+                  "internal_ipv6_prefix_length",
+                  "ipv6_access_configurations",
+                  "ipv6_access_type",
+                  "ipv6_address",
+                  "multicast_query_mode",
+                  "network_attachment_reference",
+                  "network_scoped_dns_enabled",
+                  "parent_interface_reference",
+                  "queue_count",
+                  "stack_type",
+                  "subnetwork_reference",
+                  "vlan_identifier"
+                ]
+              },
               "evidence_refs": [
                 "v3.aws-ec2.59ef36fd8aa4961eeb21",
                 "v3.aws-ec2.7aaf8be24c9d95057fda",
@@ -1004,176 +1580,7 @@
                 "v3.aws-ec2.bdce67c4e080d1bc3ee0",
                 "v3.aws-ec2.f0bac2e2a878174bb108",
                 "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ],
-              "item": {
-                "kind": "object",
-                "unobserved_members": [
-                  "stack_type",
-                  "access_configurations",
-                  "network_reference",
-                  "subnetwork_reference"
-                ],
-                "members": [
-                  {
-                    "source": "Association",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Attachment",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Description",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Groups",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "security_sensitive",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Ipv6Addresses",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "security_sensitive",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "MacAddress",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "NetworkInterfaceId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "OwnerId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "PrivateDnsName",
-                    "rule": {
-                      "kind": "string"
-                    },
-                    "target": "private_dns_name"
-                  },
-                  {
-                    "source": "PrivateIpAddress",
-                    "rule": {
-                      "kind": "string"
-                    },
-                    "target": "private_address"
-                  },
-                  {
-                    "source": "PrivateIpAddresses",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "security_sensitive",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "SourceDestCheck",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Status",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "SubnetId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "VpcId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "InterfaceType",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Ipv4Prefixes",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Ipv6Prefixes",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "ConnectionTrackingConfiguration",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Operator",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  }
-                ]
-              }
+              ]
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.59ef36fd8aa4961eeb21",
@@ -1201,7 +1608,8 @@
               "v3.aws-ec2.bdce67c4e080d1bc3ee0",
               "v3.aws-ec2.f0bac2e2a878174bb108",
               "v3.aws-ec2.5f57b08a24c8cf791ea2"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/NetworkPerformanceOptions",
@@ -1229,13 +1637,17 @@
                     "kind": "string"
                   }
                 }
+              ],
+              "unobserved_members": [
+                "total_egress_bandwidth_tier"
               ]
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.06725f5fe6558fd9163f",
               "v3.aws-ec2.4efc47d636adf7d7be39",
               "v3.aws-ec2.7f84529f7968c379a804"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/Operator",
@@ -1279,10 +1691,13 @@
                 {
                   "source": "HiddenByDefault",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider visibility setting."
-                  }
+                    "kind": "enum",
+                    "values": {
+                      "true": "enabled",
+                      "false": "disabled"
+                    }
+                  },
+                  "target": "hidden_by_default_state"
                 }
               ]
             },
@@ -1338,74 +1753,71 @@
                 {
                   "source": "AvailabilityZoneId",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "scoped_reference"
+                  },
+                  "target": "zone_id_reference"
                 },
                 {
                   "source": "Affinity",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "string"
+                  },
+                  "target": "host_affinity_setting"
                 },
                 {
                   "source": "GroupName",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "scoped_reference"
+                  },
+                  "target": "placement_group_name_reference"
                 },
                 {
                   "source": "PartitionNumber",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "integer_decimal"
+                  },
+                  "target": "partition_number"
                 },
                 {
                   "source": "HostId",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "scoped_reference"
+                  },
+                  "target": "host_reference"
                 },
                 {
                   "source": "Tenancy",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "enum",
+                    "values": {
+                      "default": "default",
+                      "dedicated": "dedicated",
+                      "host": "host"
+                    }
+                  },
+                  "target": "tenancy"
                 },
                 {
                   "source": "SpreadDomain",
                   "rule": {
                     "kind": "private",
                     "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
+                    "rationale": "The retained placement model reserves this member for future use and defines no observed domain."
                   }
                 },
                 {
                   "source": "HostResourceGroupArn",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "scoped_reference"
+                  },
+                  "target": "host_resource_group_reference"
                 },
                 {
                   "source": "GroupId",
                   "rule": {
-                    "kind": "private",
-                    "reason_code": "provider_internal",
-                    "rationale": "Provider-specific member has no independent neutral target."
-                  }
+                    "kind": "scoped_reference"
+                  },
+                  "target": "placement_group_id_reference"
                 },
                 {
                   "source": "AvailabilityZone",
@@ -1425,7 +1837,8 @@
               "v3.aws-ec2.87c1900a2ba895b29fe4",
               "v3.aws-ec2.5f57b08a24c8cf791ea2",
               "v3.aws-ec2.f8fb595e6aab32e74837"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_field_id": "Platform",
@@ -1468,8 +1881,10 @@
             "explicit_null_disposition": "map_to_absent",
             "semantic_evidence_refs": [
               "v3.aws-ec2.de1a8222735c0059d74e",
-              "v3.aws-ec2.5f57b08a24c8cf791ea2"
-            ]
+              "v3.aws-ec2.5f57b08a24c8cf791ea2",
+              "aws.billing.definition.PlatformDetails"
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/PrivateDnsName",
@@ -1536,7 +1951,8 @@
               "v3.aws-ec2.56cfe891eca94702399f",
               "v3.aws-ec2.6c20a23e39c5197cd3f4",
               "v3.aws-ec2.05551c46e93d6ba9e99a"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/PrivateIpAddress",
@@ -1602,7 +2018,7 @@
             ],
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.product_code_observations",
             "target_value_kind": "exact_token",
-            "target_cardinality": "one"
+            "target_cardinality": "many"
           },
           {
             "source_pointer": "/PublicDnsName",
@@ -1642,15 +2058,8 @@
             "source_field_id": "RamdiskId",
             "disposition": "maps_exact_relationship_fact",
             "target_field": "ramdisk_relationship",
-            "projection": "typed_structure",
+            "projection": "relationship_reference",
             "semantic_path": "compute.ramdisk",
-            "structured_recipe": {
-              "kind": "scoped_reference",
-              "evidence_refs": [
-                "v3.aws-ec2.5de20b6a6f1daec173e7",
-                "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ]
-            },
             "explicit_null_disposition": "map_to_absent",
             "explicit_absent_disposition": "map_to_absent",
             "source_pointer": "/RamdiskId",
@@ -1705,7 +2114,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.3a88e2c78a6b09b3cb34",
               "v3.aws-ec2.e306c2b74143290c10e6"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/SecondaryInterfaces",
@@ -1720,6 +2130,150 @@
             "target_cardinality": "many",
             "structured_recipe": {
               "kind": "list",
+              "item": {
+                "kind": "object",
+                "members": [
+                  {
+                    "source": "Attachment",
+                    "target": "attachment_observation",
+                    "rule": {
+                      "kind": "object",
+                      "members": [
+                        {
+                          "source": "AttachTime",
+                          "target": "attachment_time",
+                          "rule": {
+                            "kind": "utc_instant"
+                          }
+                        },
+                        {
+                          "source": "AttachmentId",
+                          "target": "attachment_reference",
+                          "rule": {
+                            "kind": "scoped_reference"
+                          }
+                        },
+                        {
+                          "source": "DeleteOnTermination",
+                          "target": "delete_on_termination",
+                          "rule": {
+                            "kind": "boolean"
+                          }
+                        },
+                        {
+                          "source": "DeviceIndex",
+                          "target": "device_index",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        },
+                        {
+                          "source": "Status",
+                          "target": "reported_state",
+                          "rule": {
+                            "kind": "enum",
+                            "values": {
+                              "attaching": "attaching",
+                              "attached": "attached",
+                              "detaching": "detaching",
+                              "detached": "detached"
+                            }
+                          }
+                        },
+                        {
+                          "source": "NetworkCardIndex",
+                          "target": "network_card_index",
+                          "rule": {
+                            "kind": "integer_decimal"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "source": "MacAddress",
+                    "target": "link_layer_address",
+                    "rule": {
+                      "kind": "string"
+                    }
+                  },
+                  {
+                    "source": "SecondaryInterfaceId",
+                    "target": "interface_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "OwnerId",
+                    "target": "owner_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "PrivateIpAddresses",
+                    "target": "private_address_observations",
+                    "rule": {
+                      "kind": "list",
+                      "item": {
+                        "kind": "object",
+                        "members": [
+                          {
+                            "source": "PrivateIpAddress",
+                            "target": "private_address",
+                            "rule": {
+                              "kind": "string"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "source": "SourceDestCheck",
+                    "target": "source_destination_check_enabled",
+                    "rule": {
+                      "kind": "boolean"
+                    }
+                  },
+                  {
+                    "source": "Status",
+                    "target": "reported_state",
+                    "rule": {
+                      "kind": "enum",
+                      "values": {
+                        "available": "available",
+                        "in-use": "in_use"
+                      }
+                    }
+                  },
+                  {
+                    "source": "SecondarySubnetId",
+                    "target": "subnet_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "SecondaryNetworkId",
+                    "target": "network_reference",
+                    "rule": {
+                      "kind": "scoped_reference"
+                    }
+                  },
+                  {
+                    "source": "InterfaceType",
+                    "target": "interface_type",
+                    "rule": {
+                      "kind": "enum",
+                      "values": {
+                        "secondary": "secondary"
+                      }
+                    }
+                  }
+                ]
+              },
               "evidence_refs": [
                 "v3.aws-ec2.59ef36fd8aa4961eeb21",
                 "v3.aws-ec2.7aaf8be24c9d95057fda",
@@ -1737,96 +2291,7 @@
                 "v3.aws-ec2.027e4cd3b32d15727546",
                 "v3.aws-ec2.60f922fde8d55fd12040",
                 "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ],
-              "item": {
-                "kind": "object",
-                "unobserved_members": [
-                  "network_reference",
-                  "subnetwork_reference"
-                ],
-                "members": [
-                  {
-                    "source": "Attachment",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "MacAddress",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "SecondaryInterfaceId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "OwnerId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "PrivateIpAddresses",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "security_sensitive",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "SourceDestCheck",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "Status",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "SecondarySubnetId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "SecondaryNetworkId",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  },
-                  {
-                    "source": "InterfaceType",
-                    "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
-                    }
-                  }
-                ]
-              }
+              ]
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.59ef36fd8aa4961eeb21",
@@ -1845,7 +2310,8 @@
               "v3.aws-ec2.027e4cd3b32d15727546",
               "v3.aws-ec2.60f922fde8d55fd12040",
               "v3.aws-ec2.5f57b08a24c8cf791ea2"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/SecurityGroups",
@@ -1860,49 +2326,48 @@
             "target_cardinality": "many",
             "structured_recipe": {
               "kind": "list",
-              "evidence_refs": [
-                "v3.aws-ec2.aa51641e71c69dc49041",
-                "v3.aws-ec2.704d0a2a0df1635ff283",
-                "v3.aws-ec2.8f76ff16846b61b521d4",
-                "v3.aws-ec2.5f57b08a24c8cf791ea2"
-              ],
               "item": {
                 "kind": "object",
                 "members": [
                   {
                     "source": "GroupId",
+                    "target": "security_group_reference",
                     "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
+                      "kind": "scoped_reference"
                     }
                   },
                   {
                     "source": "GroupName",
+                    "target": "display_name",
                     "rule": {
-                      "kind": "private",
-                      "reason_code": "provider_internal",
-                      "rationale": "Provider-specific member has no independent neutral target."
+                      "kind": "string"
                     }
                   }
                 ]
-              }
+              },
+              "evidence_refs": [
+                "v3.aws-ec2.aa51641e71c69dc49041",
+                "v3.aws-ec2.704d0a2a0df1635ff283",
+                "v3.aws-ec2.8f76ff16846b61b521d4",
+                "v3.aws-ec2.5f57b08a24c8cf791ea2"
+              ]
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.aa51641e71c69dc49041",
               "v3.aws-ec2.704d0a2a0df1635ff283",
               "v3.aws-ec2.8f76ff16846b61b521d4",
               "v3.aws-ec2.5f57b08a24c8cf791ea2"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/SourceDestCheck",
             "source_field_id": "SourceDestCheck",
             "disposition": "maps_exact_source_fact",
-            "target_field": "ip_forwarding_state",
+            "target_field": "source_destination_check_state",
             "projection": "evidence_closed_scalar",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.ip_forwarding_state",
-            "semantic_path": "network.ip_forwarding_state",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.source_destination_check_state",
+            "semantic_path": "network.source_destination_check",
             "target_value_kind": "boolean_state",
             "target_cardinality": "one",
             "explicit_null_disposition": "map_to_absent",
@@ -1913,15 +2378,16 @@
                 "v3.aws-ec2.b95f9d2b47ea28d34ee1"
               ],
               "source_to_neutral": {
-                "true": "disabled",
-                "false": "enabled"
+                "true": "enabled",
+                "false": "disabled"
               },
               "unknown_value_policy": "refuse"
             },
             "semantic_evidence_refs": [
               "v3.aws-ec2.7aaf8be24c9d95057fda",
               "v3.aws-ec2.b95f9d2b47ea28d34ee1"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/SpotInstanceRequestId",
@@ -2106,7 +2572,8 @@
             "source_pointer": "/UsageOperation",
             "semantic_evidence_refs": [
               "v3.aws-ec2.45926f5126f18fe35043",
-              "v3.aws-ec2.5f57b08a24c8cf791ea2"
+              "v3.aws-ec2.5f57b08a24c8cf791ea2",
+              "aws.billing.definition.UsageOperation"
             ],
             "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.billing_usage_operation",
             "target_value_kind": "exact_token",
@@ -2155,20 +2622,21 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.8d52873ecb8ff590cf40",
               "v3.aws-ec2.b9b201ce19b6d28ffbe0"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/VpcId",
             "source_field_id": "VpcId",
             "disposition": "maps_exact_relationship_fact",
-            "target_field": "vpc_relationship",
+            "target_field": "virtual_network_relationship",
             "projection": "relationship_reference",
             "explicit_null_disposition": "map_to_absent",
             "semantic_path": "network.virtual_network",
             "target_value_kind": "scope_resolved_opaque_reference",
             "target_cardinality": "one",
             "target_reference_target": "CloudNeutralScopedBinding",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.vpc_relationship",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.virtual_network_relationship",
             "explicit_absent_disposition": "map_to_absent",
             "semantic_evidence_refs": [
               "v3.aws-ec2.7b8656206bdf59d76992",
@@ -2332,7 +2800,8 @@
                   "source_to_neutral": {
                     "enabled": "enabled",
                     "disabled": "disabled",
-                    "pending": "pending"
+                    "pending": "pending",
+                    "disabling": "disabling"
                   },
                   "unknown_value_policy": "refuse"
                 },
@@ -3992,6 +4461,24 @@
             "start_byte": 3897765,
             "end_byte": 3898124,
             "slice_sha256": "3ffa22d53c996372562f9e4969c8d48976839c0ee2c87ad80bc1aee126cc9ac9"
+          },
+          {
+            "id": "aws.billing.definition.PlatformDetails",
+            "source_path": "official/aws/ec2-billing-info-fields.md",
+            "source_uri": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/billing-info-fields.md",
+            "expected_sha256": "14dc42608a27105c4103d95d529ee3959eda51a65727519fffd7c63d89821696",
+            "start_byte": 145,
+            "end_byte": 271,
+            "slice_sha256": "fac84e09ce8ff794b82dd2dfb02b83e16c4ea54e5bb830a2079e92c49076aff5"
+          },
+          {
+            "id": "aws.billing.definition.UsageOperation",
+            "source_path": "official/aws/ec2-billing-info-fields.md",
+            "source_uri": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/billing-info-fields.md",
+            "expected_sha256": "14dc42608a27105c4103d95d529ee3959eda51a65727519fffd7c63d89821696",
+            "start_byte": 273,
+            "end_byte": 741,
+            "slice_sha256": "57d584302464aa127771b6291165729eed23fda5b91b5fe584b22da8265b43db"
           }
         ]
       }
@@ -4138,7 +4625,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.7aaf8be24c9d95057fda",
               "v3.aws-ec2.c1484af88b13ef6c6877"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/Iops",
@@ -4153,7 +4641,7 @@
             "target_cardinality": "one",
             "target_unit_dimension": "iops",
             "source_unit": "iops",
-            "source_numeric_maximum": "9223372036854775807",
+            "source_numeric_maximum": "2147483647",
             "unit_evidence_ref": "aws.ec2.volume.model",
             "explicit_null_disposition": "source_private_only",
             "qualified_measurement_recipe": {
@@ -4173,7 +4661,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.e8edb116cd39acb405ec",
               "v3.aws-ec2.f8391beec610560a5cdc"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/KmsKeyId",
@@ -4219,7 +4708,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.7aaf8be24c9d95057fda",
               "v3.aws-ec2.ce3f51bb0354ea8f6b5c"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/Operator",
@@ -4254,7 +4744,6 @@
                 },
                 {
                   "source": "Principal",
-                  "target": "principal",
                   "rule": {
                     "kind": "private",
                     "reason_code": "security_sensitive",
@@ -4272,6 +4761,9 @@
                     }
                   }
                 }
+              ],
+              "unobserved_members": [
+                "principal_reference"
               ]
             },
             "semantic_evidence_refs": [
@@ -4279,7 +4771,8 @@
               "v3.aws-ec2.f0bac2e2a878174bb108",
               "v3.aws-ec2.5f57b08a24c8cf791ea2",
               "v3.aws-ec2.bfafb48eee1a40c95c6b"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/OutpostArn",
@@ -4341,10 +4834,10 @@
             "source_pointer": "/SnapshotId",
             "source_field_id": "SnapshotId",
             "disposition": "maps_exact_relationship_fact",
-            "target_field": "source_resource_relationship",
+            "target_field": "source_snapshot_relationship",
             "projection": "relationship_reference",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.source_resource_relationship",
-            "semantic_path": "resource_lineage.source_resource",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.source_snapshot_relationship",
+            "semantic_path": "storage.source_snapshot_relationship",
             "target_value_kind": "scope_resolved_opaque_reference",
             "target_cardinality": "one",
             "target_reference_target": "CloudNeutralScopedBinding",
@@ -4387,7 +4880,8 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.955a3f78ba22b7e89577",
               "v3.aws-ec2.36aa2d52d9f5d0acca59"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "disposition": "maps_exact_lifecycle_fact",
@@ -4452,7 +4946,8 @@
               "v3.aws-ec2.32ae2d0bf7045c520aa1",
               "v3.aws-ec2.c179623ec8cac98f4891",
               "v3.aws-ec2.1cbd85acf08562c5cce2"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/Throughput",
@@ -4471,7 +4966,9 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.e8edb116cd39acb405ec",
               "v3.aws-ec2.a28771a986fefba8a377"
-            ]
+            ],
+            "source_numeric_maximum": "2147483647",
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/VolumeArn",
@@ -4519,24 +5016,28 @@
             "semantic_evidence_refs": [
               "v3.aws-ec2.e8edb116cd39acb405ec",
               "v3.aws-ec2.e26d47095e4dcaa21dca"
-            ]
+            ],
+            "source_numeric_maximum": "2147483647",
+            "explicit_absent_disposition": "map_to_not_observed"
           },
           {
             "source_pointer": "/VolumeType",
             "wire_pointer": "/volumeType",
             "source_field_id": "VolumeType",
-            "disposition": "maps_exact_source_fact",
-            "target_field": "storage_performance_class",
-            "projection": "exact",
-            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.storage_performance_class",
-            "semantic_path": "storage.reported_performance_class",
-            "target_value_kind": "exact_token",
+            "disposition": "maps_exact_relationship_fact",
+            "target_field": "volume_product_type_relationship",
+            "projection": "relationship_reference",
+            "semantic_owner_ref": "sections.s3_semantic_schema_and_relationships.type_and_presence_closure.machine_readable_target_schema.semantic_owner_fields.field_definitions.volume_product_type_relationship",
+            "semantic_path": "catalog.volume_product_type",
+            "target_value_kind": "scope_resolved_opaque_reference",
             "target_cardinality": "one",
             "explicit_null_disposition": "source_private_only",
             "semantic_evidence_refs": [
               "v3.aws-ec2.0e2a9c3965faaf64f93b",
               "v3.aws-ec2.08b7dd283246172cf70e"
-            ]
+            ],
+            "explicit_absent_disposition": "map_to_unknown",
+            "target_reference_target": "CloudNeutralScopedBinding"
           }
         ],
         "nested": [

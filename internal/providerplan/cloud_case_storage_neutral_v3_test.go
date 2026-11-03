@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -109,7 +108,7 @@ func assertGCSV3Value(t *testing.T, record map[string]any, field string, want an
 
 func loadGCSStorageV3(t *testing.T) (CloudCatalog, CloudSourceObjectTarget) {
 	t.Helper()
-	request, err := LoadCloudSourceCandidateInput(filepath.Join("../../testdata/cloudapi", "candidate-input-v3.json"), NewCloudCatalogParser())
+	request, err := loadCloudNeutralV3Service(t, "gcp", "storage")
 	if err != nil {
 		t.Fatal(err)
 	}

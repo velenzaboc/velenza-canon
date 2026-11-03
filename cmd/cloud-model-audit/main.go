@@ -16,7 +16,35 @@ func run(args []string, out, errout io.Writer) int {
 	f.SetOutput(io.Discard)
 	old := f.String("old", "", "pinned old model")
 	fresh := f.String("new", "", "candidate new model")
-	if f.Parse(args) != nil || f.NArg() != 0 || *old == "" || *fresh == "" {
+	model := f.String("model", "", "retained model for exact byte selections")
+	selections := f.String("select", "", "pinned source coordinate and named JSON pointers")
+	if f.Parse(args) != nil || f.NArg() != 0 {
+		return 2
+	}
+	if *model != "" || *selections != "" {
+		if *model == "" || *selections == "" || *old != "" || *fresh != "" {
+			fmt.Fprintln(errout, "cloud-model-audit: --model and --select must be supplied together")
+			return 2
+		}
+		raw, err := readModel(*model)
+		if err != nil {
+			return 1
+		}
+		request, err := readModel(*selections)
+		if err != nil {
+			return 1
+		}
+		bindings, err := providerplan.MeasureCloudModelEvidence(raw, request)
+		if err != nil {
+			fmt.Fprintln(errout, "cloud-model-audit:", err)
+			return 1
+		}
+		if err := json.NewEncoder(out).Encode(bindings); err != nil {
+			return 1
+		}
+		return 0
+	}
+	if *old == "" || *fresh == "" {
 		fmt.Fprintln(errout, "cloud-model-audit: --old and --new are required")
 		return 2
 	}

@@ -54,10 +54,10 @@ func validateCloudNestedDecompositions(catalog CloudCatalog, contract CloudMappi
 			}
 			seen[mapping.SourcePointer] = struct{}{}
 			if err := validateCloudNullDisposition(mapping, field, neutral); err != nil {
-				return nil, err
+				return nil, fmt.Errorf("nested mapping %s/%s -> %s null disposition: %w", decomposition.ParentPointer, mapping.SourcePointer, mapping.TargetField, err)
 			}
 			if err := validateCloudMappingField(mapping, field, neutral); err != nil {
-				return nil, err
+				return nil, fmt.Errorf("nested mapping %s/%s -> %s: %w", decomposition.ParentPointer, mapping.SourcePointer, mapping.TargetField, err)
 			}
 		}
 		parents[decomposition.ParentPointer] = struct{}{}

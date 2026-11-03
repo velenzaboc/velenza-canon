@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Build & Test
+  repository:
+    name: Repository build and tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,5 +32,29 @@ jobs:
       - name: Build all packages
         run: go build ./...
 
-      - name: Run test suite
-        run: go test -p 1 -count=1 -timeout 30m ./...
+      - name: Run suite including historical mapping generations
+        run: go test -p 1 -count=1 -timeout 30m -skip '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' ./...
+
+  native-successor:
+    name: Four-service native successor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.1"
+          check-latest: false
+      - name: Compile and verify all nine successor operation packages
+        run: go test -p 1 -count=1 -timeout 30m -run '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' ./internal/providerplan
+
+  test:
+    name: Build & Test
+    needs: [repository, native-successor]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require both suites on this revision
+        env:
+          REPOSITORY_RESULT: ${{ needs.repository.result }}
+          SUCCESSOR_RESULT: ${{ needs.native-successor.result }}
+        run: test "$REPOSITORY_RESULT" = success && test "$SUCCESSOR_RESULT" = success

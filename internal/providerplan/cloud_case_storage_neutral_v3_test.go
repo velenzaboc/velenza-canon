@@ -17,12 +17,7 @@ func TestGCSStorageNeutralV3ProjectsClosedSuccessorFacts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	recipe := gcsStorageV3Recipe(catalog, target, []CloudNeutralScopedBinding{
-		{ScopeReference: "fixture-scope", ScopedNativeKey: "fixture-successor-bucket", OpaqueNeutralID: "neutral-bucket"},
-		{ScopeReference: "fixture-scope", ScopedNativeKey: "US", OpaqueNeutralID: "neutral-location-us"},
-		{ScopeReference: "fixture-scope", ScopedNativeKey: "US-CENTRAL1", OpaqueNeutralID: "neutral-location-central"},
-		{ScopeReference: "fixture-scope", ScopedNativeKey: "US-EAST1", OpaqueNeutralID: "neutral-location-east"},
-	})
+	recipe := gcsStorageV3Recipe(catalog, target, gcsStorageV3Bindings())
 	result, err := ProjectCloudNeutralResponse(recipe, raw)
 	if err != nil || len(result.Records) != 1 {
 		t.Fatalf("GCS v3 projection = %#v, %v", result, err)
@@ -34,12 +29,13 @@ func TestGCSStorageNeutralV3ProjectsClosedSuccessorFacts(t *testing.T) {
 	if record["semantic_record_instance_identity"] != "neutral-bucket" {
 		t.Fatalf("identity = %#v", record["semantic_record_instance_identity"])
 	}
-	for _, field := range []string{"access_control_configuration_observation", "automatic_storage_class_management_configuration_observation", "billing_configuration_observation", "cross_origin_request_policy_configuration_observation", "custom_placement_configuration_observation", "default_access_control_configuration_observation", "network_access_filter_configuration_observation", "object_retention_configuration_observation", "soft_delete_policy_configuration_observation", "website_configuration_observation"} {
-		v, ok := record[field].(map[string]any)
-		if !ok || v["state"] != "present" {
-			t.Fatalf("%s = %#v, want present closed observation", field, record[field])
-		}
-	}
+	assertGCSV3Value(t, record, "access_control_configuration_observation", []any{map[string]any{"principal_reference": "neutral-project-owners", "role": "owner"}})
+	assertGCSV3Value(t, record, "default_access_control_configuration_observation", []any{map[string]any{"principal_reference": "neutral-authenticated-users", "role": "reader"}})
+	assertGCSV3Value(t, record, "cross_origin_request_policy_configuration_observation", []any{map[string]any{"methods": []any{"GET"}, "origins": []any{"neutral-origin"}, "response_headers": []any{"Content-Type"}, "max_age_seconds": "3600"}})
+	assertGCSV3Value(t, record, "network_access_filter_configuration_observation", map[string]any{"mode": "enabled", "allowed_ip_prefixes": []any{"neutral-ip-prefix"}})
+	assertGCSV3Value(t, record, "logging_configuration_observation", map[string]any{"log_bucket_reference": "neutral-log-bucket"})
+	assertGCSV3Value(t, record, "container_location_relationship", "neutral-location-us")
+	assertGCSV3Value(t, record, "uniform_resource_access_lock_time", "2026-02-02T03:04:05.000Z")
 	for _, leak := range [][]byte{[]byte("project-owners-123456789012"), []byte("https://example.invalid"), []byte("private-key"), []byte("192.0.2.0/24"), []byte("fixture-log-bucket")} {
 		if bytes.Contains(result.Records[0], leak) {
 			t.Fatalf("neutral record leaked private GCS source value %q: %s", leak, result.Records[0])
@@ -53,13 +49,60 @@ func TestGCSStorageNeutralV3RefusesMissingOrForeignScopedLocation(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	base := []CloudNeutralScopedBinding{{ScopeReference: "fixture-scope", ScopedNativeKey: "fixture-successor-bucket", OpaqueNeutralID: "neutral-bucket"}}
+	base := gcsStorageV3Bindings()
+	base = gcsStorageV3Without(base, "US")
 	if _, err := ProjectCloudNeutralResponse(gcsStorageV3Recipe(catalog, target, base), raw); err == nil {
 		t.Fatal("accepted missing location binding")
 	}
 	foreign := append(base, CloudNeutralScopedBinding{ScopeReference: "other-scope", ScopedNativeKey: "US", OpaqueNeutralID: "neutral-location-us"})
 	if _, err := ProjectCloudNeutralResponse(gcsStorageV3Recipe(catalog, target, foreign), raw); err == nil {
 		t.Fatal("accepted foreign-scope location binding")
+	}
+}
+
+func TestGCSStorageNeutralV3RefusesMismatchedAndAcceptsAliasOnlyLockTime(t *testing.T) {
+	catalog, target := loadGCSStorageV3(t)
+	raw, err := os.ReadFile("../../testdata/cloudapi/neutral-v3/fixtures/gcp-storage/bucket-all-successor-fields.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bad := bytes.Replace(raw, []byte(`"bucketPolicyOnly":{"enabled":true,"lockedTime":"2026-02-02T03:04:05.000Z"}`), []byte(`"bucketPolicyOnly":{"enabled":true,"lockedTime":"2026-02-01T03:04:05.000Z"}`), 1)
+	if _, err := ProjectCloudNeutralResponse(gcsStorageV3Recipe(catalog, target, gcsStorageV3Bindings()), bad); err == nil {
+		t.Fatal("accepted mismatched bucketPolicyOnly lock-time alias")
+	}
+	aliasOnly := bytes.Replace(raw, []byte(`"uniformBucketLevelAccess": {"enabled": true,"lockedTime":"2026-02-02T03:04:05.000Z"}`), []byte(`"uniformBucketLevelAccess": {"enabled": true}`), 1)
+	result, err := ProjectCloudNeutralResponse(gcsStorageV3Recipe(catalog, target, gcsStorageV3Bindings()), aliasOnly)
+	if err != nil || len(result.Records) != 1 {
+		t.Fatalf("alias-only lock time = %#v, %v", result, err)
+	}
+	var record map[string]any
+	if err := json.Unmarshal(result.Records[0], &record); err != nil {
+		t.Fatal(err)
+	}
+	assertGCSV3Value(t, record, "uniform_resource_access_lock_time", "2026-02-02T03:04:05.000Z")
+}
+
+func gcsStorageV3Bindings() []CloudNeutralScopedBinding {
+	return []CloudNeutralScopedBinding{
+		{ScopeReference: "fixture-scope", ScopedNativeKey: "fixture-successor-bucket", OpaqueNeutralID: "neutral-bucket"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "US", OpaqueNeutralID: "neutral-location-us"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "US-CENTRAL1", OpaqueNeutralID: "neutral-location-central"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "US-EAST1", OpaqueNeutralID: "neutral-location-east"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "project-owners-123456789012", OpaqueNeutralID: "neutral-project-owners"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "allAuthenticatedUsers", OpaqueNeutralID: "neutral-authenticated-users"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "https://example.invalid", OpaqueNeutralID: "neutral-origin"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "192.0.2.0/24", OpaqueNeutralID: "neutral-ip-prefix"}, {ScopeReference: "fixture-scope", ScopedNativeKey: "fixture-log-bucket", OpaqueNeutralID: "neutral-log-bucket"},
+	}
+}
+func gcsStorageV3Without(in []CloudNeutralScopedBinding, native string) []CloudNeutralScopedBinding {
+	out := make([]CloudNeutralScopedBinding, 0, len(in))
+	for _, b := range in {
+		if b.ScopedNativeKey != native {
+			out = append(out, b)
+		}
+	}
+	return out
+}
+func assertGCSV3Value(t *testing.T, record map[string]any, field string, want any) {
+	t.Helper()
+	got, ok := record[field].(map[string]any)
+	actual, _ := json.Marshal(got["value"])
+	expected, _ := json.Marshal(want)
+	if !ok || got["state"] != "present" || !bytes.Equal(actual, expected) {
+		t.Fatalf("%s = %#v, want present %#v", field, record[field], want)
 	}
 }
 

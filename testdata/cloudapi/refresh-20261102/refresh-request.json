@@ -1,0 +1,14 @@
+{
+  "model_id": "gcp-compute-model",
+  "model_path": "refresh-20261102/compute-v1.discovery.json",
+  "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+  "source": {
+    "id": "gcp-compute-model",
+    "uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+    "stable_coordinate": "gcp/compute/v1@sha256:ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+    "format_revision": "discovery-20261026"
+  },
+  "mapping_version": "candidate-20261026",
+  "service_profile_version": "2",
+  "retrieved": "2026-11-02"
+}

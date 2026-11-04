@@ -693,14 +693,8 @@ func Verify(opts Options) (Receipt, error) {
 	if err := rejectDuplicateJSONKeys(oodBytes); err != nil {
 		return Receipt{}, fmt.Errorf("OOD spec: %w", err)
 	}
-	var ood oodContract
-	if err := json.Unmarshal(oodBytes, &ood); err != nil {
-		return Receipt{}, fmt.Errorf("decode OOD spec: %w", err)
-	}
-	if ood.DocID == "" || ood.Version.String() == "" || ood.Status != "locked" {
-		return Receipt{}, fmt.Errorf("selected OOD authority has no locked doc_id/version identity")
-	}
-	if err := validateVerificationAuthorityExpectedPin(oodAuthority, opts.ExpectedOODSpecSHA256); err != nil {
+	ood, err := decodeSelectedOODAuthority(oodAuthority, opts.ExpectedOODSpecSHA256)
+	if err != nil {
 		return Receipt{}, err
 	}
 	oodSHA := oodAuthority.Resource.ContentSHA256

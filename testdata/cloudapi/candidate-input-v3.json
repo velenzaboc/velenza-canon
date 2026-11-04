@@ -1,0 +1,256 @@
+{
+  "models": [
+    {
+      "api_surface_id": "s3",
+      "api_version": "2006-03-01",
+      "expected_sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "format": "smithy_json",
+      "model_path": "official/aws/s3-2006-03-01.json",
+      "provider_id": "aws",
+      "resource_declarations": [
+        {
+          "evidence_locator": {
+            "end_byte": 7263,
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_declarations/0",
+            "start_byte": 6898
+          },
+          "resource_id": "com.amazonaws.s3#Bucket",
+          "role": "asserted_candidate_unqualified",
+          "structure_locator": {
+            "end_byte": 1188128,
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.s3#Bucket",
+            "start_byte": 1186453
+          },
+          "structure_shape_id": "com.amazonaws.s3#Bucket"
+        }
+      ],
+      "resource_operation_assertions": [
+        {
+          "evidence_locator": {
+            "end_byte": 8188,
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_operation_assertions/0",
+            "start_byte": 8074
+          },
+          "operation_id": "com.amazonaws.s3#ListBuckets",
+          "resource_id": "com.amazonaws.s3#Bucket"
+        },
+        {
+          "evidence_locator": {
+            "end_byte": 532,
+            "evidence_id": "storage-operation-associations",
+            "json_pointer": "/assertions/0",
+            "start_byte": 437
+          },
+          "operation_id": "com.amazonaws.s3#GetBucketVersioning",
+          "resource_id": "com.amazonaws.s3#Bucket"
+        },
+        {
+          "evidence_locator": {
+            "end_byte": 628,
+            "evidence_id": "storage-operation-associations",
+            "json_pointer": "/assertions/1",
+            "start_byte": 533
+          },
+          "operation_id": "com.amazonaws.s3#GetBucketEncryption",
+          "resource_id": "com.amazonaws.s3#Bucket"
+        },
+        {
+          "evidence_locator": {
+            "end_byte": 725,
+            "evidence_id": "storage-operation-associations",
+            "json_pointer": "/assertions/2",
+            "start_byte": 629
+          },
+          "operation_id": "com.amazonaws.s3#GetPublicAccessBlock",
+          "resource_id": "com.amazonaws.s3#Bucket"
+        }
+      ],
+      "service_id": "s3",
+      "source": {
+        "format_revision": "smithy-2",
+        "id": "aws-s3-model",
+        "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01",
+        "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json"
+      },
+      "supplemental_evidence": [
+        {
+          "expected_sha256": "707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b",
+          "id": "association-evidence",
+          "source": {
+            "format_revision": "velenza.cloud_api_resource_association_evidence/3",
+            "id": "cloudapi-association-evidence",
+            "stable_coordinate": "testdata/cloudapi/association-evidence.json@sha256:707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b",
+            "uri": "urn:velenza:testdata:cloudapi-association-evidence"
+          }
+        },
+        {
+          "expected_sha256": "ea8ddcbed0d10a90576cd526b532eb5ef046480aab3b2528e2aafeaf17dab4c6",
+          "id": "storage-operation-associations",
+          "source": {
+            "format_revision": "1",
+            "id": "storage-operation-associations",
+            "stable_coordinate": "cloudapi/storage-operation-associations@sha256:ea8ddcbed0d10a90576cd526b532eb5ef046480aab3b2528e2aafeaf17dab4c6",
+            "uri": "urn:velenza:candidate:storage-operation-associations"
+          }
+        }
+      ],
+      "supplemental_evidence_paths": [
+        "association-evidence.json",
+        "storage-operation-associations.json"
+      ]
+    },
+    {
+      "api_surface_id": "ec2",
+      "api_version": "2016-11-15",
+      "expected_sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "format": "smithy_json",
+      "model_path": "official/aws/ec2-2016-11-15.json",
+      "provider_id": "aws",
+      "resource_declarations": [
+        {
+          "evidence_locator": {
+            "end_byte": 7645,
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_declarations/1",
+            "start_byte": 7271
+          },
+          "resource_id": "com.amazonaws.ec2#Instance",
+          "role": "asserted_candidate_unqualified",
+          "structure_locator": {
+            "end_byte": 3879746,
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.ec2#Instance",
+            "start_byte": 3855151
+          },
+          "structure_shape_id": "com.amazonaws.ec2#Instance"
+        },
+        {
+          "evidence_locator": {
+            "end_byte": 8021,
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_declarations/2",
+            "start_byte": 7653
+          },
+          "resource_id": "com.amazonaws.ec2#Volume",
+          "role": "asserted_candidate_unqualified",
+          "structure_locator": {
+            "end_byte": 6652582,
+            "evidence_id": "model",
+            "json_pointer": "/shapes/com.amazonaws.ec2#Volume",
+            "start_byte": 6644219
+          },
+          "structure_shape_id": "com.amazonaws.ec2#Volume"
+        }
+      ],
+      "resource_operation_assertions": [
+        {
+          "evidence_locator": {
+            "end_byte": 8320,
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_operation_assertions/1",
+            "start_byte": 8196
+          },
+          "operation_id": "com.amazonaws.ec2#DescribeInstances",
+          "resource_id": "com.amazonaws.ec2#Instance"
+        },
+        {
+          "evidence_locator": {
+            "end_byte": 8448,
+            "evidence_id": "association-evidence",
+            "json_pointer": "/catalog_bindings/resource_operation_assertions/2",
+            "start_byte": 8328
+          },
+          "operation_id": "com.amazonaws.ec2#DescribeVolumes",
+          "resource_id": "com.amazonaws.ec2#Volume"
+        }
+      ],
+      "service_id": "ec2",
+      "source": {
+        "format_revision": "smithy-2",
+        "id": "aws-ec2-model",
+        "stable_coordinate": "aws/api-models-aws@d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15",
+        "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json"
+      },
+      "supplemental_evidence": [
+        {
+          "expected_sha256": "707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b",
+          "id": "association-evidence",
+          "source": {
+            "format_revision": "velenza.cloud_api_resource_association_evidence/3",
+            "id": "cloudapi-association-evidence",
+            "stable_coordinate": "testdata/cloudapi/association-evidence.json@sha256:707b6a6e56db49fa5169b32a5d04d0b26fdb326d4118c535294b624eb211b97b",
+            "uri": "urn:velenza:testdata:cloudapi-association-evidence"
+          }
+        }
+      ],
+      "supplemental_evidence_paths": [
+        "association-evidence.json"
+      ]
+    },
+    {
+      "api_surface_id": "storage",
+      "api_version": "v1",
+      "expected_sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "format": "google_discovery_rest",
+      "model_path": "official/gcp/storage-v1.discovery.json",
+      "provider_id": "gcp",
+      "service_id": "storage",
+      "source": {
+        "format_revision": "discovery",
+        "id": "gcp-storage-model",
+        "stable_coordinate": "gcp/storage/v1",
+        "uri": "https://storage.googleapis.com/$discovery/rest?version=v1"
+      }
+    },
+    {
+      "api_surface_id": "compute",
+      "api_version": "v1",
+      "expected_sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+      "format": "google_discovery_rest",
+      "model_path": "refresh-20261102/compute-v1.discovery.json",
+      "provider_id": "gcp",
+      "service_id": "compute",
+      "source": {
+        "format_revision": "discovery-20261026",
+        "id": "gcp-compute-model",
+        "stable_coordinate": "gcp/compute/v1@sha256:ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+        "uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest"
+      }
+    }
+  ],
+  "neutral_schema_export_path": "semantic-owner/infrastructure-resource-record-v3-mapping-schema.export.json",
+  "neutral_schema_export_sha256": "18c5c6ef9de9bf1e9aa9fb1aa0a602c2627d04875660f8c892d4b53344b1ede5",
+  "target_documents": [
+    {
+      "provider_id": "aws",
+      "service_id": "s3",
+      "api_surface_id": "s3",
+      "path": "neutral-v3/aws-s3.json",
+      "sha256": "3af8c108b36ff8c57b8e1b0feae6e86bf9ef6a15effc6b4ad875e238b61cc169"
+    },
+    {
+      "provider_id": "aws",
+      "service_id": "ec2",
+      "api_surface_id": "ec2",
+      "path": "neutral-v3/aws-ec2.json",
+      "sha256": "de63d20f5abee3e0021ace9137ab10ac91976c17b8e1f7c4387b4a01775f5288"
+    },
+    {
+      "provider_id": "gcp",
+      "service_id": "storage",
+      "api_surface_id": "storage",
+      "path": "neutral-v3/gcp-storage.json",
+      "sha256": "6595e02d6a4d3c8cbbabe73bf7b96d9c0d9230fcd196f5e672f34e5acb964e54"
+    },
+    {
+      "provider_id": "gcp",
+      "service_id": "compute",
+      "api_surface_id": "compute",
+      "path": "neutral-v3/gcp-compute.json",
+      "sha256": "5dc3af070415f16a8fd7715800c45907c6c9dcc71442bd5b1fe96a55717daaeb"
+    }
+  ]
+}

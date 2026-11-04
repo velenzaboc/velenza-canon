@@ -10,9 +10,13 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Build & Test
+  suites:
+    name: ${{ matrix.suite }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [Repository build and tests, Four-service native successor]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,13 +28,31 @@ jobs:
           check-latest: false
 
       - name: Validate release wrapper shell syntax
+        if: matrix.suite == 'Repository build and tests'
         run: sh -n scripts/provider-documentation-factory-release.sh
 
       - name: Run go vet
+        if: matrix.suite == 'Repository build and tests'
         run: go vet ./...
 
       - name: Build all packages
+        if: matrix.suite == 'Repository build and tests'
         run: go build ./...
 
-      - name: Run test suite
-        run: go test -p 1 -count=1 -timeout 30m ./...
+      - name: Run suite including historical mapping generations
+        if: matrix.suite == 'Repository build and tests'
+        run: go test -p 1 -count=1 -timeout 30m -skip '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' ./...
+      - name: Compile and verify all nine successor operation packages
+        if: matrix.suite == 'Four-service native successor'
+        run: go test -p 1 -count=1 -timeout 30m -run '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' ./internal/providerplan
+
+  test:
+    name: Build & Test
+    needs: suites
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require both suites on this revision
+        env:
+          SUITES_RESULT: ${{ needs.suites.result }}
+        run: test "$SUITES_RESULT" = success

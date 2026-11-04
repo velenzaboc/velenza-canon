@@ -236,6 +236,13 @@ func cloudNativeServiceContext(t *testing.T, fixture *testFixture, model PinnedC
 	}
 	for evidenceID := range selectedEvidenceIDs {
 		path := fixture.evidenceByRole["protocol"]
+		for _, evidence := range model.SupplementalEvidence {
+			if evidence.ID == evidenceID {
+				if additional := fixture.evidenceByRole["source:"+evidence.Source.StableCoordinate]; additional != "" {
+					path = additional
+				}
+			}
+		}
 		if path == "" {
 			t.Fatalf("fixture has no sealed supplemental evidence manifest for %q", evidenceID)
 		}

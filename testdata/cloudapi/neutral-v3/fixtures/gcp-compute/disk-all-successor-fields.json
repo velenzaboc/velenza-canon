@@ -1,0 +1,93 @@
+{
+  "accessMode": "READ_WRITE_MANY",
+  "architecture": "X86_64",
+  "asyncPrimaryDisk": {
+    "disk": "projects/p/zones/us-central1-a/disks/primary",
+    "diskId": "123"
+  },
+  "asyncSecondaryDisks": {
+    "projects/p/zones/us-central1-b/disks/secondary": {
+      "asyncReplicationDisk": {
+        "disk": "projects/p/zones/us-central1-b/disks/secondary",
+        "diskId": "456",
+        "consistencyGroupPolicy": "regions/us-central1/resourcePolicies/policy",
+        "consistencyGroupPolicyId": "policy-id"
+      }
+    }
+  },
+  "diskEncryptionKey": {
+    "kmsKeyName": "projects/p/locations/us/keyRings/r/cryptoKeys/disk",
+    "sha256": "synthetic-private-key-verifier"
+  },
+  "enableConfidentialCompute": true,
+  "guestOsFeatures": [
+    {
+      "type": "UEFI_COMPATIBLE"
+    }
+  ],
+  "kind": "compute#disk",
+  "labelFingerprint": "fixture-label-fingerprint",
+  "labels": {
+    "environment": "test",
+    "owner": "fixture"
+  },
+  "lastAttachTimestamp": "2026-11-01T01:02:03.000Z",
+  "lastDetachTimestamp": "2026-11-01T02:02:03.000Z",
+  "licenseCodes": [
+    "1000006"
+  ],
+  "licenses": [
+    "projects/debian-cloud/global/licenses/debian-12"
+  ],
+  "locationHint": "us-central1-a",
+  "options": "BETA",
+  "params": {
+    "resourceManagerTags": {
+      "example": "fixture"
+    }
+  },
+  "physicalBlockSizeBytes": "4096",
+  "provisionedIops": "15000",
+  "provisionedThroughput": "300",
+  "region": "regions/us-central1",
+  "replicaZones": [
+    "zones/us-central1-a",
+    "zones/us-central1-b"
+  ],
+  "resourcePolicies": [
+    "regions/us-central1/resourcePolicies/fixture"
+  ],
+  "resourceStatus": {
+    "asyncPrimaryDisk": {
+      "state": "ACTIVE"
+    }
+  },
+  "satisfiesPzi": true,
+  "satisfiesPzs": true,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-a/disks/fixture",
+  "sourceConsistencyGroupPolicy": "regions/us-central1/resourcePolicies/policy",
+  "sourceConsistencyGroupPolicyId": "policy-id",
+  "sourceDisk": "projects/p/zones/us-central1-a/disks/source",
+  "sourceDiskId": "123456",
+  "sourceImage": "projects/debian-cloud/global/images/debian-12",
+  "sourceImageEncryptionKey": {
+    "kmsKeyName": "projects/p/locations/us/keyRings/r/cryptoKeys/image"
+  },
+  "sourceImageId": "234567",
+  "sourceInstantSnapshot": "projects/p/zones/us-central1-a/instantSnapshots/snapshot",
+  "sourceInstantSnapshotId": "345678",
+  "sourceSnapshot": "projects/p/global/snapshots/snapshot",
+  "sourceSnapshotEncryptionKey": {
+    "kmsKeyName": "projects/p/locations/us/keyRings/r/cryptoKeys/snapshot"
+  },
+  "sourceSnapshotId": "456789",
+  "sourceStorageObject": "gs://fixture/source",
+  "status": "READY",
+  "storagePool": "projects/p/zones/us-central1-a/storagePools/pool",
+  "type": "zones/us-central1-a/diskTypes/pd-ssd",
+  "zone": "zones/us-central1-a",
+  "id": "2000000000000000002",
+  "name": "disk-v3",
+  "sizeGb": "20",
+  "users": []
+}

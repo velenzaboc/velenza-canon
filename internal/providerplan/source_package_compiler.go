@@ -125,6 +125,10 @@ type DocumentationFactorySourceCompileOptions struct {
 type DocumentationFactorySourceCompileResult struct {
 	FactoryReceipt FactoryRunReceipt
 	SourceReceipt  DocumentationFactorySourceCompileReceipt
+	// oodProjection is deliberately not exported: it is the exact sealed
+	// compiler handoff retained for the native physical-plan constructor. A
+	// receipt hash alone is not a substitute for the parsed candidate bytes.
+	oodProjection *sourcePackageOODProjection
 }
 
 // DocumentationFactorySourceOutputOwnerValidation records a validation that a
@@ -451,7 +455,11 @@ func compilePreparedDocumentationFactorySourcePackage(options DocumentationFacto
 	if err := dependencies.Publish(options.OutputRoot, outputFiles); err != nil {
 		return DocumentationFactorySourceCompileResult{}, fmt.Errorf("publish complete source compiler output tree: %w", err)
 	}
-	return DocumentationFactorySourceCompileResult{FactoryReceipt: factoryReceipt, SourceReceipt: sourceReceipt}, nil
+	projection, err := newSourcePackageOODProjection(compilation)
+	if err != nil {
+		return DocumentationFactorySourceCompileResult{}, err
+	}
+	return DocumentationFactorySourceCompileResult{FactoryReceipt: factoryReceipt, SourceReceipt: sourceReceipt, oodProjection: projection}, nil
 }
 
 func sourcePackageOutputFiles(files map[string][]byte) []factorySourceOutputFile {

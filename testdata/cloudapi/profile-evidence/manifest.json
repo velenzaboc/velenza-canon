@@ -1,0 +1,127 @@
+{
+  "kind": "cloud_profile_candidate_document_capture",
+  "version": "1",
+  "candidate_only": true,
+  "records": [
+    {
+      "uri": "https://cloud.google.com/compute/docs/reference/rest/v1/disks/aggregatedList",
+      "sha256": "536e2fbf38ae967b815ca73ea1ed84b232fa592ae2c36d269373afdb4897d66a",
+      "byte_count": 2125066,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:536e2fbf38ae967b815ca73ea1ed84b232fa592ae2c36d269373afdb4897d66a",
+      "file": "evidence-01.raw"
+    },
+    {
+      "uri": "https://cloud.google.com/compute/docs/reference/rest/v1/instances/aggregatedList",
+      "sha256": "c8a68d7bc76f80e0d39184453d107eb48285cad4e41efbf5d4028fba948a2b59",
+      "byte_count": 2282224,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:c8a68d7bc76f80e0d39184453d107eb48285cad4e41efbf5d4028fba948a2b59",
+      "file": "evidence-02.raw"
+    },
+    {
+      "uri": "https://cloud.google.com/docs/authentication",
+      "sha256": "1dcf6961c69c5b783820cc166bc78308a100fa41061bc674996ae6ae6b2cc0c6",
+      "byte_count": 155795,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:1dcf6961c69c5b783820cc166bc78308a100fa41061bc674996ae6ae6b2cc0c6",
+      "file": "evidence-03.raw"
+    },
+    {
+      "uri": "https://cloud.google.com/storage/docs/json_api/v1/buckets/list",
+      "sha256": "581ae3459d85cc89fe7e0e63886c23450981e59bd6ba50753873154bc35bb790",
+      "byte_count": 200936,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:581ae3459d85cc89fe7e0e63886c23450981e59bd6ba50753873154bc35bb790",
+      "file": "evidence-04.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketEncryption.html",
+      "sha256": "ae11b1148bffb1b407c4485ccc9e5adaa78be75199f652b38438df772a9e3d9f",
+      "byte_count": 27928,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:ae11b1148bffb1b407c4485ccc9e5adaa78be75199f652b38438df772a9e3d9f",
+      "file": "evidence-05.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketVersioning.html",
+      "sha256": "697011e89b3f7dbddf885b51cded94eed885938b33d3d583da18b80c24817aa4",
+      "byte_count": 22630,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:697011e89b3f7dbddf885b51cded94eed885938b33d3d583da18b80c24817aa4",
+      "file": "evidence-06.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetPublicAccessBlock.html",
+      "sha256": "3fe65b9c9efaa0f7436f85f8b9b2d2046681281f5878e0c2e09fe8b84a5efc1a",
+      "byte_count": 27137,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:3fe65b9c9efaa0f7436f85f8b9b2d2046681281f5878e0c2e09fe8b84a5efc1a",
+      "file": "evidence-07.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html",
+      "sha256": "b999eeb1c4794181f399f35f62f40c992514b8c534bee1b3937397759b2edf44",
+      "byte_count": 34023,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:b999eeb1c4794181f399f35f62f40c992514b8c534bee1b3937397759b2edf44",
+      "file": "evidence-08.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html",
+      "sha256": "0971bc7344c8a2a69737051117f118d58e91dd072dfded275dccd237f1034f93",
+      "byte_count": 78702,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:0971bc7344c8a2a69737051117f118d58e91dd072dfded275dccd237f1034f93",
+      "file": "evidence-09.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html",
+      "sha256": "fa144e8ddb1c35e0e7da735a8875a6220e25ca954d85bbc7b4ab436af68da27a",
+      "byte_count": 27175,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:fa144e8ddb1c35e0e7da735a8875a6220e25ca954d85bbc7b4ab436af68da27a",
+      "file": "evidence-10.raw"
+    },
+    {
+      "uri": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-troubleshooting.html",
+      "sha256": "cd379706469d56e12f74d3b7f4a26812d82a108603ac81c1997fa878fa8610cc",
+      "byte_count": 27901,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:cd379706469d56e12f74d3b7f4a26812d82a108603ac81c1997fa878fa8610cc",
+      "file": "evidence-11.raw"
+    },
+    {
+      "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/ec2/service/2016-11-15/ec2-2016-11-15.json",
+      "sha256": "2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "byte_count": 6808269,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:2a61258f48c9769ccd24ad8d0a439593334fbafcf2a82d49677d72a04747f85e",
+      "file": "evidence-12.raw"
+    },
+    {
+      "uri": "https://raw.githubusercontent.com/aws/api-models-aws/d6bbb4d64e2c82927834dfa9791bebc0000f70c0/models/s3/service/2006-03-01/s3-2006-03-01.json",
+      "sha256": "73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "byte_count": 2996942,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:73e4f75747396176053a0fcc910261cf670c7e133c1cebcfffefa703fad3ce68",
+      "file": "evidence-13.raw"
+    },
+    {
+      "uri": "https://storage.googleapis.com/$discovery/rest?version=v1",
+      "sha256": "91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "byte_count": 251359,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:91588de46b456618d09d202a6595ba1e4d1752658251fce0aa61e7f36781adff",
+      "file": "evidence-14.raw"
+    },
+    {
+      "uri": "https://www.googleapis.com/discovery/v1/apis/compute/v1/rest",
+      "sha256": "ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+      "byte_count": 6419346,
+      "capture_date": "2026-11-02",
+      "stable_content_address": "sha256:ce740f987255bec9ed06e051e6df52797ddbe216bc8644b3433ccc16b0ebfe37",
+      "file": "evidence-15.raw"
+    }
+  ]
+}

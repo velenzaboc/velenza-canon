@@ -102,6 +102,31 @@ func cloudCheckedPositiveGiBToBytes(value any) (string, error) {
 	return strconv.FormatUint(parsed*1024*1024*1024, 10), nil
 }
 
+func cloudCheckedMiBPerSecondToBytesPerSecond(value any) (string, error) {
+	return cloudCheckedMiBPerSecondToBytesPerSecondAtMost(value, "18446744073709551615")
+}
+
+func cloudCheckedMiBPerSecondToBytesPerSecondAtMost(value any, maximum string) (string, error) {
+	var decimal string
+	switch typed := value.(type) {
+	case json.Number:
+		decimal = typed.String()
+	case string:
+		decimal = typed
+	default:
+		return "", fmt.Errorf("mebibytes_per_second_to_bytes_per_second requires an integer string or JSON integer")
+	}
+	if decimal == "" || strings.HasPrefix(decimal, "+") || strings.ContainsAny(decimal, ".-eE") {
+		return "", fmt.Errorf("mebibytes_per_second_to_bytes_per_second requires a nonnegative decimal integer")
+	}
+	parsed, err := strconv.ParseUint(decimal, 10, 64)
+	maxSource, maxErr := strconv.ParseUint(maximum, 10, 64)
+	if err != nil || maxErr != nil || parsed > maxSource || parsed > math.MaxUint64/(1024*1024) {
+		return "", fmt.Errorf("mebibytes_per_second_to_bytes_per_second refuses overflow")
+	}
+	return strconv.FormatUint(parsed*1024*1024, 10), nil
+}
+
 func decodeCloudSyntheticProtocol(raw []byte) (any, error) {
 	trimmed := bytes.TrimSpace(raw)
 	if len(trimmed) == 0 {

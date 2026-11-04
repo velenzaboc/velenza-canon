@@ -27,6 +27,7 @@ type cloudNeutralBindingKey struct{ scope, native string }
 // Go. ObjectPointer selects response object(s); all source fields and their
 // disposition remain exclusively in the validated mapping contract.
 type CloudNeutralProjectionRecipe struct {
+	structuredPlans       map[string]*cloudStructuredPlan
 	Catalog               CloudCatalog                `json:"-"`
 	Target                *CloudSourceObjectTarget    `json:"-"`
 	Contract              CloudMappingContract        `json:"-"`
@@ -66,6 +67,19 @@ func ProjectCloudNeutralRecords(recipe CloudNeutralProjectionRecipe, raw []byte)
 func ProjectCloudNeutralResponse(recipe CloudNeutralProjectionRecipe, raw []byte) (CloudNeutralProjectionResult, error) {
 	if err := validateCloudNeutralProjectionRecipe(recipe); err != nil {
 		return CloudNeutralProjectionResult{}, err
+	}
+	for _, f := range cloudNeutralProjectionFields(recipe.Contract) {
+		if f.StructuredRecipe != nil {
+			fields, err := cloudCatalogObjectFields(recipe.Catalog, recipe.Contract.ObjectSchemaID)
+			if err != nil {
+				return CloudNeutralProjectionResult{}, err
+			}
+			recipe.structuredPlans, err = compileCloudStructuredFields(recipe.Catalog, recipe.Contract, fields)
+			if err != nil {
+				return CloudNeutralProjectionResult{}, err
+			}
+			break
+		}
 	}
 	root, err := decodeCloudSyntheticProtocol(raw)
 	if err != nil {
@@ -201,6 +215,10 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 	if err != nil {
 		return nil, err
 	}
+	aliases, err := cloudAliasValues(recipe.Contract, object, direct, xmlWire, recipe.ScopeReference, bindings)
+	if err != nil {
+		return nil, err
+	}
 	identityKey, err := cloudNeutralResolveIdentity(recipe, object, xmlWire)
 	if err != nil {
 		return nil, err
@@ -236,6 +254,12 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			}
 		}
 		value, state, fieldErr := resolveCloudNeutralProjectionPointerMode(object, pointer, true)
+		if alias, ok := aliases[field.SourcePointer]; ok && fieldErr == nil {
+			value, state = alias.value, alias.state
+		}
+		if plan := recipe.structuredPlans[field.SourcePointer]; plan != nil && plan.nestedLeafList {
+			value, state, fieldErr = selectCloudStructuredLeafList(object, pointer, xmlWire)
+		}
 		// Only an explicitly empty XML list wrapper proves zero members.
 		if xmlWire && (field.Projection == CloudMappingProjectionBoundedZeroOrOneRelationship || field.Projection == CloudMappingProjectionManyRelationship) && state != "present" {
 			if at := strings.LastIndex(pointer, "/item/"); at >= 0 {
@@ -254,6 +278,8 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 				record[field.TargetField] = map[string]any{"state": "absent"}
 			case CloudAbsentToUnknown:
 				record[field.TargetField] = map[string]any{"state": "unknown"}
+			case CloudAbsentToNotObserved:
+				record[field.TargetField] = map[string]any{"state": "not_observed"}
 			default:
 				return nil, fmt.Errorf("field %q is absent", field.SourceFieldID)
 			}
@@ -265,11 +291,23 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			}
 			continue
 		}
+		if field.Projection == cloudProjectionStructured {
+			plan := recipe.structuredPlans[field.SourcePointer]
+			if plan == nil {
+				return nil, fmt.Errorf("missing structured plan for %s", field.SourcePointer)
+			}
+			projected, err := plan.project(value, xmlWire, recipe.ScopeReference, bindings)
+			if err != nil {
+				return nil, fmt.Errorf("structured source %s: %w", field.SourcePointer, err)
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": projected}
+			continue
+		}
 		if field.Disposition == CloudSourceMapsExactRelationshipFact {
 			if field.Projection == CloudMappingProjectionManyRelationship {
 				refs, err := cloudNeutralManyRelationships(value, recipe.ScopeReference, bindings)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("relationship %s: %w", field.SourcePointer, err)
 				}
 				record[field.TargetField] = map[string]any{"state": "present", "value": refs}
 				continue
@@ -291,7 +329,7 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			}
 			ref, found := bindings[cloudNeutralBindingKey{recipe.ScopeReference, key}]
 			if !found {
-				return nil, fmt.Errorf("relationship has no scoped fixture binding")
+				return nil, fmt.Errorf("relationship %s has no scoped fixture binding", field.SourcePointer)
 			}
 			record[field.TargetField] = map[string]any{"state": "present", "value": ref}
 			continue
@@ -357,12 +395,45 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 			record[field.TargetField] = map[string]any{"state": "present", "value": s}
 			continue
 		}
+		if field.Projection == CloudMappingProjectionQualifiedIntegerMeasurement {
+			measurement := field.QualifiedMeasurementRecipe
+			if measurement == nil {
+				return nil, fmt.Errorf("qualified integer measurement has no recipe")
+			}
+			discriminatorPointer := cloudProjectionWirePointer(recipe.Contract, measurement.DiscriminatorPointer, xmlWire)
+			discriminatorValue, discriminatorState, discriminatorErr := resolveCloudNeutralProjectionPointerMode(object, discriminatorPointer, true)
+			if discriminatorErr != nil || discriminatorState != "present" {
+				return nil, fmt.Errorf("qualified integer measurement discriminator is absent or invalid")
+			}
+			discriminator, ok := discriminatorValue.(string)
+			if !ok || discriminator == "" {
+				return nil, fmt.Errorf("qualified integer measurement discriminator is not a string")
+			}
+			measurementValue, measurementErr := cloudQualifiedIntegerMeasurementValue(value, discriminator, field.SourceNumericMaximum, measurement)
+			if measurementErr != nil {
+				return nil, measurementErr
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": measurementValue}
+			continue
+		}
 		if field.Projection == CloudMappingProjectionCheckedPositiveIntegerGiBToBytes || field.Projection == CloudMappingProjectionGiBToBytes {
 			bytes, convertErr := cloudCheckedPositiveGiBToBytes(value)
 			if convertErr != nil {
 				return nil, convertErr
 			}
 			record[field.TargetField] = map[string]any{"state": "present", "value": bytes, "unit": "bytes"}
+		} else if field.Projection == CloudMappingProjectionMiBPerSecondToBytesPerSecond {
+			bytes, convertErr := cloudCheckedMiBPerSecondToBytesPerSecondAtMost(value, field.SourceNumericMaximum)
+			if convertErr != nil {
+				return nil, convertErr
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": bytes, "unit": "bytes_per_second"}
+		} else if field.Projection == CloudMappingProjectionIntegerToCanonicalDecimal {
+			decimal, decimalErr := cloudCanonicalUnsignedDecimalAtMost(value, field.SourceNumericMaximum)
+			if decimalErr != nil {
+				return nil, decimalErr
+			}
+			record[field.TargetField] = map[string]any{"state": "present", "value": decimal, "unit": field.SourceUnit}
 		} else {
 			record[field.TargetField] = map[string]any{"state": "present", "value": value}
 		}
@@ -375,6 +446,64 @@ func projectCloudNeutralObject(recipe CloudNeutralProjectionRecipe, object map[s
 		return nil, fmt.Errorf("owner-valid neutral record: %w", err)
 	}
 	return encoded, nil
+}
+
+func cloudQualifiedIntegerMeasurementValue(value any, discriminator, maximum string, recipe *CloudQualifiedIntegerMeasurementRecipe) (map[string]any, error) {
+	if recipe == nil || recipe.Unit == "" {
+		return nil, fmt.Errorf("qualified integer measurement has no recipe")
+	}
+	basis, ok := recipe.BasisByDiscriminator[discriminator]
+	if !ok {
+		return nil, fmt.Errorf("qualified integer measurement discriminator %q is unclassified", discriminator)
+	}
+	amount, err := cloudCanonicalUnsignedDecimalAtMost(value, maximum)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"basis": basis, "amount": amount, "unit": recipe.Unit}, nil
+}
+
+func cloudProjectionWirePointer(contract CloudMappingContract, sourcePointer string, xmlWire bool) string {
+	if !xmlWire {
+		return sourcePointer
+	}
+	for _, field := range cloudNeutralProjectionFields(contract) {
+		if field.SourcePointer == sourcePointer && field.WirePointer != "" {
+			return field.WirePointer
+		}
+	}
+	return sourcePointer
+}
+
+// cloudCanonicalUnsignedDecimal refuses lossy float, exponent, sign, leading
+// zero, and uint64-overflow representations.  Provider values are accepted
+// only as an exact source integer token, then emitted as owner wire text.
+func cloudCanonicalUnsignedDecimal(value any) (string, error) {
+	return cloudCanonicalUnsignedDecimalAtMost(value, "18446744073709551615")
+}
+
+func cloudCanonicalUnsignedDecimalAtMost(value any, maximum string) (string, error) {
+	var decimal string
+	switch typed := value.(type) {
+	case json.Number:
+		decimal = typed.String()
+	case string:
+		decimal = typed
+	default:
+		return "", fmt.Errorf("integer_to_canonical_decimal requires a JSON integer or decimal string")
+	}
+	if decimal == "" || strings.HasPrefix(decimal, "+") || strings.ContainsAny(decimal, ".-eE") || (len(decimal) > 1 && decimal[0] == '0') {
+		return "", fmt.Errorf("integer_to_canonical_decimal requires canonical nonnegative decimal text")
+	}
+	parsed, err := strconv.ParseUint(decimal, 10, 64)
+	if err != nil {
+		return "", fmt.Errorf("integer_to_canonical_decimal refuses an out-of-range source integer")
+	}
+	limit, err := strconv.ParseUint(maximum, 10, 64)
+	if err != nil || parsed > limit {
+		return "", fmt.Errorf("integer_to_canonical_decimal exceeds the source numeric bound")
+	}
+	return decimal, nil
 }
 
 func cloudNeutralProjectionFields(contract CloudMappingContract) []CloudMappingContractField {

@@ -1,0 +1,132 @@
+{
+  "advancedMachineFeatures": {
+    "enableNestedVirtualization": true
+  },
+  "canIpForward": true,
+  "confidentialInstanceConfig": {
+    "enableConfidentialCompute": true
+  },
+  "cpuPlatform": "Intel Ice Lake",
+  "deletionProtection": true,
+  "disks": [
+    {
+      "source": "projects/p/zones/us-central1-a/disks/boot",
+      "boot": true,
+      "autoDelete": true,
+      "deviceName": "boot",
+      "mode": "READ_WRITE",
+      "interface": "SCSI",
+      "index": 0
+    }
+  ],
+  "displayDevice": {
+    "enableDisplay": false
+  },
+  "fingerprint": "fixture-instance-fingerprint",
+  "guestAccelerators": [
+    {
+      "acceleratorType": "nvidia-tesla-t4",
+      "acceleratorCount": 1
+    }
+  ],
+  "hostname": "fixture.internal",
+  "instanceEncryptionKey": {
+    "kmsKeyName": "projects/p/locations/us/keyRings/r/cryptoKeys/key"
+  },
+  "keyRevocationActionType": "NONE",
+  "kind": "compute#instance",
+  "labelFingerprint": "fixture-label-fingerprint",
+  "labels": {
+    "environment": "test",
+    "owner": "fixture"
+  },
+  "lastStartTimestamp": "2026-11-01T01:02:03.000Z",
+  "lastStopTimestamp": "2026-11-01T02:02:03.000Z",
+  "lastSuspendedTimestamp": "2026-11-01T03:02:03.000Z",
+  "localSsdEncryptionMode": "CUSTOMER_SUPPLIED_KEY",
+  "machineType": "zones/us-central1-a/machineTypes/n2-standard-4",
+  "metadata": {
+    "items": [
+      {
+        "key": "startup-script",
+        "value": "customer supplied text"
+      }
+    ]
+  },
+  "minCpuPlatform": "Intel Skylake",
+  "networkInterfaces": [
+    {
+      "network": "global/networks/default",
+      "subnetwork": "regions/us-central1/subnetworks/default",
+      "networkIP": "10.0.0.2",
+      "stackType": "IPV4_ONLY",
+      "accessConfigs": [
+        {
+          "name": "External NAT",
+          "type": "ONE_TO_ONE_NAT",
+          "networkTier": "PREMIUM"
+        }
+      ]
+    }
+  ],
+  "networkPerformanceConfig": {
+    "totalEgressBandwidthTier": "TIER_1"
+  },
+  "params": {
+    "resourceManagerTags": {
+      "example": "fixture"
+    }
+  },
+  "privateIpv6GoogleAccess": "ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE",
+  "reservationAffinity": {
+    "consumeReservationType": "ANY_RESERVATION"
+  },
+  "resourcePolicies": [
+    "regions/us-central1/resourcePolicies/fixture"
+  ],
+  "resourceStatus": {
+    "physicalHost": "hosts/fixture"
+  },
+  "satisfiesPzi": true,
+  "satisfiesPzs": true,
+  "scheduling": {
+    "automaticRestart": true,
+    "preemptible": false
+  },
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-a/instances/fixture",
+  "serviceAccounts": [
+    {
+      "email": "fixture@p.iam.gserviceaccount.com",
+      "scopes": [
+        "https://www.googleapis.com/auth/cloud-platform"
+      ]
+    }
+  ],
+  "shieldedInstanceConfig": {
+    "enableSecureBoot": true,
+    "enableVtpm": true,
+    "enableIntegrityMonitoring": true
+  },
+  "shieldedInstanceIntegrityPolicy": {
+    "updateAutoLearnPolicy": true
+  },
+  "sourceMachineImage": "global/machineImages/base",
+  "sourceMachineImageEncryptionKey": {
+    "kmsKeyName": "projects/p/locations/us/keyRings/r/cryptoKeys/image"
+  },
+  "startRestricted": false,
+  "statusMessage": "fixture status",
+  "tags": {
+    "items": [
+      "fixture"
+    ]
+  },
+  "workloadIdentityConfig": {
+    "identity": "fixture-identity",
+    "identityCertificateEnabled": true
+  },
+  "zone": "zones/us-central1-a",
+  "id": "1000000000000000001",
+  "name": "instance-v3",
+  "status": "RUNNING"
+}

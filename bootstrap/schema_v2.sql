@@ -279,8 +279,7 @@ CREATE INDEX OODGraphObjectsBySourceReference
   ON OODGraphObjects (organization_id, source_authority_id, source_ref_kind, source_stable_reference, version_coordinate);
 
 CREATE NULL_FILTERED INDEX OODGraphObjectsByApiRoleLocatorManifest
-  ON OODGraphObjects (organization_id, api_element_role_locator_manifest_hash, graph_object_id)
-  WHERE api_element_role_locator_manifest_hash IS NOT NULL;
+  ON OODGraphObjects (organization_id, api_element_role_locator_manifest_hash, graph_object_id);
 
 CREATE INDEX OODGraphSymbolsByObject
   ON OODGraphSymbols (organization_id, graph_snapshot_id, graph_object_id, symbol_kind);

@@ -143,11 +143,22 @@ func TestAPIRoleLocatorMigrationMatchesFreshSchema(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, required := range []string{
-		"api_element_role", "api_element_role_locator_manifest_hash", "OODGraphObjectsByApiRoleLocatorManifest",
-	} {
-		if !strings.Contains(string(migration), required) || !strings.Contains(string(fresh), required) {
-			t.Fatalf("migration/fresh schema missing required API role surface %q", required)
+	const wantIndex = "CREATE NULL_FILTERED INDEX OODGraphObjectsByApiRoleLocatorManifest ON OODGraphObjects (organization_id, api_element_role_locator_manifest_hash, graph_object_id)"
+	for name, ddl := range map[string]string{"migration": string(migration), "fresh schema": string(fresh)} {
+		if !strings.Contains(ddl, "api_element_role") || !strings.Contains(ddl, "api_element_role_locator_manifest_hash") {
+			t.Fatalf("%s missing API role columns", name)
+		}
+		var indexStatements []string
+		for _, statement := range splitDDL(ddl) {
+			if strings.Contains(statement, "OODGraphObjectsByApiRoleLocatorManifest") {
+				indexStatements = append(indexStatements, strings.Join(strings.Fields(statement), " "))
+			}
+		}
+		if len(indexStatements) != 1 {
+			t.Fatalf("%s declares %d API-role locator indexes, want 1", name, len(indexStatements))
+		}
+		if indexStatements[0] != wantIndex {
+			t.Fatalf("%s API-role locator index = %q, want %q", name, indexStatements[0], wantIndex)
 		}
 	}
 }

@@ -78,13 +78,34 @@ func TestSpannerProjectionTransactionAndReadback(t *testing.T) {
 	ss := f.source.Snapshot
 	n := f.source.Nodes[0]
 	ed := f.source.Edges[0]
-	created, _ := time.Parse(time.RFC3339Nano, testTime)
-	coord, _ := jsonCell(ss.CoordinatesJSON)
-	scope, _ := jsonCell(ss.ScopeJSON)
-	body, _ := jsonCell(n.BodyJSON)
-	nc, _ := jsonCell(n.CoordinatesJSON)
-	ep, _ := jsonCell(ed.ProofJSON)
-	ec, _ := jsonCell(ed.CoordinatesJSON)
+	created, parseErr := time.Parse(time.RFC3339Nano, testTime)
+	if parseErr != nil {
+		t.Fatalf("fixture timestamp: %v", parseErr)
+	}
+	coord, cellErr := jsonCell(ss.CoordinatesJSON)
+	if cellErr != nil {
+		t.Fatalf("snapshot coordinates JSON: %v", cellErr)
+	}
+	scope, cellErr := jsonCell(ss.ScopeJSON)
+	if cellErr != nil {
+		t.Fatalf("snapshot scope JSON: %v", cellErr)
+	}
+	body, cellErr := jsonCell(n.BodyJSON)
+	if cellErr != nil {
+		t.Fatalf("node body JSON: %v", cellErr)
+	}
+	nc, cellErr := jsonCell(n.CoordinatesJSON)
+	if cellErr != nil {
+		t.Fatalf("node coordinates JSON: %v", cellErr)
+	}
+	ep, cellErr := jsonCell(ed.ProofJSON)
+	if cellErr != nil {
+		t.Fatalf("edge proof JSON: %v", cellErr)
+	}
+	ec, cellErr := jsonCell(ed.CoordinatesJSON)
+	if cellErr != nil {
+		t.Fatalf("edge coordinates JSON: %v", cellErr)
+	}
 	_, e = client.Apply(ctx, []*spanner.Mutation{
 		spanner.InsertMap("FeatureGraphSnapshots", map[string]any{"organization_id": c.Organization, "snapshot_id": c.SourceSnapshot, "source_coordinates": coord, "scope": scope, "sealed": false, "created_at": created, "sealed_at": spanner.NullTime{}}),
 		spanner.InsertMap("FeatureGraphNodes", map[string]any{"organization_id": c.Organization, "snapshot_id": c.SourceSnapshot, "node_id": n.ID, "node_kind": n.Kind, "title": n.Title, "review_state": n.ReviewState, "content_sha256": n.ContentSHA256, "body": body, "source_coordinates": nc, "search_text": n.SearchText, "created_at": created}),
@@ -93,11 +114,56 @@ func TestSpannerProjectionTransactionAndReadback(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	store, e := NewSpannerStore(ctx, resource, gcpauth.Selector{}, true)
+	store, e := NewSpannerStore(client, c.MaxBytes)
 	if e != nil {
 		t.Fatal(e)
 	}
-	defer store.Close()
+	// Observation uses one budget across metadata and selected rows; it must
+	// refuse before Plan/Apply can create any target snapshot.
+	tiny, e := NewSpannerStore(client, 200)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = tiny.ReadSnapshot(ctx, c.Organization, c.SourceSnapshot); e != nil {
+		t.Fatal("individual snapshot should fit", e)
+	}
+	if _, e = tiny.ReadNodes(ctx, c.Organization, c.SourceSnapshot, s.NodeIDs); e != nil {
+		t.Fatal("individual nodes should fit", e)
+	}
+	if _, e = tiny.ReadEdges(ctx, c.Organization, c.SourceSnapshot, s.EdgeIDs); e != nil {
+		t.Fatal("individual edges should fit", e)
+	}
+	if _, e = Plan(ctx, c, tiny, fakeGit{}, s); e == nil || !strings.Contains(e.Error(), "byte budget") {
+		t.Fatal("cumulative Plan byte budget accepted", e)
+	}
+	countRows := client.Single().Query(ctx, spanner.Statement{SQL: "SELECT COUNT(*) FROM FeatureGraphSnapshots"})
+	countRow, countErr := countRows.Next()
+	if countErr != nil {
+		countRows.Stop()
+		t.Fatal(countErr)
+	}
+	var snapshotCount int64
+	if countErr = countRow.Columns(&snapshotCount); countErr != nil {
+		countRows.Stop()
+		t.Fatal(countErr)
+	}
+	countRows.Stop()
+	if snapshotCount != 1 {
+		t.Fatal("budget refusal wrote a target", snapshotCount)
+	}
+	for _, limit := range []int{0, -1, int(^uint(0) >> 1)} {
+		if _, _, err := store.ReadAll(ctx, c.Organization, c.SourceSnapshot, limit, 1); err == nil {
+			t.Fatalf("unbounded ReadAll limit %d accepted", limit)
+		}
+	}
+	emptySelection := s
+	emptySelection.EdgeIDs = nil
+	c.ExpectedSelectionSHA256, _ = SelectionSHA256(emptySelection)
+	emptyManifest, err := Plan(ctx, c, store, fakeGit{}, emptySelection)
+	if err != nil || len(emptyManifest.Edges) != 0 {
+		t.Fatal("empty edge selection became an unbounded read", err)
+	}
+	c.ExpectedSelectionSHA256, _ = SelectionSHA256(s)
 	m, e := Plan(ctx, c, store, fakeGit{}, s)
 	if e != nil {
 		t.Fatal(e)
@@ -108,6 +174,9 @@ func TestSpannerProjectionTransactionAndReadback(t *testing.T) {
 	r, e := Apply(ctx, c, store, fakeGit{}, m, m.Digest)
 	if e != nil {
 		t.Fatal(e)
+	}
+	if _, _, err := tiny.ReadAll(ctx, c.Organization, r.TargetSnapshot, c.MaxNodes, c.MaxEdges); err == nil {
+		t.Fatal("target readback ignored byte budget")
 	}
 	if r.NodeCount != 2 || r.EdgeCount != 2 || r.CommittedAt == "" || r.Replayed {
 		t.Fatalf("bad receipt %+v", r)

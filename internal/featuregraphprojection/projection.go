@@ -57,8 +57,8 @@ func (c Config) Validate() error {
 	if !hex64.MatchString(c.ExpectedSelectionSHA256) {
 		return fmt.Errorf("reviewed selection digest required")
 	}
-	if c.MaxNodes <= 0 || c.MaxEdges <= 0 || c.MaxBytes <= 0 || c.MaxMutations <= 0 || len(c.AllowedRepositories) == 0 {
-		return fmt.Errorf("positive caps and allowed repositories required")
+	if c.MaxNodes <= 0 || c.MaxNodes > 500000 || c.MaxEdges <= 0 || c.MaxEdges > 500000 || c.MaxBytes <= 0 || c.MaxBytes > 32<<20 || c.MaxMutations <= 0 || c.MaxMutations > 1000000 || len(c.AllowedRepositories) == 0 {
+		return fmt.Errorf("positive bounded caps and allowed repositories required")
 	}
 	for id, r := range c.AllowedRepositories {
 		if !cleanID(id, 256) || r.GitDir == "" || len(r.PathPrefixes) == 0 || len(r.Roles) == 0 {
@@ -161,6 +161,7 @@ type Reader interface {
 }
 type Store interface {
 	Reader
+	Observe(context.Context, func(Reader) error) error
 	Atomic(context.Context, func(Tx) error) error
 }
 type Tx interface {
@@ -187,18 +188,26 @@ func Plan(ctx context.Context, cfg Config, store Store, reader ArtifactReader, s
 	if len(selection.NodeIDs) > cfg.MaxNodes || len(selection.EdgeIDs) > cfg.MaxEdges {
 		return Manifest{}, fmt.Errorf("selection exceeds caps")
 	}
-	s, err := store.ReadSnapshot(ctx, cfg.Organization, cfg.SourceSnapshot)
+	var source Snapshot
+	var ns []Node
+	var es []Edge
+	err := store.Observe(ctx, func(r Reader) error {
+		var e error
+		source, e = r.ReadSnapshot(ctx, cfg.Organization, cfg.SourceSnapshot)
+		if e != nil {
+			return e
+		}
+		ns, e = r.ReadNodes(ctx, cfg.Organization, cfg.SourceSnapshot, selection.NodeIDs)
+		if e != nil {
+			return e
+		}
+		es, e = r.ReadEdges(ctx, cfg.Organization, cfg.SourceSnapshot, selection.EdgeIDs)
+		return e
+	})
 	if err != nil {
 		return Manifest{}, err
 	}
-	ns, err := store.ReadNodes(ctx, cfg.Organization, cfg.SourceSnapshot, selection.NodeIDs)
-	if err != nil {
-		return Manifest{}, err
-	}
-	es, err := store.ReadEdges(ctx, cfg.Organization, cfg.SourceSnapshot, selection.EdgeIDs)
-	if err != nil {
-		return Manifest{}, err
-	}
+	s := source
 	if !reflect.DeepEqual(nodeIDs(ns), sorted(selection.NodeIDs)) || !reflect.DeepEqual(edgeIDs(es), sorted(selection.EdgeIDs)) {
 		return Manifest{}, fmt.Errorf("selected IDs do not match exact source closure")
 	}
@@ -213,7 +222,11 @@ func Plan(ctx context.Context, cfg Config, store Store, reader ArtifactReader, s
 	if !s.Sealed {
 		mode = "pinned_source_observation"
 	}
-	m := Manifest{SourceHashPolicy: sourceHashPolicy, SourceBodyObservations: bodyObservations(ns), Version: 1, Database: cfg.Database, TargetPrefix: cfg.TargetPrefix, Organization: cfg.Organization, SourceSnapshot: cfg.SourceSnapshot, Source: s, Nodes: ns, Edges: es, Artifacts: arts, ProjectionMode: mode}
+	observations, err := bodyObservations(ns)
+	if err != nil {
+		return Manifest{}, err
+	}
+	m := Manifest{SourceHashPolicy: sourceHashPolicy, SourceBodyObservations: observations, Version: 1, Database: cfg.Database, TargetPrefix: cfg.TargetPrefix, Organization: cfg.Organization, SourceSnapshot: cfg.SourceSnapshot, Source: s, Nodes: ns, Edges: es, Artifacts: arts, ProjectionMode: mode}
 	if err := validateManifest(cfg, m); err != nil {
 		return Manifest{}, err
 	}
@@ -243,8 +256,9 @@ func Apply(ctx context.Context, cfg Config, store Store, reader ArtifactReader, 
 	if err != nil {
 		return Receipt{}, err
 	}
-	// Count written cells conservatively, including generated token metadata.
-	if len(ns) > cfg.MaxNodes || len(es) > cfg.MaxEdges || len(ns)*12+len(es)*12+7 > cfg.MaxMutations || len(encoded) > cfg.MaxBytes {
+	// Limit buffered single-row mutation messages. Spanner separately enforces
+	// indexed cell mutation and transaction-size quotas at atomic commit.
+	if len(ns) > cfg.MaxNodes || len(es) > cfg.MaxEdges || len(ns)+len(es)+1 > cfg.MaxMutations || len(encoded) > cfg.MaxBytes {
 		return Receipt{}, fmt.Errorf("projection write exceeds configured caps")
 	}
 	replay := false
@@ -275,11 +289,16 @@ func Apply(ctx context.Context, cfg Config, store Store, reader ArtifactReader, 
 	if err != nil {
 		return Receipt{}, err
 	}
-	actual, err := store.ReadSnapshot(ctx, cfg.Organization, target.ID)
+	var actual Snapshot
+	err = store.Observe(ctx, func(r Reader) error {
+		var e error
+		actual, e = r.ReadSnapshot(ctx, cfg.Organization, target.ID)
+		if e != nil {
+			return e
+		}
+		return verifyTarget(ctx, r, actual, target, ns, es, cfg)
+	})
 	if err != nil {
-		return Receipt{}, fmt.Errorf("committed projection requires readback: %w", err)
-	}
-	if err = verifyTarget(ctx, store, actual, target, ns, es, cfg); err != nil {
 		return Receipt{}, fmt.Errorf("committed projection readback failed: %w", err)
 	}
 	return Receipt{TargetSnapshot: target.ID, ManifestSHA256: m.Digest, NodeIDs: nodeIDs(ns), EdgeIDs: edgeIDs(es), NodeCount: len(ns), EdgeCount: len(es), CommittedAt: actual.CreatedAt, Replayed: replay}, nil
@@ -343,13 +362,17 @@ func SelectionSHA256(s Selection) (string, error) {
 	}
 	return sum(b), nil
 }
-func bodyObservations(ns []Node) []SourceBodyObservation {
+func bodyObservations(ns []Node) ([]SourceBodyObservation, error) {
 	out := make([]SourceBodyObservation, 0, len(ns))
 	for _, n := range ns {
-		out = append(out, SourceBodyObservation{NodeID: n.ID, DeclaredSHA256: n.ContentSHA256, CanonicalBodySHA256: sum(canonicalRaw(n.BodyJSON))})
+		body, err := CanonicalJSON(n.BodyJSON)
+		if err != nil {
+			return nil, fmt.Errorf("invalid observed body for %q: %w", n.ID, err)
+		}
+		out = append(out, SourceBodyObservation{NodeID: n.ID, DeclaredSHA256: n.ContentSHA256, CanonicalBodySHA256: sum(body)})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].NodeID < out[j].NodeID })
-	return out
+	return out, nil
 }
 func validateSelection(s Selection) error {
 	if len(s.NodeIDs) == 0 || len(s.Artifacts) == 0 {
@@ -407,7 +430,11 @@ func validateManifest(c Config, m Manifest) error {
 	if h, e := SelectionSHA256(Selection{NodeIDs: nodeIDs(m.Nodes), EdgeIDs: edgeIDs(m.Edges), Artifacts: m.Artifacts}); e != nil || h != c.ExpectedSelectionSHA256 {
 		return fmt.Errorf("manifest selection differs from reviewed configuration")
 	}
-	if m.SourceHashPolicy != sourceHashPolicy || !reflect.DeepEqual(m.SourceBodyObservations, bodyObservations(m.Nodes)) {
+	observations, err := bodyObservations(m.Nodes)
+	if err != nil {
+		return err
+	}
+	if m.SourceHashPolicy != sourceHashPolicy || !reflect.DeepEqual(m.SourceBodyObservations, observations) {
 		return fmt.Errorf("source body observations or declared hash qualification mismatch")
 	}
 	if len(m.Nodes) > c.MaxNodes || len(m.Edges) > c.MaxEdges {
@@ -492,7 +519,15 @@ func validJSON(b []byte) bool {
 	_, e := CanonicalJSON(b)
 	return e == nil
 }
-func canonicalRaw(b []byte) []byte { x, _ := CanonicalJSON(b); return x }
+
+// canonicalRaw is only for JSON already checked by validateManifest.
+func canonicalRaw(b []byte) []byte {
+	x, err := CanonicalJSON(b)
+	if err != nil {
+		panic(fmt.Errorf("invalid prevalidated JSON: %w", err))
+	}
+	return x
+}
 func sameRaw(a, b []byte) bool {
 	x, e := CanonicalJSON(a)
 	y, f := CanonicalJSON(b)

@@ -1,6 +1,6 @@
 # Bounded FeatureGraph evidence publication
 
-`cmd/featuregraph-publish` plans and atomically publishes a reviewed source selection into a new sealed legacy FeatureGraph snapshot. It writes only FeatureGraphSnapshots, FeatureGraphNodes and FeatureGraphEdges. It neither initializes databases nor writes OOD, runtime, admission or executable state.
+`spec-graph featuregraph-publish` plans and atomically publishes a reviewed source selection into a new sealed legacy FeatureGraph snapshot. It writes only FeatureGraphSnapshots, FeatureGraphNodes and FeatureGraphEdges. It neither initializes databases nor writes OOD, runtime, admission or executable state.
 
 The operator config must explicitly fence the experimental database, organization, source snapshot, target prefix, repository paths, artifact roles, caps and the expected selection SHA-256. The selection includes exact source node/edge IDs and immutable Git artifact locators with reviewed references. SelectionSHA256 commits to their normalized sets; omitted edges, changed artifacts and changed references require a new config commitment. Artifact bytes are read from the specified full Git commit, checked as regular blobs and verified against SHA-256.
 
@@ -10,12 +10,12 @@ Unsealed sources refuse by default. Explicit allow_observed_unsealed_source reco
 
 Plan:
 
-    featuregraph-publish --config CONFIG.json --selection SELECTION.json --manifest PLAN.json
+    spec-graph featuregraph-publish --config CONFIG.json --selection SELECTION.json --manifest PLAN.json
 
 Inspect the complete plan and digest before apply:
 
-    featuregraph-publish --config CONFIG.json --manifest PLAN.json --apply --expected-manifest-sha256 DIGEST
+    spec-graph featuregraph-publish --config CONFIG.json --manifest PLAN.json --apply --expected-manifest-sha256 DIGEST
 
-Reapply the identical manifest to verify exact replay. Config uses the existing gcpauth selector for process-local device credentials and owner-required impersonation; do not copy credentials or change shared authentication. Files are strict bounded JSON: duplicate keys, unknown fields and trailing data refuse.
+Reapply the identical manifest to verify exact replay. Config uses the existing gcpauth selector for process-local device credentials and owner-required impersonation; do not copy credentials or change shared authentication. File inputs have an independent 32MiB absolute ceiling; config also caps bytes, node/edge limits and buffered row mutations. max_mutations counts single-row mutation messages (one snapshot plus node/edge rows), not the service quota on cells/index mutations. Spanner independently enforces its commit quotas atomically. Files are strict bounded JSON: duplicate keys, unknown fields and trailing data refuse.
 
 Tests: scoped unit tests cover selection commitments, observed-body qualification, transactional drift, rollback, caps, replay and exact target readback. Integration-tagged tests exercise the real Spanner SDK against an explicitly allowed loopback emulator with only the three legacy tables, including large JSON integers and buffered-write failure. No live credentials are used by tests.

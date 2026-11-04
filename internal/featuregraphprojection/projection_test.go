@@ -24,6 +24,7 @@ type fakeStore struct {
 	commits int
 }
 
+func (f *fakeStore) Observe(ctx context.Context, fn func(Reader) error) error { return fn(f) }
 func (f *fakeStore) ReadSnapshot(_ context.Context, o, id string) (Snapshot, error) {
 	if o != f.source.Snapshot.Organization {
 		return Snapshot{}, ErrSnapshotNotFound
@@ -356,5 +357,48 @@ func TestLegacyDeclaredHashIsQualifiedAndObservedBodyDigestBound(t *testing.T) {
 	m.Digest, _ = digest(m)
 	if _, e := Apply(context.Background(), c, f, fakeGit{}, m, m.Digest); e == nil {
 		t.Fatal("rehashed observed-body forgery accepted")
+	}
+}
+
+func TestProjectionRejectsUnboundedConfigurationBeforeSourceRead(t *testing.T) {
+	for _, kind := range []string{"bytes", "nodes", "edges", "mutations"} {
+		t.Run(kind, func(t *testing.T) {
+			f, c, s := fixture()
+			max := int(^uint(0) >> 1)
+			switch kind {
+			case "bytes":
+				c.MaxBytes = max
+			case "nodes":
+				c.MaxNodes = max
+			case "edges":
+				c.MaxEdges = max
+			case "mutations":
+				c.MaxMutations = max
+			}
+			if _, e := Plan(context.Background(), c, f, fakeGit{}, s); e == nil {
+				t.Fatal("unbounded configuration accepted")
+			}
+		})
+	}
+}
+func TestProjectionRowMutationBudget(t *testing.T) {
+	f, c, s := fixture()
+	c.MaxMutations = 5
+	m := plan(t, f, c, s)
+	if _, e := Apply(context.Background(), c, f, fakeGit{}, m, m.Digest); e != nil {
+		t.Fatal("exact five buffered row mutations refused", e)
+	}
+	f, c, s = fixture()
+	c.MaxMutations = 4
+	m = plan(t, f, c, s)
+	if _, e := Apply(context.Background(), c, f, fakeGit{}, m, m.Digest); e == nil || len(f.targets) != 0 {
+		t.Fatal("row mutation budget exceeded")
+	}
+}
+func TestProjectionRejectsInvalidObservedBodyWithoutEmptyHash(t *testing.T) {
+	f, c, s := fixture()
+	f.source.Nodes[0].BodyJSON = []byte(`{"duplicate":1,"duplicate":2}`)
+	if _, e := Plan(context.Background(), c, f, fakeGit{}, s); e == nil {
+		t.Fatal("invalid observed JSON accepted")
 	}
 }

@@ -18,7 +18,7 @@ func TestDecodeStrictRefusesDuplicatesTrailingAndUnknownFields(t *testing.T) {
 	} {
 		var got payload
 		if err := DecodeStrict([]byte(raw), &got); err == nil {
-			t.Fatalf("DecodeStrict(%s) succeeded, want refusal", raw)
+			t.Fatalf("DecodeStrict(%q) succeeded, want refusal", raw)
 		}
 	}
 }

@@ -46,8 +46,15 @@ func cmdFeatureGraphPublish(ctx context.Context, args []string) error {
 		return fmt.Errorf("featuregraph-publish: --selection is plan-only and --expected-manifest-sha256 is apply-only")
 	}
 
+	configBytes, err := featureGraphReadFile(*configPath, featureGraphConfigByteCap)
+	if err != nil {
+		return err
+	}
+	if err = gcpauth.ValidateConfigCredentialShape(configBytes); err != nil {
+		return err
+	}
 	var cfg featureGraphPublishConfig
-	if err := featureGraphDecode(*configPath, featureGraphConfigByteCap, &cfg); err != nil {
+	if err = featuregraphprojection.DecodeStrict(configBytes, &cfg); err != nil {
 		return err
 	}
 	if err := cfg.Config.Validate(); err != nil {

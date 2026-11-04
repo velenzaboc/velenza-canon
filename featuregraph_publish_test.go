@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -38,5 +40,16 @@ func TestFeatureGraphReadFileAppliesAbsoluteCapBeforeReading(t *testing.T) {
 	}
 	if _, err := featureGraphReadFile(name, int(^uint(0)>>1)); err == nil {
 		t.Fatal("featureGraphReadFile() accepted a file over the absolute cap")
+	}
+}
+
+func TestFeatureGraphCommandRejectsHiddenCredentialConfigBeforeClient(t *testing.T) {
+	name := filepath.Join(t.TempDir(), "operator.json")
+	if err := os.WriteFile(name, []byte(`{"credentials_file":"not-a-real-carrier"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	err := cmdFeatureGraphPublish(context.Background(), []string{"--config", name, "--selection", "unused", "--manifest", "unused"})
+	if err == nil || !strings.Contains(err.Error(), "only allowed inside google_credentials") {
+		t.Fatalf("hidden credential config did not refuse before client construction: %v", err)
 	}
 }

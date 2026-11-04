@@ -1,9 +1,10 @@
 // spec-graph is the Node Identity & Admission MCP server.
 //
 // Subcommands:
-//   spec-graph mcp                       run as MCP stdio subprocess
-//   spec-graph init                      apply bootstrap/schema_v1.sql to the experimental DB
-//   spec-graph reset --confirm           drop + recreate the experimental DB
+//
+//	spec-graph mcp                       run as MCP stdio subprocess
+//	spec-graph init                      apply bootstrap/schema_v1.sql to the experimental DB
+//	spec-graph reset --confirm           drop + recreate the experimental DB
 //
 // See README.md and REQUIREMENTS.md for the three-tier framing, the
 // experimental-bootstrap operating mode, and the cutover discipline.
@@ -37,6 +38,8 @@ func main() {
 		err = cmdReset(ctx, os.Args[2:])
 	case "trace-code":
 		err = cmdTraceCode(ctx, os.Args[2:])
+	case "featuregraph-publish":
+		err = cmdFeatureGraphPublish(ctx, os.Args[2:])
 	case "arbor-info":
 		err = runArborInfoCLI(os.Args[2:], os.Stdout)
 	case "help", "-h", "--help":
@@ -62,6 +65,7 @@ usage:
   spec-graph reset --confirm           drop + recreate the experimental DB
   spec-graph trace-code --spec-dir <dir> --code-dir <dir> [--fail-on-dangling] [--fail-on-uncovered]
                                        audit cross-layer //spec: and //volt: coverage
+  spec-graph featuregraph-publish      plan/apply bounded source-pinned legacy research evidence
   spec-graph arbor-info                emit the Layer 2 Velenza Arbor Stack JSON descriptor
 
 For live-graph R-rule audits, see bootstrap/audit/README.md — the audit

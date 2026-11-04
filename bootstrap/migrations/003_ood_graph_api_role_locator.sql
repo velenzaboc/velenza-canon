@@ -12,5 +12,4 @@ ALTER TABLE OODGraphObjects ADD COLUMN api_element_role STRING(64);
 ALTER TABLE OODGraphObjects ADD COLUMN api_element_role_locator_manifest_hash STRING(64);
 
 CREATE NULL_FILTERED INDEX OODGraphObjectsByApiRoleLocatorManifest
-  ON OODGraphObjects (organization_id, api_element_role_locator_manifest_hash, graph_object_id)
-  WHERE api_element_role_locator_manifest_hash IS NOT NULL;
+  ON OODGraphObjects (organization_id, api_element_role_locator_manifest_hash, graph_object_id);

@@ -28,7 +28,7 @@ import (
 
 const (
 	releaseCommandName                  = "provider-documentation-factory-release"
-	releaseGoVersion                    = "go1.27.1"
+	releaseGoVersion                    = "go1.27.3"
 	releaseBuildTag                     = "factory_release"
 	releaseModulePath                   = "github.com/velenzaboc/velenza-canon"
 	releaseRunnerPackage                = "./cmd/provider-documentation-factory-run"

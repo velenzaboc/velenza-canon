@@ -412,11 +412,11 @@ func TestMeasureRegularTreeAndExecutableClassification(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "bin", "go"), []byte("binary"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(root, "VERSION"), []byte("go1.27.1\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "VERSION"), []byte("go1.27.3\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	tree, err := measureRegularTree(root)
-	if err != nil || tree.files != 2 || tree.bytes != int64(len("binary")+len("go1.27.1\n")) || !validSHA256(tree.digest) {
+	if err != nil || tree.files != 2 || tree.bytes != int64(len("binary")+len("go1.27.3\n")) || !validSHA256(tree.digest) {
 		t.Fatalf("tree=%+v err=%v", tree, err)
 	}
 	if !sameNativePath(filepath.Join(root, "bin", ".."), root) || sameNativePath(root, filepath.Join(root, "other")) {

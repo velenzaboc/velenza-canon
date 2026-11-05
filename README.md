@@ -301,7 +301,7 @@ To compile and verify one already-prepared four-stage bundle in a single
 bounded process, use the exact-commit release bootstrap. The bootstrap itself
 is an operator trust entry point: use its reviewed bytes from the same selected
 commit. Supply a repository that contains that commit, the full lowercase
-40-character commit SHA, and independently selected absolute Go 1.27.1 and Git
+40-character commit SHA, and independently selected absolute Go 1.27.3 and Git
 executable paths. On Windows PowerShell:
 
 The local ceremony detects ordinary path, byte, mode, identity, and pre/post
@@ -317,7 +317,7 @@ OS-enforced immutable filesystem against an already-compromised principal.
 & .\scripts\provider-documentation-factory-release.ps1 `
   '<absolute-spec-graph-repository-root>' `
   '<full-lowercase-commit-sha>' `
-  '<absolute-go-1.27.1-executable>' `
+  '<absolute-go-1.27.3-executable>' `
   '<absolute-git-executable>' `
   -- `
   --evidence-intake-inputs <evidence-intake-stage-input-manifest.json> `
@@ -341,7 +341,7 @@ On macOS, use the committed POSIX bootstrap with the same runner arguments:
 ./scripts/provider-documentation-factory-release.sh \
   <absolute-spec-graph-repository-root> \
   <full-lowercase-commit-sha> \
-  <absolute-go-1.27.1-executable> \
+  <absolute-go-1.27.3-executable> \
   <absolute-git-executable> \
   -- <the-same-runner-arguments-shown-above>
 ```

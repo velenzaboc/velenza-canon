@@ -10,10 +10,9 @@ import (
 
 // The release ceremony accepts exactly one Go toolchain patch (releaseGoVersion,
 // checked by string equality in verifyGoVersion and against the child receipt's
-// build info). The repository's own CI jobs and the operator documentation must
-// name that same exact patch; otherwise the release tests run under a toolchain
-// the trust root refuses, which is how go_version "1.27" (resolving to go1.27.1)
-// silently diverged from the go1.27.0 pin.
+// build info). Operator release documentation must name that exact patch. Guarded source
+// verification independently uses the installed local compiler and never
+// installs a toolchain or executes the release ceremony.
 func TestReleaseToolchainPinsAgree(t *testing.T) {
 	exactPatch := regexp.MustCompile(`^go[0-9]+\.[0-9]+\.[0-9]+$`)
 	if !exactPatch.MatchString(releaseGoVersion) {
@@ -34,15 +33,15 @@ func TestReleaseToolchainPinsAgree(t *testing.T) {
 		return strings.ReplaceAll(string(raw), "\r\n", "\n")
 	}
 
-	workflow := read(".github/workflows/ci.yml")
-	workflowPins := regexp.MustCompile(`(?m)^\s*go[-_]version:\s*(.*?)\s*$`).FindAllStringSubmatch(workflow, -1)
-	if len(workflowPins) != 1 {
-		t.Fatalf("ci.yml declares %d Go toolchain selections, want exactly 1", len(workflowPins))
+	// Verification runs under the owner's installed, locally selected compiler.
+	// Release remains separately bound to its exact independently selected
+	// toolchain; retiring hosted CI must not loosen that release trust root.
+	localGate := read("scripts/verify-local.sh")
+	if !strings.Contains(localGate, "GOTOOLCHAIN=local") || !strings.Contains(localGate, "go version") {
+		t.Fatal("local verification must use and report the installed compiler")
 	}
-	for _, pin := range workflowPins {
-		if got := strings.Trim(pin[1], `"'`); got != want {
-			t.Fatalf("ci.yml selects Go %q, want the release trust-root patch %q", pin[1], want)
-		}
+	if _, err := os.Stat(filepath.Join(repositoryRoot, ".github", "workflows", "ci.yml")); !os.IsNotExist(err) {
+		t.Fatal("automatic hosted test workflow must remain absent")
 	}
 
 	readme := read("README.md")

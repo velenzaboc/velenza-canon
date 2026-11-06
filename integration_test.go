@@ -2406,6 +2406,12 @@ func TestIntegrationCompleteSnapshotRejectsInvalidLegacyRowsBeforeOpeningSuccess
 				object.ProjectionRole = "bootstrap_admission_vertex"
 				object.GraphObjectID = uuid.NewSHA1(oodGraphIDNamespace, []byte("object|"+object.OrganizationID+"|api_symbol|"+object.SourceAuthorityID+"|"+object.SourceRefKind+"|"+object.SourceStableReference+"|"+object.VersionCoordinate+"|"+object.SectionPath)).String()
 				object.GraphAddress = (GraphAddress{ObjectClass: object.ObjectClass, SourceAuthorityID: object.SourceAuthorityID, SourceRefKind: object.SourceRefKind, SourceRef: object.SourceStableReference, VersionCoordinate: object.VersionCoordinate, SectionPath: object.SectionPath}).String()
+				coordinate := ArtifactSourceCoordinate{SourceAuthorityID: object.SourceAuthorityID, SourceArtifactClass: object.SourceArtifactClass, SourceRefKind: object.SourceRefKind, SourceStableReference: object.SourceStableReference, VersionCoordinate: object.VersionCoordinate, SectionPath: object.SectionPath, SourceContentHash: object.SourceContentHash, SourceContentHashOwner: object.SourceContentHashOwner}
+				policy := integrationDocsPolicy(t)
+				object.SearchPayload = externalReferenceSearchPayload(object.ObjectClass, object.GraphAddress, coordinate, policy)
+				object.SearchText = externalReferenceSearchText(object.ObjectClass, coordinate, policy)
+				// Content authorization is distinct from the deliberately absent API-role evidence.
+				integrationAttachExternalVerificationReceipts(t, &seed)
 			case "unknown_edge_label":
 				integrationAppendObject(t, &seed, "sha256_invalid_edge_target", strings.Repeat("a", 64))
 				integrationAddReciprocalObjectEdges(t, &seed)

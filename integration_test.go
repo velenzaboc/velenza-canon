@@ -148,6 +148,8 @@ var integrationSourceCoordinateSchema = []string{
 		graph_snapshot_id STRING(36) NOT NULL,
 		graph_object_id STRING(36) NOT NULL,
 		object_class STRING(64) NOT NULL,
+		api_element_role STRING(64),
+		api_element_role_locator_manifest_hash STRING(64),
 		source_authority_id STRING(36) NOT NULL,
 		source_artifact_class STRING(64) NOT NULL,
 		source_ref_kind STRING(32) NOT NULL,

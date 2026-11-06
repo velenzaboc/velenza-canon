@@ -352,9 +352,10 @@ export VELENZA_VERIFY_DOCKER_CONTEXT="$REGISTERED_BUILD_CONTEXT"
 python3 "$VERIFICATION_GUARD" --cwd "$UNIQUE_RUN_REPO" -- timeout 3600 bash scripts/verify-local.sh
 ```
 
-The entrypoint verifies the native resource scope, runs vet, build, the entire
-race-enabled unit tier with statement coverage, and the complete emulator
-integration tier. The emulator uses a digest-pinned image, a unique container,
+The entrypoint verifies the native resource scope, runs vet, build, both complete
+repository/native-successor unit tiers with the original un-raced selection,
+statement coverage on changed production boundaries, separate race checks for
+the credential and release boundaries, and the complete emulator integration tier. The emulator uses a digest-pinned image, a unique container,
 loopback ports, the explicitly selected build context, and separate two-CPU/two-GiB
 caps; the verification scope reduces to two CPUs/six GiB before Docker starts.
 It preserves existing images and removes an image it acquired itself. The caller

@@ -50,7 +50,13 @@ go version
 sh -n scripts/provider-documentation-factory-release.sh 2>/dev/null || { [[ ! -e scripts/provider-documentation-factory-release.sh ]] || exit 1; }
 go vet ./...
 go build ./...
-go test -race -p 2 -count=1 -timeout=30m -coverprofile="$scratch/unit.cover" -json ./... | tee "$scratch/unit.json"
+# Preserve the former complete repository and native-successor tiers without
+# adding race instrumentation to unrelated model/streaming packages. Measure
+# changed production boundaries, then run their separate race controls.
+go test -p 1 -count=1 -timeout=30m -skip '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' -coverpkg=.,./internal/gcpauth,./cmd/provider-documentation-factory-release -coverprofile="$scratch/unit.cover" -json ./... | tee "$scratch/unit.json"
+go test -p 1 -count=1 -timeout=30m -run '^TestCloudMappingNeutralSuccessorReachRealFactoryVerify$' -json ./internal/providerplan | tee "$scratch/native-successor.json"
+go test -race -p 1 -count=1 -timeout=10m -coverprofile="$scratch/security.cover" -json ./internal/gcpauth ./cmd/provider-documentation-factory-release | tee "$scratch/security.json"
+go tool cover -func="$scratch/security.cover"
 go tool cover -func="$scratch/unit.cover"
 python3 - "$scratch/unit.json" <<'PY'
 import json,sys

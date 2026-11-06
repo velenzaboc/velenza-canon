@@ -2403,6 +2403,7 @@ func TestIntegrationCompleteSnapshotRejectsInvalidLegacyRowsBeforeOpeningSuccess
 			case "missing_api_role":
 				object := &seed.Objects[0]
 				object.ObjectClass = "api_symbol"
+				object.ProjectionRole = "bootstrap_admission_vertex"
 				object.GraphObjectID = uuid.NewSHA1(oodGraphIDNamespace, []byte("object|"+object.OrganizationID+"|api_symbol|"+object.SourceAuthorityID+"|"+object.SourceRefKind+"|"+object.SourceStableReference+"|"+object.VersionCoordinate+"|"+object.SectionPath)).String()
 				object.GraphAddress = (GraphAddress{ObjectClass: object.ObjectClass, SourceAuthorityID: object.SourceAuthorityID, SourceRefKind: object.SourceRefKind, SourceRef: object.SourceStableReference, VersionCoordinate: object.VersionCoordinate, SectionPath: object.SectionPath}).String()
 			case "unknown_edge_label":

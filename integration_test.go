@@ -459,6 +459,8 @@ func integrationEnv(t *testing.T) *Env {
 func integrationOODEnv(t *testing.T) *Env {
 	t.Helper()
 	edgeLabels := externalReferenceTestEdgeDescriptors()
+	// API-symbol fixtures must carry the same closed relationship registry as the app.
+	edgeLabels = append(edgeLabels, completeAPIRelationshipRegistry()...)
 	edgeLabels = append(edgeLabels,
 		resolutionTestLabel("depends_on", "dependency", []string{"section"}, []string{"section"}, "load_bearing_for"),
 		resolutionTestLabel("load_bearing_for", "dependency", []string{"section"}, []string{"section"}, "depends_on"),

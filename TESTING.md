@@ -338,3 +338,34 @@ Expected: database dropped and recreated, schema re-applied. Verbs against the n
 ### Pass criteria
 
 All six steps complete without error. The graph state matches the expected end-state at each step. The MCP server stays up across calls. Resetting and re-running produces identical state.
+
+## Guarded local verification and protected delivery
+
+Automatic GitHub test workflows have been retired. Run the complete source
+verification before requesting review, in a uniquely named temporary checkout
+on verification-host NVMe with run-owned `GOCACHE`, `GOMODCACHE` and `TMPDIR`. Select the designated
+verification host, registered build context and installed resource guard externally:
+
+```sh
+export VELENZA_VERIFY_HOST="$DESIGNATED_VERIFICATION_HOST"
+export VELENZA_VERIFY_DOCKER_CONTEXT="$REGISTERED_BUILD_CONTEXT"
+python3 "$VERIFICATION_GUARD" --cwd "$UNIQUE_RUN_REPO" -- timeout 3600 bash scripts/verify-local.sh
+```
+
+The entrypoint verifies the native resource scope, runs vet, build, both complete
+repository/native-successor unit tiers with the original un-raced selection,
+statement coverage on changed production boundaries, separate race checks for
+the credential and release boundaries, and the complete emulator integration tier. The emulator uses a digest-pinned image, a unique container,
+loopback ports, the explicitly selected build context, and separate two-CPU/two-GiB
+caps; the verification scope reduces to two CPUs/six GiB before Docker starts.
+It preserves existing images and removes an image it acquired itself. The caller
+streams stdout to durable evidence and removes its unique checkout, caches and
+other run-owned artifacts on every exit, then verifies cleanup.
+
+Protected pull requests, merge provenance and the merge queue remain in force.
+The guarded verification status records actual exact-revision local results and
+independent acceptance; it is not a skipped job or an automatic passing status.
+Recheck the speculative merge tree before attesting its verification, and reuse
+results only when that tree exactly equals the independently accepted tree.
+Only explicitly requested deployment may use CI. Publishing an image and
+starting a container remain separately verified deployment actions.

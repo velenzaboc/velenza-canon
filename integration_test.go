@@ -148,6 +148,8 @@ var integrationSourceCoordinateSchema = []string{
 		graph_snapshot_id STRING(36) NOT NULL,
 		graph_object_id STRING(36) NOT NULL,
 		object_class STRING(64) NOT NULL,
+		api_element_role STRING(64),
+		api_element_role_locator_manifest_hash STRING(64),
 		source_authority_id STRING(36) NOT NULL,
 		source_artifact_class STRING(64) NOT NULL,
 		source_ref_kind STRING(32) NOT NULL,
@@ -459,6 +461,8 @@ func integrationEnv(t *testing.T) *Env {
 func integrationOODEnv(t *testing.T) *Env {
 	t.Helper()
 	edgeLabels := externalReferenceTestEdgeDescriptors()
+	// API-symbol fixtures must carry the same closed relationship registry as the app.
+	edgeLabels = append(edgeLabels, completeAPIRelationshipRegistry()...)
 	edgeLabels = append(edgeLabels,
 		resolutionTestLabel("depends_on", "dependency", []string{"section"}, []string{"section"}, "load_bearing_for"),
 		resolutionTestLabel("load_bearing_for", "dependency", []string{"section"}, []string{"section"}, "depends_on"),
@@ -923,10 +927,11 @@ func integrationAddReciprocalObjectEdges(t *testing.T, batch *MaterializationBat
 	}
 	// The external-edge registry deliberately forbids generic dependency
 	// labels for external reference pages. Make the fixture use two closed
-	// external-reference contracts rather than widening that registry.
+	// external-reference contracts rather than widening that registry. API-symbol
+	// roles require independent evidence; an ordinary code example needs no fake API role.
 	target := &batch.Objects[1]
-	target.ObjectClass = "api_symbol"
-	target.GraphObjectID = uuid.NewSHA1(oodGraphIDNamespace, []byte("object|"+target.OrganizationID+"|api_symbol|"+target.SourceAuthorityID+"|"+target.SourceRefKind+"|"+target.SourceStableReference+"|"+target.VersionCoordinate+"|"+target.SectionPath)).String()
+	target.ObjectClass = "code_example"
+	target.GraphObjectID = uuid.NewSHA1(oodGraphIDNamespace, []byte("object|"+target.OrganizationID+"|code_example|"+target.SourceAuthorityID+"|"+target.SourceRefKind+"|"+target.SourceStableReference+"|"+target.VersionCoordinate+"|"+target.SectionPath)).String()
 	target.GraphAddress = (GraphAddress{ObjectClass: target.ObjectClass, SourceAuthorityID: target.SourceAuthorityID, SourceRefKind: target.SourceRefKind, SourceRef: target.SourceStableReference, VersionCoordinate: target.VersionCoordinate, SectionPath: target.SectionPath}).String()
 	coord := ArtifactSourceCoordinate{SourceAuthorityID: target.SourceAuthorityID, SourceArtifactClass: target.SourceArtifactClass, SourceRefKind: target.SourceRefKind, SourceStableReference: target.SourceStableReference, VersionCoordinate: target.VersionCoordinate, SectionPath: target.SectionPath, SourceContentHash: target.SourceContentHash, SourceContentHashOwner: target.SourceContentHashOwner}
 	policy := integrationDocsPolicy(t)
@@ -935,10 +940,10 @@ func integrationAddReciprocalObjectEdges(t *testing.T, batch *MaterializationBat
 	integrationAttachExternalVerificationReceipts(t, batch)
 
 	documents := resolutionTestLabel("documents", "external_reference", []string{"external_reference_doc", "reference_page"}, []string{"doc_object", "doc_version", "section", "symbol", "config", "circuit", "schema", "sentinel", "invariant", "assumption", "api_symbol", "code_example", "release_note", "code_symbol_ref"}, "")
-	defines := resolutionTestLabel("defines_external_symbol", "external_reference", []string{"reference_page", "source_repo"}, []string{"api_symbol", "code_symbol_ref"}, "")
+	example := resolutionTestLabel("example_of", "external_reference", []string{"code_example"}, []string{"api_symbol", "reference_page", "code_symbol_ref"}, "")
 	edges, violations := ResolveEdgeEndpointsInBatch(batch.Run.OrganizationID, batch.Run.MaterializationRunID, batch.Snapshot.GraphSnapshotID, batch.Objects, []PendingEdge{
 		{SourceEndpointID: batch.Objects[0].GraphObjectID, TargetEndpointID: target.GraphObjectID, Label: documents, AuthoringSourcePath: "$.relationships[0]", SourceAuthorityID: batch.Objects[0].SourceAuthorityID},
-		{SourceEndpointID: batch.Objects[0].GraphObjectID, TargetEndpointID: target.GraphObjectID, Label: defines, AuthoringSourcePath: "$.relationships[1]", SourceAuthorityID: batch.Objects[0].SourceAuthorityID},
+		{SourceEndpointID: target.GraphObjectID, TargetEndpointID: batch.Objects[0].GraphObjectID, Label: example, AuthoringSourcePath: "$.relationships[1]", SourceAuthorityID: batch.Objects[0].SourceAuthorityID},
 	})
 	if len(violations) != 0 || len(edges) != 2 {
 		t.Fatalf("resolve reciprocal fixture edges=%d violations=%+v", len(edges), violations)
@@ -2377,7 +2382,7 @@ func TestIntegrationCompleteSnapshotNeverDropsCarriedProjectionOrViolationArtifa
 }
 
 func TestIntegrationCompleteSnapshotRejectsInvalidLegacyRowsBeforeOpeningSuccessor(t *testing.T) {
-	for _, corruption := range []string{"unknown_object_class", "unknown_edge_label"} {
+	for _, corruption := range []string{"unknown_object_class", "unknown_edge_label", "missing_api_role"} {
 		t.Run(corruption, func(t *testing.T) {
 			requireEmulator(t)
 			ctx := context.Background()
@@ -2395,6 +2400,18 @@ func TestIntegrationCompleteSnapshotRejectsInvalidLegacyRowsBeforeOpeningSuccess
 			switch corruption {
 			case "unknown_object_class":
 				seed.Objects[0].ObjectClass = "legacy_unregistered_class"
+			case "missing_api_role":
+				object := &seed.Objects[0]
+				object.ObjectClass = "api_symbol"
+				object.ProjectionRole = "bootstrap_admission_vertex"
+				object.GraphObjectID = uuid.NewSHA1(oodGraphIDNamespace, []byte("object|"+object.OrganizationID+"|api_symbol|"+object.SourceAuthorityID+"|"+object.SourceRefKind+"|"+object.SourceStableReference+"|"+object.VersionCoordinate+"|"+object.SectionPath)).String()
+				object.GraphAddress = (GraphAddress{ObjectClass: object.ObjectClass, SourceAuthorityID: object.SourceAuthorityID, SourceRefKind: object.SourceRefKind, SourceRef: object.SourceStableReference, VersionCoordinate: object.VersionCoordinate, SectionPath: object.SectionPath}).String()
+				coordinate := ArtifactSourceCoordinate{SourceAuthorityID: object.SourceAuthorityID, SourceArtifactClass: object.SourceArtifactClass, SourceRefKind: object.SourceRefKind, SourceStableReference: object.SourceStableReference, VersionCoordinate: object.VersionCoordinate, SectionPath: object.SectionPath, SourceContentHash: object.SourceContentHash, SourceContentHashOwner: object.SourceContentHashOwner}
+				policy := integrationDocsPolicy(t)
+				object.SearchPayload = externalReferenceSearchPayload(object.ObjectClass, object.GraphAddress, coordinate, policy)
+				object.SearchText = externalReferenceSearchText(object.ObjectClass, coordinate, policy)
+				// Content authorization is distinct from the deliberately absent API-role evidence.
+				integrationAttachExternalVerificationReceipts(t, &seed)
 			case "unknown_edge_label":
 				integrationAppendObject(t, &seed, "sha256_invalid_edge_target", strings.Repeat("a", 64))
 				integrationAddReciprocalObjectEdges(t, &seed)
@@ -2414,6 +2431,9 @@ func TestIntegrationCompleteSnapshotRejectsInvalidLegacyRowsBeforeOpeningSuccess
 			_, _, err = adapter.PrepareCompleteMaterialization(ctx, delta, nil, materializationValidationAuthority(env))
 			if err == nil {
 				t.Fatal("invalid legacy row was laundered into a complete successor")
+			}
+			if corruption == "missing_api_role" && !strings.Contains(err.Error(), "api_element_role") {
+				t.Fatalf("missing API role error=%v, want explicit API-role refusal", err)
 			}
 			client, err := adapter.getClient(ctx)
 			if err != nil {
